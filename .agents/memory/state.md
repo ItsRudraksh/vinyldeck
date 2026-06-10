@@ -111,6 +111,7 @@ Current task track:
 - Current follow-up pass fixes only Settings DISPLAY modal height UX by widening the Display panel and compacting controls into a three-column window-mode deck plus three compact switch cards; it intentionally avoids a scrollable modal solution.
 - Current follow-up pass also adds debug-only Rust window logs for mini mode without changing mini URL/architecture. Smoke on 2026-06-10 opened the main `VinylDeck` window and printed `[VinylDeck window] cmd_set_window_mode requested: main`; mini still needs manual trigger to capture the new mini logs.
 - User-provided mini logs on 2026-06-10 captured the hang boundary: `cmd_set_window_mode requested: mini` → `show_mini: start` → `show_mini: hiding main window` → `show_mini: building mini window at app URL index.html`, then no further app logs until manual Ctrl+C. Follow-up fix made `cmd_set_window_mode` async and moved main hide after mini build.
+- User confirmed async mini fix works. Mini UX polish now keeps the vinyl centered in the 280px window, moves track text and controls out of normal layout flow, and shows the controls as an absolute bottom overlay only during pointer/touch activity before fading them back down.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
@@ -151,6 +152,7 @@ Current task track:
 
 ### Views
 - `views/MainView.tsx` — Final z-stack (AmbientLayer/vinyl-area/TrackInfo/Controls/ThemePicker/SourceBadge)
+- `views/MiniView.tsx` + `views/MiniView.css` — 280px mini player with centered vinyl and pointer-revealed absolute controls overlay
 
 ### Entry Points
 - `main.tsx` — CSS imports + data-theme="noir" before first paint

@@ -129,3 +129,5 @@ Planned scope:
 - Mini mode is not behavior-fixed in this pass. Systematic debugging found a strong local clue in installed Tauri 2.11.2 source: creating a `WebviewWindow` inside a synchronous command on Windows has a documented WebView2 deadlock/half-create risk. Added debug-only Rust logs around mini create/show/focus so next manual test can show whether the white window is failing at build, navigation URL, show, or focus.
 - User-provided mini logs confirmed the hang occurs inside `WebviewWindowBuilder::build()`: no URL/show/focus logs appeared after `show_mini: building mini window at app URL index.html`.
 - Follow-up mini root fix: `cmd_set_window_mode` changed to async Tauri command and mini creation now completes before hiding the main window.
+- User confirmed mini window now works.
+- Current mini UX polish: vinyl centered, controls removed from document flow, controls reveal as absolute bottom overlay on pointer/touch activity and fade back down after idle.
