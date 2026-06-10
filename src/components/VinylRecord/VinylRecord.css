@@ -1,0 +1,378 @@
+/* ============================================================
+   VinylRecord Component CSS
+   Ground truth from stitch vinyldeck_noir_high_fidelity_motion
+   Phase 2: vinylWobble, counter-rotating reflection layers,
+            mouse specular opacity tuned to 0.28, playing states.
+   ============================================================ */
+
+/* ── @property for animated conic-gradient rotation ───────── */
+@property --vinyl-rotation {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* ── Wrapper ───────────────────────────────────────────────── */
+.vinyl-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--vinyl-size, 420px);
+  height: var(--vinyl-size, 420px);
+  flex-shrink: 0;
+  /* Phase 2.1: Wobble applied at wrapper level, separate from disc rotation */
+}
+
+/* Phase 2.1: Wobble ON when playing — wrapper drifts ±0.8px */
+/* Applied to wrapper so it doesn't interfere with the RAF rotation on disc */
+.vinyl-wrapper--playing {
+  animation: vinylWobble 1.8s linear infinite;
+  will-change: transform;
+}
+
+/* ── Glow bloom — behind disc ──────────────────────────────── */
+.vinyl-glow {
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    var(--glow-color) 0%,
+    transparent 70%
+  );
+  filter: blur(var(--glow-radius, 80px));
+  opacity: var(--glow-opacity, 0.5);
+  pointer-events: none;
+  will-change: opacity;
+  transition: opacity 800ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.vinyl-glow.playing {
+  opacity: calc(var(--glow-opacity, 0.5) * 1.6);
+}
+
+/* ── Counter-rotating reflection layers — OUTSIDE disc ──────── */
+/* Phase 2.2/2.3: These overlays are siblings of vinyl-disc,    */
+/* NOT children. So they do NOT rotate with the disc. They sit  */
+/* at fixed angles — like a real overhead light source.         */
+/* Layer A: slow clockwise 6s, Layer B: counter 8s             */
+.vinyl-counter-a,
+.vinyl-counter-b {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.vinyl-counter-a {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.04) 30deg,
+    transparent 90deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.03) 240deg,
+    transparent 300deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  animation: counterRotateA 6s linear infinite;
+  transition: opacity 800ms ease;
+}
+
+.vinyl-counter-b {
+  background: conic-gradient(
+    from 180deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.03) 20deg,
+    transparent 60deg,
+    transparent 200deg,
+    rgba(255, 255, 255, 0.025) 250deg,
+    transparent 300deg,
+    transparent 360deg
+  );
+  mix-blend-mode: overlay;
+  opacity: 0.3;
+  animation: counterRotateB 8s linear infinite;
+  transition: opacity 800ms ease;
+}
+
+/* Phase 2.3: Reflections lift opacity when playing — */
+/* environmental light catches the spinning grooves more vividly */
+.vinyl-wrapper--playing .vinyl-counter-a { opacity: 0.75; }
+.vinyl-wrapper--playing .vinyl-counter-b { opacity: 0.65; }
+
+/* ── Main disc ─────────────────────────────────────────────── */
+/* RAF rotation applied to this element via useVinylRotation.   */
+.vinyl-disc {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--vinyl-color, #0a0a0a);
+  /* Shadow stack: outer ambient + subtle edge ring */
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 30px 60px rgba(0, 0, 0, 0.9),
+    0 8px 40px rgba(0, 0, 0, 0.7),
+    0 0 100px rgba(0, 0, 0, 0.5);
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+/* ── Groove texture — exact from reference HTML ────────────── */
+/* repeating-radial-gradient(#111 0px, #222 2px, #111 4px)     */
+.vinyl-grooves {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* Outer groove band — coarser pattern */
+  background: repeating-radial-gradient(
+    circle at center,
+    #0f0f0f 0px,
+    #191919 1.5px,
+    #0f0f0f 3px
+  );
+  box-shadow:
+    inset 0 0 40px rgba(255, 255, 255, 0.05),
+    inset 0 0 100px rgba(0, 0, 0, 0.8);
+}
+
+/* Inner groove zone — slightly tighter, lighter */
+.vinyl-grooves::after {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    #111111 0px,
+    #1e1e1e 1.2px,
+    #111111 2.4px
+  );
+  opacity: 0.9;
+}
+
+/* ── Specular reflection — mouse-driven conic gradient ─────── */
+/* Phase 2.4: Tuned opacity to 0.28 (was 0.07 — too faint).   */
+/* Uses CSS @property --vinyl-rotation for smooth transitions.  */
+.vinyl-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--vinyl-rotation, 0deg) at 50% 50%,
+    rgba(255, 255, 255, 0.01) 0deg,
+    rgba(255, 255, 255, 0.28) 45deg,
+    transparent 90deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.22) 225deg,
+    transparent 270deg,
+    rgba(255, 255, 255, 0.01) 360deg
+  );
+  transition: --vinyl-rotation 0.08s ease-out;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ── Static reflection — inner disc subtle highlight ────────── */
+/* This layer stays INSIDE the disc for the inner-glow on grooves */
+.vinyl-reflection {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 30% 25%,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+/* ── Center label ──────────────────────────────────────────── */
+.vinyl-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 33%;
+  height: 33%;
+  /* counter-rotate to show artwork upright while disc spins */
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--vinyl-label-bg, #141414);
+  /* Physical edge: inset + outer shadow */
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(20, 20, 20, 0.9);
+  z-index: 2;
+}
+
+.vinyl-label img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+/* ── Fallback label (no artwork) ────────────────────────────── */
+.vinyl-label-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.10),
+    var(--vinyl-label-bg, #141414)
+  );
+  border-radius: 50%;
+}
+
+.vinyl-label-fallback span {
+  font-family: var(--font-display, 'Sora'), sans-serif;
+  font-size: clamp(20px, 8%, 40px);
+  font-weight: 700;
+  color: var(--ui-accent, #e8e8e8);
+  letter-spacing: -0.02em;
+  opacity: 0.85;
+  line-height: 1;
+}
+
+.vinyl-label-fallback--empty span {
+  font-size: clamp(11px, 8%, 18px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--ui-accent) 28%, transparent);
+}
+
+/* ── Spindle hole ───────────────────────────────────────────── */
+.vinyl-hole {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3%;
+  height: 3%;
+  min-width: 8px;
+  min-height: 8px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #000;
+  z-index: 10;
+  box-shadow:
+    inset 0 4px 8px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 6.6 — Theme-Specific Vinyl Label Customization
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── NOIR — Iridescent conic shimmer overlay ─────────────────── */
+/* Dark label (#141414) with a rotating conic shimmer that feels */
+/* like the iridescent inner label on a premium pressing.        */
+[data-theme="noir"] .vinyl-label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(0, 200, 180, 0.12) 40deg,
+    transparent 80deg,
+    rgba(100, 80, 220, 0.10) 160deg,
+    transparent 200deg,
+    rgba(0, 200, 180, 0.08) 300deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  animation: counterRotateA 8s linear infinite;
+  pointer-events: none;
+}
+
+/* ── AURORA — Cyan concentric ring border ────────────────────── */
+/* Single 1px cyan border ring + glow — sci-fi label indicator.  */
+[data-theme="aurora"] .vinyl-label {
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--ui-accent, #00d4be),
+    0 0 8px var(--ui-accent, #00d4be),
+    0 0 20px rgba(0, 212, 190, 0.25);
+}
+
+/* Inner concentric ring — smaller circle */
+[data-theme="aurora"] .vinyl-label::after {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 212, 190, 0.25);
+  box-shadow: 0 0 4px rgba(0, 212, 190, 0.2);
+  pointer-events: none;
+}
+
+/* ── VAPOR — Magenta tinted label ────────────────────────────── */
+/* Label gets a translucent magenta accent bleed — neon.         */
+[data-theme="vapor"] .vinyl-label {
+  background: color-mix(in srgb, var(--ui-accent, #c855ff) 22%, #141414);
+  box-shadow:
+    inset 0 0 20px rgba(200, 85, 255, 0.3),
+    0 0 16px rgba(200, 85, 255, 0.2),
+    0 0 0 1px rgba(200, 85, 255, 0.15);
+}
+
+/* ── PAPER — Stamped text ring ───────────────────────────────── */
+/* White label like a real vinyl — stamped "33⅓ RPM • STEREO"  */
+/* CSS-only using ::before for the outer ring text effect.       */
+[data-theme="paper"] .vinyl-label {
+  background: #f5f0e4; /* aged paper white */
+  box-shadow:
+    inset 0 0 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(160, 130, 80, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Stamped ring text — uses letter-spacing trick */
+[data-theme="paper"] .vinyl-label::after {
+  content: '· 33⅓ RPM · STEREO ·';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  text-align: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 5.5px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(100, 75, 30, 0.55);
+  white-space: nowrap;
+  pointer-events: none;
+  /* Position near the outer ring of the label */
+  margin-top: 28%;
+}
+
+/* ── GLASS — Frosted translucent circle ─────────────────────── */
+/* Dark translucent with backdrop-filter — frosted glass look.  */
+[data-theme="glass"] .vinyl-label {
+  background: rgba(0, 0, 0, 0.22);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 0 20px rgba(0, 80, 200, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.2);
+}

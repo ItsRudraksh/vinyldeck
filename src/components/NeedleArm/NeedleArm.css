@@ -1,0 +1,153 @@
+/* ============================================================
+   NeedleArm Component CSS
+   Tonearm: brushed metal arm, hinge, stylus head, LED.
+   Transform-origin near hinge = physical pivot simulation.
+   Phase 3: LED uses --ui-accent (theme color), ledPulse from
+            animations.css. Headshell needle-bump keyframe added.
+   ============================================================ */
+
+/* ── Container — positioned relative to vinyl-area ─────────── */
+.needle-arm-container {
+  position: absolute;
+  top: -2%;
+  right: 2%;
+  width: 30%;
+  height: 60%;
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ── Arm — pivots from hinge at top-right ───────────────────── */
+.needle-arm {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 88% 7%;   /* hinge pivot point */
+  will-change: transform;
+}
+
+/* ── Hinge circle — machined metal knob ────────────────────── */
+.needle-arm__hinge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  /* Radial gradient: brushed metal look */
+  background: radial-gradient(
+    circle at 35% 30%,
+    #e0e0e0,
+    var(--needle-hinge-color, #a0a0a0) 50%,
+    #404040 100%
+  );
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Inner dot on hinge */
+.needle-arm__hinge::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 40% 35%, #555, #222);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Arm body — thin brushed metal rod ─────────────────────── */
+.needle-arm__body {
+  position: absolute;
+  top: 12px;
+  right: 13px;
+  width: 4px;
+  height: 82%;
+  /* Three-stop brushed metal gradient left to right */
+  background: linear-gradient(
+    to right,
+    var(--needle-hinge-color, #a0a0a0),
+    var(--needle-color, #c0c0c0) 40%,
+    #e0e0e0 55%,
+    var(--needle-color, #c0c0c0) 70%,
+    var(--needle-hinge-color, #a0a0a0)
+  );
+  border-radius: 2px;
+  box-shadow:
+    2px 4px 15px var(--needle-shadow, rgba(0, 0, 0, 0.6)),
+    1px 1px 3px rgba(0, 0, 0, 0.4);
+  /* Slight lean matches real tonearm geometry */
+  transform: rotate(-6deg);
+  transform-origin: top center;
+}
+
+/* ── Headshell — cartridge body at tip ─────────────────────── */
+.needle-arm__head {
+  position: absolute;
+  bottom: 4%;
+  right: 7%;
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(
+    to bottom,
+    var(--needle-color, #c0c0c0),
+    #888 60%,
+    #444
+  );
+  border-radius: 0 0 4px 4px;
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  /* Phase 3.2: needle bump applied via class on arm drop complete */
+  transform-origin: top center;
+}
+
+/* Phase 3.2: Stylus "needle bump" — triggered when arm drop completes */
+/* Quick translateY(-2px) → 0 over 80ms — the moment needle hits groove */
+.needle-arm__head--bump {
+  animation: needleBump 120ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes needleBump {
+  0%   { transform: translateY(0); }
+  40%  { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
+
+/* ── LED — phase-aware power indicator on headshell ─────────── */
+/* Phase 3.1: Uses var(--ui-accent) for theme color.            */
+/* Uses global ledPulse keyframe from animations.css.           */
+/* Playing: bright glow in theme accent. Lifted: dim, no pulse. */
+.needle-arm__led {
+  position: absolute;
+  bottom: 4px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ui-accent, #ffffff);
+  box-shadow:
+    0 0 4px var(--ui-accent, #ffffff),
+    0 0 8px var(--ui-accent, #ffffff);
+  /* Phase 3.1: Use global ledPulse from animations.css */
+  animation: ledPulse 2.5s ease-in-out infinite alternate;
+  transition:
+    background var(--theme-transition, 600ms ease),
+    box-shadow var(--theme-transition, 600ms ease);
+}
+
+/* Arm lifted (not playing) — dim the LED, stop pulse */
+.needle-arm__led--dim {
+  background: color-mix(in srgb, var(--ui-accent, #ffffff) 25%, #111);
+  box-shadow: 0 0 2px color-mix(in srgb, var(--ui-accent, #ffffff) 20%, transparent);
+  animation: none;
+  opacity: 0.4;
+}

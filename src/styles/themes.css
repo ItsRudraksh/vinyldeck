@@ -1,0 +1,368 @@
+/* ============================================================
+   VinylDeck — Theme System
+   All 5 themes as CSS custom property blocks.
+   Apply via: document.documentElement.setAttribute("data-theme", "noir")
+   Ground-truth tokens from stitch-ui-designs DESIGN.md files.
+   ============================================================ */
+
+/* ── Shared base properties (defaults if no theme is set) ── */
+:root {
+  /* === Background === */
+  --bg: #000000;
+  --color-scheme: dark;
+
+  /* === Typography === */
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --mono-tracking: 0.1em;
+
+  /* === Border Radius === */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+  --radius-base: var(--radius-md); /* default — overridden per theme */
+
+  /* === Vinyl Record === */
+  --vinyl-color: #111111;
+  --vinyl-groove-inner: rgba(255, 255, 255, 0.04);
+  --vinyl-groove-outer: rgba(255, 255, 255, 0.015);
+  --vinyl-sheen: rgba(255, 255, 255, 0.08);
+  --vinyl-label-bg: #1a1a1a;
+  --vinyl-size: 420px;
+
+  /* === Needle Arm === */
+  --needle-color: #c0c0c0;
+  --needle-hinge-color: #a0a0a0;
+  --needle-shadow: rgba(0, 0, 0, 0.6);
+
+  /* === Ambient Background === */
+  --ambient-primary: #111111;
+  --ambient-secondary: #1a1a1a;
+  --ambient-blur: 120px;
+  --ambient-opacity: 0.6;
+
+  /* === UI / Controls === */
+  --ui-bg: rgba(255, 255, 255, 0.05);
+  --ui-border: rgba(255, 255, 255, 0.08);
+  --ui-text-primary: rgba(255, 255, 255, 0.92);
+  --ui-text-secondary: rgba(255, 255, 255, 0.45);
+  --ui-accent: #ffffff;
+  --ui-control-hover: rgba(255, 255, 255, 0.12);
+  --ui-control-active: rgba(255, 255, 255, 0.18);
+
+  /* === Progress Ring === */
+  --ring-track: rgba(255, 255, 255, 0.1);
+  --ring-fill: var(--ui-accent);
+  --ring-glow: rgba(255, 255, 255, 0.3);
+
+  /* === Glow === */
+  --glow-color: rgba(255, 255, 255, 0.2);
+  --glow-radius: 80px;
+  --glow-opacity: 0.5;
+
+  /* === Transitions === */
+  --theme-transition: 600ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --spring-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --brake-curve: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* NOIR — Cinematic OLED black. Monochromatic. Studio noir.   */
+/* Source: stitch_vinyldeck_cinematic_analog_visualizer/noir  */
+/* ─────────────────────────────────────────────────────────── */
+[data-theme="noir"] {
+  /* Background */
+  --bg: #131313;
+  --color-scheme: dark;
+
+  /* Typography — Hanken Grotesk (sharp editorial) + Geist (systematic) */
+  --font-display: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-body: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --mono-tracking: 0.1em;
+
+  /* Radius — ZERO everywhere per DESIGN.md spec. Only disc stays a circle. */
+  --radius-base: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+
+  /* Vinyl */
+  --vinyl-color: #0a0a0a;
+  --vinyl-groove-inner: rgba(255, 255, 255, 0.05);
+  --vinyl-groove-outer: rgba(255, 255, 255, 0.02);
+  --vinyl-sheen: rgba(255, 255, 255, 0.07);
+  --vinyl-label-bg: #141414;
+
+  /* Needle — brushed steel */
+  --needle-color: #8c8c8c;
+  --needle-hinge-color: #606060;
+  --needle-shadow: rgba(0, 0, 0, 0.7);
+
+  /* Ambient — vivid crimson + warm umber (exact from reference HTML: #93000a / #3a2e24) */
+  --ambient-primary: #93000a;
+  --ambient-secondary: #4a2e1a;
+  --ambient-blur: 140px;
+  --ambient-opacity: 0.55;
+
+  /* UI — heavy frosted dark glass */
+  --ui-bg: rgba(20, 20, 20, 0.85);
+  --ui-border: rgba(255, 255, 255, 0.06);
+  --ui-text-primary: rgba(229, 226, 225, 0.92);   /* from DESIGN.md on-surface */
+  --ui-text-secondary: rgba(196, 199, 200, 0.40); /* from DESIGN.md on-surface-variant muted */
+  --ui-accent: #e8e8e8;
+  --ui-control-hover: rgba(255, 255, 255, 0.08);
+  --ui-control-active: rgba(255, 255, 255, 0.14);
+
+  /* Ring */
+  --ring-track: rgba(255, 255, 255, 0.08);
+  --ring-fill: #e8e8e8;
+  --ring-glow: rgba(232, 232, 232, 0.25);
+
+  /* Glow — cool white */
+  --glow-color: rgba(200, 200, 200, 0.12);
+  --glow-radius: 90px;
+  --glow-opacity: 0.4;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* GLASS — Frosted acrylic. Apple-inspired translucency.      */
+/* Source: stitch_vinyldeck_cinematic_analog_visualizer/glass */
+/* LIGHT MODE — #f9f9fb base, vibrant blue primary.           */
+/* ─────────────────────────────────────────────────────────── */
+[data-theme="glass"] {
+  /* Background — light mode */
+  --bg: #f9f9fb;
+  --color-scheme: light;
+
+  /* Typography — Manrope (geometric balance) + Inter */
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'Inter', system-ui, sans-serif; /* Glass uses Inter everywhere, no mono */
+  --mono-tracking: 0.05em;
+
+  /* Radius — most rounded theme */
+  --radius-base: 1rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  /* Vinyl — deep cool slate */
+  --vinyl-color: #1a1f2e;
+  --vinyl-groove-inner: rgba(160, 200, 255, 0.08);
+  --vinyl-groove-outer: rgba(160, 200, 255, 0.035);
+  --vinyl-sheen: rgba(255, 255, 255, 0.15);
+  --vinyl-label-bg: rgba(255, 255, 255, 0.10);
+
+  /* Needle — ice blue silver */
+  --needle-color: #d0d8e4;
+  --needle-hinge-color: #9ab0d0;
+  --needle-shadow: rgba(0, 30, 80, 0.5);
+
+  /* Ambient — vivid royal blue + ice navy */
+  --ambient-primary: #1a4a9a;
+  --ambient-secondary: #0a2060;
+  --ambient-blur: 130px;
+  --ambient-opacity: 0.60;
+
+  /* UI — bright frosted glass (light mode) */
+  --ui-bg: rgba(255, 255, 255, 0.70);
+  --ui-border: rgba(0, 88, 188, 0.15);
+  --ui-text-primary: rgba(26, 28, 29, 0.92);   /* DESIGN.md on-surface dark text */
+  --ui-text-secondary: rgba(65, 71, 85, 0.70); /* DESIGN.md on-surface-variant */
+  --ui-accent: #0058bc;
+  --ui-control-hover: rgba(0, 88, 188, 0.08);
+  --ui-control-active: rgba(0, 88, 188, 0.16);
+
+  /* Ring */
+  --ring-track: rgba(0, 88, 188, 0.12);
+  --ring-fill: #0058bc;
+  --ring-glow: rgba(0, 88, 188, 0.30);
+
+  /* Glow — soft blue bloom */
+  --glow-color: rgba(0, 88, 188, 0.10);
+  --glow-radius: 100px;
+  --glow-opacity: 0.40;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* AURORA — Sci-fi midnight teal. Holographic projection.     */
+/* Source: aurora_cinematic DESIGN.md (#0e1419, #00dbe7)      */
+/* ─────────────────────────────────────────────────────────── */
+[data-theme="aurora"] {
+  /* Background — deep desaturated navy (NOT pure black per spec) */
+  --bg: #0e1419;
+  --color-scheme: dark;
+
+  /* Typography — Sora (cinematic) + Geist (engineered) */
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --mono-tracking: 0.08em;
+
+  /* Radius */
+  --radius-base: 0.25rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  /* Vinyl — deep oceanic */
+  --vinyl-color: #050d1a;
+  --vinyl-groove-inner: rgba(0, 219, 231, 0.07);
+  --vinyl-groove-outer: rgba(0, 219, 231, 0.025);
+  --vinyl-sheen: rgba(0, 242, 255, 0.09);
+  --vinyl-label-bg: #080f1f;
+
+  /* Needle — cyan-tinted silver */
+  --needle-color: #7ae8d4;
+  --needle-hinge-color: #4ab8b0;
+  --needle-shadow: rgba(0, 30, 40, 0.6);
+
+  /* Ambient — vivid teal + deep cyan (from DESIGN.md #00dbe7 accent) */
+  --ambient-primary: #007060;
+  --ambient-secondary: #003a48;
+  --ambient-blur: 130px;
+  --ambient-opacity: 0.65;
+
+  /* UI — dark teal glass */
+  --ui-bg: rgba(0, 30, 40, 0.80);
+  --ui-border: rgba(0, 219, 231, 0.16);
+  --ui-text-primary: rgba(222, 227, 234, 0.92);   /* DESIGN.md on-surface */
+  --ui-text-secondary: rgba(148, 209, 209, 0.55); /* DESIGN.md secondary */
+  --ui-accent: #00d4be;
+  --ui-control-hover: rgba(0, 212, 190, 0.12);
+  --ui-control-active: rgba(0, 212, 190, 0.22);
+
+  /* Ring */
+  --ring-track: rgba(0, 219, 231, 0.12);
+  --ring-fill: #00d4be;
+  --ring-glow: rgba(0, 212, 190, 0.40);
+
+  /* Glow — aurora teal bloom */
+  --glow-color: rgba(0, 219, 231, 0.25);
+  --glow-radius: 100px;
+  --glow-opacity: 0.60;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* VAPOR — Neon-noir vaporwave. Electric magenta + cyber grid.*/
+/* Source: vapor DESIGN.md (#111225, #fea9ff primary)         */
+/* ─────────────────────────────────────────────────────────── */
+[data-theme="vapor"] {
+  /* Background — violet-black (NEVER pure black per spec) */
+  --bg: #111225;
+  --color-scheme: dark;
+
+  /* Typography — Anybody (expressive 80s display) + Space Grotesk + Space Mono */
+  --font-display: 'Anybody', system-ui, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace; /* VFD display aesthetic */
+  --mono-tracking: 0.1em;
+
+  /* Radius — precision hardware, minimal rounding */
+  --radius-base: 0.25rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  /* Vinyl — ultra deep space violet */
+  --vinyl-color: #0b0c1f;
+  --vinyl-groove-inner: rgba(200, 0, 255, 0.07);
+  --vinyl-groove-outer: rgba(200, 0, 255, 0.025);
+  --vinyl-sheen: rgba(255, 100, 200, 0.08);
+  --vinyl-label-bg: #130018;
+
+  /* Needle — neon violet */
+  --needle-color: #d080ff;
+  --needle-hinge-color: #9040cc;
+  --needle-shadow: rgba(50, 0, 80, 0.6);
+
+  /* Ambient — vivid electric violet + deep magenta (from #fea9ff accent) */
+  --ambient-primary: #6a00a8;
+  --ambient-secondary: #3a006a;
+  --ambient-blur: 130px;
+  --ambient-opacity: 0.70;
+
+  /* UI — neon-noir glass */
+  --ui-bg: rgba(30, 0, 40, 0.82);
+  --ui-border: rgba(200, 0, 255, 0.18);
+  --ui-text-primary: rgba(225, 224, 251, 0.90);   /* DESIGN.md on-surface */
+  --ui-text-secondary: rgba(217, 191, 213, 0.55); /* DESIGN.md on-surface-variant */
+  --ui-accent: #c855ff;
+  --ui-control-hover: rgba(200, 85, 255, 0.14);
+  --ui-control-active: rgba(200, 85, 255, 0.24);
+
+  /* Ring */
+  --ring-track: rgba(200, 0, 255, 0.12);
+  --ring-fill: #c855ff;
+  --ring-glow: rgba(200, 85, 255, 0.45);
+
+  /* Glow — magenta neon bloom */
+  --glow-color: rgba(200, 85, 255, 0.30);
+  --glow-radius: 100px;
+  --glow-opacity: 0.65;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+/* PAPER — Warm vintage analog. Bronze + cream + aged paper.  */
+/* Source: paper DESIGN.md (#fef9eb base, #715230 bronze)     */
+/* LIGHT MODE — cream canvas, warm charcoal text.             */
+/* ─────────────────────────────────────────────────────────── */
+[data-theme="paper"] {
+  /* Background — warm cream canvas (LIGHT MODE) */
+  --bg: #fef9eb;
+  --color-scheme: light;
+
+  /* Typography — Libre Caslon Text (luxury serif) + Work Sans + Space Mono */
+  --font-display: 'Libre Caslon Text', Georgia, serif;
+  --font-body: 'Work Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', monospace; /* stamped back-panel text */
+  --mono-tracking: 0.08em;
+
+  /* Radius — soft but precise, like machined cardstock */
+  --radius-base: 0.25rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  /* Vinyl — deep aged walnut */
+  --vinyl-color: #1a1408;
+  --vinyl-groove-inner: rgba(200, 160, 80, 0.07);
+  --vinyl-groove-outer: rgba(200, 160, 80, 0.028);
+  --vinyl-sheen: rgba(220, 180, 100, 0.09);
+  --vinyl-label-bg: #221a08;
+
+  /* Needle — aged brass/gold */
+  --needle-color: #c8a84a;
+  --needle-hinge-color: #9a7a30;
+  --needle-shadow: rgba(30, 20, 5, 0.65);
+
+  /* Ambient — vivid warm amber + deep sienna (from #d4a840 / #715230 accent) */
+  --ambient-primary: #8a4a08;
+  --ambient-secondary: #5a2a04;
+  --ambient-blur: 120px;
+  --ambient-opacity: 0.60;
+
+  /* UI — warm paper surface (light mode) */
+  --ui-bg: rgba(249, 243, 229, 0.85);      /* warm paper with slight transparency */
+  --ui-border: rgba(113, 82, 48, 0.20);    /* bronze outline */
+  --ui-text-primary: rgba(29, 28, 19, 0.90);   /* DESIGN.md on-surface warm charcoal */
+  --ui-text-secondary: rgba(79, 69, 60, 0.65); /* DESIGN.md on-surface-variant */
+  --ui-accent: #715230;                    /* bronze primary */
+  --ui-control-hover: rgba(113, 82, 48, 0.10);
+  --ui-control-active: rgba(113, 82, 48, 0.18);
+
+  /* Ring */
+  --ring-track: rgba(113, 82, 48, 0.15);
+  --ring-fill: #715230;
+  --ring-glow: rgba(113, 82, 48, 0.25);
+
+  /* Glow — warm bronze bloom */
+  --glow-color: rgba(212, 168, 64, 0.15);
+  --glow-radius: 80px;
+  --glow-opacity: 0.35;
+}

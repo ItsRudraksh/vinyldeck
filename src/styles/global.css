@@ -1,0 +1,134 @@
+/* ============================================================
+   VinylDeck — Global CSS
+   Base reset · OLED black · Font stack · Utilities
+   ============================================================ */
+
+/* ── Google Fonts ────────────────────────────────────────── */
+/* All 5 themes + shared system. Load all weights upfront.   */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Hanken+Grotesk:wght@200;300;400;600;700&family=Geist:wght@300;400;500;600&family=Anybody:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@400;500;600&family=Manrope:wght@400;600;700&display=swap');
+
+/* ── Box-sizing reset ────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Root — OLED black foundation ───────────────────────── */
+html {
+  background: #000000;
+  color-scheme: var(--color-scheme, dark);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body, 'Inter'), system-ui, sans-serif;
+  background: var(--bg, #000000);
+  color: var(--ui-text-primary, rgba(255, 255, 255, 0.9));
+  min-height: 100vh;
+  overflow: hidden;
+  /* Tauri: no text selection on UI chrome */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Typography base ─────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display, 'Sora'), system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Mono utility — timestamps, labels, metadata */
+.mono {
+  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  letter-spacing: var(--mono-tracking, 0.1em);
+  text-transform: uppercase;
+}
+
+code, kbd, samp, pre {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.875em;
+}
+
+/* ── Reset interactive elements ──────────────────────────── */
+button {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--ui-accent, #fff);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ── App root container ──────────────────────────────────── */
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Scrollbar — minimal dark ────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ui-border, rgba(255, 255, 255, 0.1));
+  border-radius: 2px;
+}
+
+/* ── GPU acceleration helpers ────────────────────────────── */
+.gpu {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* ── Transitions: theme-aware color crossfades ───────────── */
+/* Applied to elements that should transition smoothly on theme swap */
+.theme-transition {
+  transition:
+    background var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1)),
+    color var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1)),
+    border-color var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1));
+}
+
+/* ── Tauri drag region helper ────────────────────────────── */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+}
+[data-tauri-drag-region] * {
+  -webkit-app-region: no-drag;
+}
+
+/* ── Reduced motion support ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
