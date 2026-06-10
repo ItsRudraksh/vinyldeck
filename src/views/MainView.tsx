@@ -14,7 +14,7 @@
 // Phase 8: ProgressRing receives onSeek for scrub-to-seek
 
 import { useEffect, useState } from "react";
-import { EMPTY_PLAYBACK, useVinylDeckStore, selectPlayback, selectIsPlaying, selectArtwork, selectTheme } from "../lib/playback/store";
+import { EMPTY_PLAYBACK, useVinylDeckStore, selectPlayback, selectIsPlaying, selectArtwork, selectTheme, selectSettings } from "../lib/playback/store";
 
 import { AmbientLayer } from "../components/AmbientLayer";
 import { VaporGrid } from "../components/VaporGrid";
@@ -42,6 +42,7 @@ export function MainView() {
   const rawIsPlaying = useVinylDeckStore(selectIsPlaying);
   const rawArtworkDataUrl = useVinylDeckStore(selectArtwork);
   const theme = useVinylDeckStore(selectTheme);
+  const settings = useVinylDeckStore(selectSettings);
   const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const source = useVinylDeckStore((s) => s.source);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
@@ -68,7 +69,11 @@ export function MainView() {
   useColorExtraction(theme === "noir" && artAmbient ? artworkDataUrl : null);
 
   // Phase 7: Idle detection — only when playing
-  const isIdle = useIdleMode(isPlaying);
+  const isIdle = useIdleMode(isPlaying, {
+    enabled: settings.leanBackMode,
+    hideCursor: settings.cursorHide,
+    timeoutMs: settings.idleTimeoutSeconds * 1000,
+  });
 
   useEffect(() => {
     if (!isSettingsOpen) return;
@@ -111,7 +116,7 @@ export function MainView() {
   return (
     <>
       {/* z:0 — Ambient background */}
-      <AmbientLayer />
+      <AmbientLayer filmGrain={settings.filmGrain} />
 
       {/* z:0 — Vapor grid floor */}
       <VaporGrid />
@@ -160,6 +165,7 @@ export function MainView() {
           <div style={{ position: "relative", zIndex: 2 }}>
             <VinylRecord
               isPlaying={isPlaying}
+              vinylWobble={settings.vinylWobble}
               artworkDataUrl={artworkDataUrl}
               trackTitle={effectivePlayback.track}
               size={VINYL_SIZE}

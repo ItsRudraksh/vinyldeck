@@ -119,39 +119,39 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 2 — Settings State and Persistence
 
-- [ ] **B2.1** Define typed persisted settings contract.
+- [x] **B2.1** Define typed persisted settings contract.
   - Create: `src/lib/settings/types.ts`
   - Include: theme, art ambient, vinyl wobble, film grain, lean-back mode, cursor hide, idle timeout, always-on-top, window mode.
   - Exclude runtime-only `devForceEmpty`.
 
-- [ ] **B2.2** Promote local Settings component values into Zustand.
+- [x] **B2.2** Promote local Settings component values into Zustand.
   - Modify: `src/lib/playback/store.ts`
   - Modify: `src/components/Settings/index.tsx`
   - Preserve current defaults and Noir-only art ambient rule.
 
-- [ ] **B2.3** Wire promoted settings into visual behavior.
+- [x] **B2.3** Wire promoted settings into visual behavior.
   - Vinyl wobble controls playing wobble class.
   - Film grain controls ambient grain.
   - Lean-back controls idle-mode activation.
   - Cursor hide controls idle cursor behavior.
   - Idle timeout controls `useIdleMode`.
 
-- [ ] **B2.4** Create browser-safe settings persistence adapter.
+- [x] **B2.4** Create browser-safe settings persistence adapter.
   - Create: `src/lib/settings/index.ts`
   - Tauri: load/save through `@tauri-apps/plugin-store`.
   - Browser: return defaults and skip disk writes.
   - Validate loaded values and merge with defaults.
 
-- [ ] **B2.5** Hydrate settings before source startup without theme flash.
+- [x] **B2.5** Hydrate settings before source startup without theme flash.
   - Modify: `src/App.tsx`
   - Apply loaded theme/settings once.
   - Keep initial Noir prepaint fallback.
 
-- [ ] **B2.6** Subscribe only to persisted Zustand fields and debounce saves.
+- [x] **B2.6** Subscribe only to persisted Zustand fields and debounce saves.
   - Avoid saving playback position/source/runtime QA state.
   - Flush or rely on graceful store save during exit.
 
-- [ ] **B2.7** Add settings migration/version key.
+- [x] **B2.7** Add settings migration/version key.
   - Unknown/invalid values fall back safely.
   - Future fields can be added without corrupting existing settings.
 

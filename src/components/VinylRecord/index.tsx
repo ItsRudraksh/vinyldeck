@@ -22,6 +22,7 @@ import "./VinylRecord.css";
 
 interface VinylRecordProps {
   isPlaying: boolean;
+  vinylWobble?: boolean;
   artworkDataUrl: string | null;
   trackTitle: string;
   size?: number; // px, default 420
@@ -29,6 +30,7 @@ interface VinylRecordProps {
 
 export function VinylRecord({
   isPlaying,
+  vinylWobble = true,
   artworkDataUrl,
   trackTitle,
   size = 420,
@@ -63,7 +65,7 @@ export function VinylRecord({
 
   return (
     <div
-      className={`vinyl-wrapper${isPlaying ? " vinyl-wrapper--playing" : ""}`}
+      className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}`}
       style={{ "--vinyl-size": `${size}px` } as React.CSSProperties}
     >
       {/* Layer 0: Glow bloom — behind everything */}

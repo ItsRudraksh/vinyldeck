@@ -5,7 +5,11 @@
 
 import "./AmbientLayer.css";
 
-export function AmbientLayer() {
+interface AmbientLayerProps {
+  filmGrain?: boolean;
+}
+
+export function AmbientLayer({ filmGrain = true }: AmbientLayerProps) {
   return (
     <div className="ambient-layer" aria-hidden="true">
       {/* Primary orb — upper-left, floats with floatOrb-a (23s) */}
@@ -22,7 +26,7 @@ export function AmbientLayer() {
       <div className="ambient-layer__vignette" />
 
       {/* Film grain — procedural SVG noise at 3.5% opacity, top layer */}
-      <div className="ambient-layer__grain" />
+      {filmGrain && <div className="ambient-layer__grain" />}
     </div>
   );
 }

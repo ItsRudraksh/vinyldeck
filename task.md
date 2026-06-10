@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 1 Tauri shell foundation verified. Stop at Manual Checkpoint B1 until user approves Backend Phase 2.
+Backend Phase 2 settings state and persistence verified. Stop at Manual Checkpoint B2 until user approves Backend Phase 3.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -104,3 +104,11 @@ Planned scope:
 - B1.6: npm verification scripts added and verified.
 - Automated checks passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run check:rust`, `npm run fmt:rust`, `npm run clippy:rust`, `npm run test:rust`.
 - Dev launch probe passed: `npm run tauri dev` opened exact window title `VinylDeck`; process tree was stopped after detection.
+
+## Backend Phase 2 Evidence
+
+- B2.1: typed persisted settings contract added with version key; `devForceEmpty` remains runtime-only.
+- B2.2-B2.3: Settings controls now use Zustand-owned settings and drive wobble, film grain, lean-back idle, cursor hide, and idle timeout behavior.
+- B2.4-B2.6: browser-safe settings adapter added; Tauri Store saves debounced `settings` only; App hydrates settings before starting source.
+- B2.7: validation clamps invalid values, applies defaults, and forces Album Art Ambient off outside Noir.
+- Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, temporary settings validator smoke, and `npm run tauri dev` window smoke.

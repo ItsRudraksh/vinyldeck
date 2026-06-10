@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Manual Checkpoint B1
+**Current Stage:** Windows backend — Manual Checkpoint B2
 
 ## Active Work
-Backend Phase 1 Tauri shell foundation verified. Stop at Manual Checkpoint B1 until user approves Backend Phase 2.
+Backend Phase 2 settings state and persistence verified. Stop at Manual Checkpoint B2 until user approves Backend Phase 3.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -87,6 +87,16 @@ None.
 - B1 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run check:rust`, `npm run fmt:rust`, `npm run clippy:rust`, and `npm run test:rust` exited 0.
 - B1 dev launch probe started `npm run tauri dev`, detected exact window title `VinylDeck`, then stopped the process tree; no VinylDeck dev process remained after teardown.
 - Rust components `rustfmt` and `clippy` were missing initially and installed with `rustup component add rustfmt clippy`; rerun checks passed.
+- B2.1 created typed persisted settings contract at `src/lib/settings/types.ts`: theme, art ambient, vinyl wobble, film grain, lean-back mode, cursor hide, idle timeout, always-on-top, window mode, version key. Runtime `devForceEmpty` remains excluded.
+- B2.2 promoted Settings modal local controls into Zustand-owned `settings` state while preserving `artAmbient` as Noir-only.
+- B2.3 wired `vinylWobble`, `filmGrain`, `leanBackMode`, `cursorHide`, and `idleTimeoutSeconds` into existing visual behavior without changing approved CSS styling.
+- B2.4 added browser-safe settings adapter at `src/lib/settings/index.ts`; browser returns defaults and skips disk writes, Tauri uses `@tauri-apps/plugin-store`.
+- B2.5 App startup now loads and applies settings before starting the playback source, preserving Noir prepaint fallback.
+- B2.6 Tauri persistence subscribes only to `settings` and debounces saves; playback/source/runtime QA state is not persisted.
+- B2.7 added settings validation and version migration guard; invalid values merge/fall back safely and non-Noir art ambient is forced off.
+- B2 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` exited 0.
+- B2 validator smoke used a temporary `tsx` runner and passed: defaults, invalid values, non-Noir art ambient clamp, idle timeout clamp, and full valid object.
+- B2 Tauri smoke started `npm run tauri dev`, detected `VinylDeck` window, then stopped the process tree; no VinylDeck dev process remained after teardown.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note

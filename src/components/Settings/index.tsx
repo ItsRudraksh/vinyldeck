@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
-import { useVinylDeckStore } from "../../lib/playback/store";
+import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import "./Settings.css";
 
 interface SettingsProps {
@@ -24,15 +24,12 @@ const THEME_CARD_META: Record<ThemeId, { bg: string; accent: string; note: strin
 
 export function Settings({ open, onClose }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("THEMES");
-  const [vinylWobble, setVinylWobble] = useState(true);
-  const [filmGrain, setFilmGrain] = useState(true);
-  const [leanBackMode, setLeanBackMode] = useState(true);
-  const [cursorHide, setCursorHide] = useState(true);
-  const [idleTimeout, setIdleTimeout] = useState(3);
+  const settings = useVinylDeckStore(selectSettings);
   const currentTheme = useVinylDeckStore((s) => s.theme);
   const setTheme = useVinylDeckStore((s) => s.setTheme);
   const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const setArtAmbient = useVinylDeckStore((s) => s.setArtAmbient);
+  const updateSettings = useVinylDeckStore((s) => s.updateSettings);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const setDevForceEmpty = useVinylDeckStore((s) => s.setDevForceEmpty);
 
@@ -137,8 +134,8 @@ export function Settings({ open, onClose }: SettingsProps) {
                   <SettingsToggle
                     label="Vinyl Wobble"
                     description="Subtle platter imperfection while playback is active."
-                    checked={vinylWobble}
-                    onToggle={() => setVinylWobble((value) => !value)}
+                    checked={settings.vinylWobble}
+                    onToggle={() => updateSettings({ vinylWobble: !settings.vinylWobble })}
                   />
                   {currentTheme === "noir" && (
                     <SettingsToggle
@@ -151,8 +148,8 @@ export function Settings({ open, onClose }: SettingsProps) {
                   <SettingsToggle
                     label="Film Grain"
                     description="Analog texture over the visual engine."
-                    checked={filmGrain}
-                    onToggle={() => setFilmGrain((value) => !value)}
+                    checked={settings.filmGrain}
+                    onToggle={() => updateSettings({ filmGrain: !settings.filmGrain })}
                   />
                 </div>
               ) : activeTab === "DISPLAY" ? (
@@ -160,14 +157,14 @@ export function Settings({ open, onClose }: SettingsProps) {
                   <SettingsToggle
                     label="Lean-Back Mode"
                     description="Let controls disappear while the record becomes the room."
-                    checked={leanBackMode}
-                    onToggle={() => setLeanBackMode((value) => !value)}
+                    checked={settings.leanBackMode}
+                    onToggle={() => updateSettings({ leanBackMode: !settings.leanBackMode })}
                   />
                   <SettingsToggle
                     label="Cursor Hide"
                     description="Hide the pointer when playback settles into idle."
-                    checked={cursorHide}
-                    onToggle={() => setCursorHide((value) => !value)}
+                    checked={settings.cursorHide}
+                    onToggle={() => updateSettings({ cursorHide: !settings.cursorHide })}
                   />
                   <div className="settings-slider-row">
                     <div className="settings-slider-row__header">
@@ -175,7 +172,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                         <span className="settings-toggle-row__label">Idle Timeout</span>
                         <span className="settings-toggle-row__description">Delay before controls fade from view.</span>
                       </span>
-                      <span className="settings-slider-row__value">{idleTimeout}s</span>
+                      <span className="settings-slider-row__value">{settings.idleTimeoutSeconds}s</span>
                     </div>
                     <input
                       className="settings-slider"
@@ -183,9 +180,9 @@ export function Settings({ open, onClose }: SettingsProps) {
                       min="1"
                       max="5"
                       step="1"
-                      value={idleTimeout}
+                      value={settings.idleTimeoutSeconds}
                       aria-label="Idle timeout"
-                      onChange={(event) => setIdleTimeout(Number(event.currentTarget.value))}
+                      onChange={(event) => updateSettings({ idleTimeoutSeconds: Number(event.currentTarget.value) })}
                     />
                     <div className="settings-slider-row__ticks" aria-hidden="true">
                       <span>1s</span>

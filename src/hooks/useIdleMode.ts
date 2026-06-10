@@ -9,7 +9,16 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 const IDLE_TIMEOUT_MS = 3000;
 
-export function useIdleMode(isPlaying: boolean): boolean {
+interface IdleModeOptions {
+  enabled?: boolean;
+  hideCursor?: boolean;
+  timeoutMs?: number;
+}
+
+export function useIdleMode(isPlaying: boolean, options: IdleModeOptions = {}): boolean {
+  const enabled = options.enabled ?? true;
+  const hideCursor = options.hideCursor ?? true;
+  const timeoutMs = options.timeoutMs ?? IDLE_TIMEOUT_MS;
   const [isIdle, setIsIdle] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleRef = useRef(false); // mirror for use inside event handlers
@@ -17,7 +26,7 @@ export function useIdleMode(isPlaying: boolean): boolean {
   const resetIdle = useCallback(() => {
     // Restore cursor on first activity after going idle
     if (idleRef.current) {
-      document.body.style.cursor = "";
+      if (hideCursor) document.body.style.cursor = "";
       idleRef.current = false;
       setIsIdle(false);
     }
@@ -26,21 +35,21 @@ export function useIdleMode(isPlaying: boolean): boolean {
     if (timerRef.current) clearTimeout(timerRef.current);
 
     // Only set a new timer if currently playing
-    if (!isPlaying) return;
+    if (!isPlaying || !enabled) return;
 
     timerRef.current = setTimeout(() => {
       idleRef.current = true;
       setIsIdle(true);
-      document.body.style.cursor = "none";
-    }, IDLE_TIMEOUT_MS);
-  }, [isPlaying]);
+      if (hideCursor) document.body.style.cursor = "none";
+    }, timeoutMs);
+  }, [enabled, hideCursor, isPlaying, timeoutMs]);
 
   useEffect(() => {
     // If playback stops while idle — immediately come out of idle
-    if (!isPlaying) {
+    if (!isPlaying || !enabled) {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (idleRef.current) {
-        document.body.style.cursor = "";
+        if (hideCursor) document.body.style.cursor = "";
         idleRef.current = false;
         setIsIdle(false);
       }
@@ -59,9 +68,9 @@ export function useIdleMode(isPlaying: boolean): boolean {
       window.removeEventListener("mousedown", resetIdle);
       if (timerRef.current) clearTimeout(timerRef.current);
       // Always restore cursor on cleanup
-      document.body.style.cursor = "";
+      if (hideCursor) document.body.style.cursor = "";
     };
-  }, [isPlaying, resetIdle]);
+  }, [enabled, hideCursor, isPlaying, resetIdle]);
 
   return isIdle;
 }

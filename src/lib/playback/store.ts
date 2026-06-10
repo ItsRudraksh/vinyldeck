@@ -6,6 +6,8 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import type { PlaybackState, PlaybackSource } from "./types";
 import type { ThemeId } from "../themes/applier";
+import { DEFAULT_SETTINGS } from "../settings/types";
+import type { PersistedSettings } from "../settings/types";
 
 // ── Store state types ─────────────────────────────────────────
 export interface PlaybackStoreState {
@@ -21,6 +23,9 @@ export interface PlaybackStoreState {
 
   // Album art ambient — Noir only toggle (default off)
   artAmbient: boolean;
+
+  // Persisted settings (runtime QA state stays separate)
+  settings: PersistedSettings;
 
   // Active source (runtime, not persisted)
   source: PlaybackSource | null;
@@ -41,6 +46,10 @@ export interface PlaybackStoreActions {
 
   // Theme
   setTheme(theme: ThemeId): void;
+
+  // Persisted settings
+  hydrateSettings(settings: PersistedSettings): void;
+  updateSettings(partial: Partial<PersistedSettings>): void;
 
   // Noir ambient toggle
   setArtAmbient(enabled: boolean): void;
@@ -76,6 +85,7 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     lastSyncTime: Date.now(),
     theme: "noir",
     artAmbient: false,
+    settings: DEFAULT_SETTINGS,
     source: null,
     devForceEmpty: false,
 
@@ -125,11 +135,45 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
 
     // ── Theme ─────────────────────────────────────────────────
     setTheme(theme) {
-      set({ theme });
+      const artAmbient = theme === "noir" ? get().settings.artAmbient : false;
+      set((state) => ({
+        theme,
+        artAmbient,
+        settings: { ...state.settings, theme, artAmbient },
+      }));
+    },
+
+    hydrateSettings(settings) {
+      set({
+        settings,
+        theme: settings.theme,
+        artAmbient: settings.artAmbient,
+      });
+    },
+
+    updateSettings(partial) {
+      set((state) => {
+        const nextSettings = { ...state.settings, ...partial };
+        const theme = nextSettings.theme;
+        const artAmbient = theme === "noir" ? nextSettings.artAmbient : false;
+
+        return {
+          settings: { ...nextSettings, artAmbient },
+          theme,
+          artAmbient,
+        };
+      });
     },
 
     setArtAmbient(enabled) {
-      set({ artAmbient: enabled });
+      set((state) => {
+        const artAmbient = state.theme === "noir" ? enabled : false;
+
+        return {
+          artAmbient,
+          settings: { ...state.settings, artAmbient },
+        };
+      });
     },
 
     setDevForceEmpty(enabled) {
@@ -146,3 +190,4 @@ export const selectArtwork = (s: VinylDeckStore) => s.playback.artworkDataUrl;
 export const selectTheme = (s: VinylDeckStore) => s.theme;
 export const selectSource = (s: VinylDeckStore) => s.source;
 export const selectDevForceEmpty = (s: VinylDeckStore) => s.devForceEmpty;
+export const selectSettings = (s: VinylDeckStore) => s.settings;
