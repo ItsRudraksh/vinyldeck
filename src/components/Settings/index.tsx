@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
+import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
+import type { WindowMode } from "../../lib/window/types";
 import "./Settings.css";
 
 interface SettingsProps {
@@ -30,6 +32,8 @@ export function Settings({ open, onClose }: SettingsProps) {
   const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const setArtAmbient = useVinylDeckStore((s) => s.setArtAmbient);
   const updateSettings = useVinylDeckStore((s) => s.updateSettings);
+  const setWindowMode = useVinylDeckStore((s) => s.setWindowMode);
+  const setAlwaysOnTop = useVinylDeckStore((s) => s.setAlwaysOnTop);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const setDevForceEmpty = useVinylDeckStore((s) => s.setDevForceEmpty);
 
@@ -43,6 +47,21 @@ export function Settings({ open, onClose }: SettingsProps) {
     const next = !artAmbient;
     setArtAmbient(next);
     if (!next) resetAmbientColors();
+  }
+
+  function handleWindowModeSelect(mode: WindowMode) {
+    void setNativeWindowMode(mode).catch((error) => {
+      console.warn("[Window] Mode change failed:", error);
+    });
+    setWindowMode(mode);
+  }
+
+  function handleAlwaysOnTopToggle() {
+    const next = !settings.alwaysOnTop;
+    setAlwaysOnTop(next);
+    void setNativeAlwaysOnTop(next).catch((error) => {
+      console.warn("[Window] Always-on-top change failed:", error);
+    });
   }
 
   return (
@@ -154,6 +173,43 @@ export function Settings({ open, onClose }: SettingsProps) {
                 </div>
               ) : activeTab === "DISPLAY" ? (
                 <div className="settings-toggle-list">
+                  <div className="settings-slider-row">
+                    <div className="settings-slider-row__header">
+                      <span className="settings-toggle-row__copy">
+                        <span className="settings-toggle-row__label">Window Mode</span>
+                        <span className="settings-toggle-row__description">Switch between main, fullscreen, and mini player.</span>
+                      </span>
+                    </div>
+                    <div className="settings-theme-grid" role="group" aria-label="Window mode">
+                      {(["main", "fullscreen", "mini"] as const).map((mode) => {
+                        const active = mode !== "mini" && settings.windowMode === mode;
+
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            className={`settings-theme-card${active ? " settings-theme-card--active" : ""}`}
+                            onClick={() => handleWindowModeSelect(mode)}
+                          >
+                            <span className="settings-theme-card__copy">
+                              <span className="settings-theme-card__name">
+                                {mode === "main" ? "Main" : mode === "fullscreen" ? "Fullscreen" : "Mini"}
+                              </span>
+                              <span className="settings-theme-card__note">
+                                {mode === "main" ? "Native shell" : mode === "fullscreen" ? "Lean-back view" : "280px widget"}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <SettingsToggle
+                    label="Always On Top"
+                    description="Keep VinylDeck above other windows."
+                    checked={settings.alwaysOnTop}
+                    onToggle={handleAlwaysOnTopToggle}
+                  />
                   <SettingsToggle
                     label="Lean-Back Mode"
                     description="Let controls disappear while the record becomes the room."

@@ -50,6 +50,8 @@ export interface PlaybackStoreActions {
   // Persisted settings
   hydrateSettings(settings: PersistedSettings): void;
   updateSettings(partial: Partial<PersistedSettings>): void;
+  setWindowMode(mode: PersistedSettings["windowMode"]): void;
+  setAlwaysOnTop(enabled: boolean): void;
 
   // Noir ambient toggle
   setArtAmbient(enabled: boolean): void;
@@ -163,6 +165,21 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
           artAmbient,
         };
       });
+    },
+
+    setWindowMode(mode) {
+      set((state) => ({
+        settings: {
+          ...state.settings,
+          windowMode: mode === "mini" ? state.settings.windowMode : mode,
+        },
+      }));
+    },
+
+    setAlwaysOnTop(enabled) {
+      set((state) => ({
+        settings: { ...state.settings, alwaysOnTop: enabled },
+      }));
     },
 
     setArtAmbient(enabled) {

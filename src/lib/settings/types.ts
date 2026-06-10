@@ -1,7 +1,9 @@
 import type { ThemeId } from "../themes/applier";
+import { WINDOW_MODES } from "../window/types";
+import type { WindowMode } from "../window/types";
 
-export const WINDOW_MODES = ["main", "fullscreen", "mini"] as const;
-export type WindowMode = (typeof WINDOW_MODES)[number];
+export { WINDOW_MODES };
+export type { WindowMode };
 
 export interface PersistedSettings {
   version: 1;

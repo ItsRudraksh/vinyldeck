@@ -2,15 +2,19 @@
 // Root component. Initializes MockSource → Zustand store → MainView.
 // All Stage 2 sub-stages wired here.
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createMockSource } from "./lib/playback/mockSource";
 import { useVinylDeckStore } from "./lib/playback/store";
 import { flushSettingsPersistence, loadSettings, sanitizeSettingsForTheme, subscribeToSettingsPersistence } from "./lib/settings";
 import { applyTheme, resetAmbientColors } from "./lib/themes/applier";
+import { getCurrentRenderWindowMode, setNativeAlwaysOnTop, setNativeWindowMode } from "./lib/window";
+import type { RenderWindowMode } from "./lib/window/types";
 import { MainView } from "./views/MainView";
+import { MiniView } from "./views/MiniView";
 
 function App() {
   const setSource = useVinylDeckStore((s) => s.setSource);
+  const [renderMode, setRenderMode] = useState<RenderWindowMode>("main");
 
   useEffect(() => {
     let source = createMockSource();
@@ -24,6 +28,15 @@ function App() {
       useVinylDeckStore.getState().hydrateSettings(settings);
       applyTheme(settings.theme);
       if (settings.theme !== "noir" || !settings.artAmbient) resetAmbientColors();
+
+      const currentRenderMode = await getCurrentRenderWindowMode();
+      if (cancelled) return;
+      setRenderMode(currentRenderMode);
+
+      if (currentRenderMode === "main") {
+        await setNativeWindowMode(settings.windowMode === "mini" ? "main" : settings.windowMode);
+        await setNativeAlwaysOnTop(settings.alwaysOnTop);
+      }
 
       unsubscribeSettings = subscribeToSettingsPersistence();
       window.addEventListener("beforeunload", handleBeforeUnload);
@@ -48,7 +61,7 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <MainView />;
+  return renderMode === "mini" ? <MiniView /> : <MainView />;
 }
 
 export default App;

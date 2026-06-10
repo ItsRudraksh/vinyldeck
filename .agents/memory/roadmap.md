@@ -36,9 +36,9 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 ### [ ] Stage 3 — Tauri Shell & Window Management
 
 - User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
-- Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, and Phase 2 settings persistence are verified; paused at Manual Checkpoint B2.
+- Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, and Phase 3 window modes are verified; paused at Manual Checkpoint B3.
 - Settings persistence is implemented through Zustand-owned settings plus Tauri Store.
-- Window modes (Main, Fullscreen, Mini always-on-top).
+- Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
 - System tray and keyboard shortcuts.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)

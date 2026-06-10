@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Manual Checkpoint B2
+**Current Stage:** Windows backend — Manual Checkpoint B3
 
 ## Active Work
-Backend Phase 2 settings state and persistence verified. Stop at Manual Checkpoint B2 until user approves Backend Phase 3.
+Backend Phase 3 window modes verified. Stop at Manual Checkpoint B3 until user approves Backend Phase 4.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -97,6 +97,15 @@ None.
 - B2 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` exited 0.
 - B2 validator smoke used a temporary `tsx` runner and passed: defaults, invalid values, non-Noir art ambient clamp, idle timeout clamp, and full valid object.
 - B2 Tauri smoke started `npm run tauri dev`, detected `VinylDeck` window, then stopped the process tree; no VinylDeck dev process remained after teardown.
+- B3.1 added shared typed window-mode contract in `src/lib/window/types.ts`.
+- B3.2 implemented Rust window-mode service in `src-tauri/src/window/mod.rs`: main restores native decorated main, fullscreen reuses main borderless, mini creates/reuses separate `280x280` always-on-top frameless window while hiding main.
+- B3.3 added `cmd_set_always_on_top` for active main/mini windows.
+- B3.4 added browser-safe frontend window adapter in `src/lib/window/index.ts`.
+- B3.5 added functional `MiniView` using the playback store, existing vinyl, track info, and controls.
+- B3.6 App now routes render by current Tauri window label; browser remains main view.
+- B3.7 Settings DISPLAY controls can switch Main/Fullscreen/Mini and toggle Always On Top; last non-mini mode and always-on-top persist through existing settings store.
+- B3 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` exited 0. Rust tests included valid/invalid window-mode parser coverage.
+- B3 Tauri smoke started `npm run tauri dev`, detected `VinylDeck` window, then stopped the process tree; no VinylDeck dev process remained after teardown.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note

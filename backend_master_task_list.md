@@ -171,34 +171,34 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 3 — Window Modes
 
-- [ ] **B3.1** Define shared typed window-mode contract.
+- [x] **B3.1** Define shared typed window-mode contract.
   - Create: `src/lib/window/types.ts`
   - Modes: `main | fullscreen | mini`.
 
-- [ ] **B3.2** Implement Rust window-mode service.
+- [x] **B3.2** Implement Rust window-mode service.
   - Create: `src-tauri/src/window/mod.rs`
   - Keep mode switching logic separate from command wrappers.
   - Main: show main, leave fullscreen, hide mini.
   - Fullscreen: show/focus main, hide mini, enter fullscreen.
   - Mini: create/show mini, hide main.
 
-- [ ] **B3.3** Implement always-on-top command for active windows.
+- [x] **B3.3** Implement always-on-top command for active windows.
 
-- [ ] **B3.4** Implement frontend window adapter.
+- [x] **B3.4** Implement frontend window adapter.
   - Create: `src/lib/window/index.ts`
   - Use Tauri invoke only when `isTauri()`.
   - Detect current window label through Tauri window API.
 
-- [ ] **B3.5** Create functional `MiniView`.
+- [x] **B3.5** Create functional `MiniView`.
   - Create: `src/views/MiniView.tsx`
   - Reuse playback store and existing physical vinyl controls.
   - Keep scope functional/minimal; visual refinement gets separate approval.
 
-- [ ] **B3.6** Route app view by current Tauri window label.
+- [x] **B3.6** Route app view by current Tauri window label.
   - Modify: `src/App.tsx`
   - Browser always renders `MainView`.
 
-- [ ] **B3.7** Persist last non-mini window mode and always-on-top.
+- [x] **B3.7** Persist last non-mini window mode and always-on-top.
 
 ### Automated Checkpoint B3
 

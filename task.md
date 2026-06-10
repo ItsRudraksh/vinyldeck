@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 2 settings state and persistence verified. Stop at Manual Checkpoint B2 until user approves Backend Phase 3.
+Backend Phase 3 window modes verified. Stop at Manual Checkpoint B3 until user approves Backend Phase 4.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -112,3 +112,11 @@ Planned scope:
 - B2.4-B2.6: browser-safe settings adapter added; Tauri Store saves debounced `settings` only; App hydrates settings before starting source.
 - B2.7: validation clamps invalid values, applies defaults, and forces Album Art Ambient off outside Noir.
 - Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, temporary settings validator smoke, and `npm run tauri dev` window smoke.
+
+## Backend Phase 3 Evidence
+
+- B3.1-B3.4: Rust and TypeScript window-mode contracts/adapters added.
+- B3.2-B3.3: Rust commands switch main/fullscreen/mini and set always-on-top.
+- B3.5-B3.6: functional MiniView added and App routes by Tauri window label; browser stays on MainView.
+- B3.7: Settings DISPLAY controls switch modes and toggle always-on-top; persisted settings keep last non-mini mode plus always-on-top.
+- Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `npm run tauri dev` window smoke.
