@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
-import { flushSettingsPersistence } from "../../lib/settings";
+import { flushSettingsPersistence, writeSettingsHandoff } from "../../lib/settings";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
 import type { WindowMode } from "../../lib/window/types";
 import "./Settings.css";
@@ -52,6 +52,7 @@ export function Settings({ open, onClose }: SettingsProps) {
 
   function handleWindowModeSelect(mode: WindowMode) {
     setWindowMode(mode);
+    writeSettingsHandoff(useVinylDeckStore.getState().settings);
     void flushSettingsPersistence()
       .then(() => setNativeWindowMode(mode))
       .catch((error) => {

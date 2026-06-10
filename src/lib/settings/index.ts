@@ -8,6 +8,7 @@ import type { ThemeId } from "../themes/applier";
 
 const STORE_FILE = "settings.json";
 const STORE_KEY = "settings";
+const SETTINGS_HANDOFF_KEY = "vinyldeck:settings-handoff";
 const STORE_DEFAULTS = { [STORE_KEY]: DEFAULT_SETTINGS };
 const SAVE_DELAY_MS = 400;
 const THEME_IDS: ThemeId[] = ["noir", "glass", "aurora", "vapor", "paper"];
@@ -36,6 +37,9 @@ export function validateSettings(value: unknown): PersistedSettings {
 }
 
 export async function loadSettings(): Promise<PersistedSettings> {
+  const handoffSettings = readSettingsHandoff();
+  if (handoffSettings) return handoffSettings;
+
   if (!isTauri()) return DEFAULT_SETTINGS;
 
   try {
@@ -71,13 +75,39 @@ export async function flushSettingsPersistence(): Promise<void> {
   await saveSettings(useVinylDeckStore.getState().settings);
 }
 
+export function writeSettingsHandoff(settings: PersistedSettings): void {
+  try {
+    window.localStorage.setItem(
+      SETTINGS_HANDOFF_KEY,
+      JSON.stringify({ settings, writtenAt: Date.now() }),
+    );
+  } catch (error) {
+    console.warn("[Settings] Handoff write failed:", error);
+  }
+}
+
 async function saveSettings(settings: PersistedSettings): Promise<void> {
+  writeSettingsHandoff(settings);
+
   try {
     const store = await load(STORE_FILE, { defaults: STORE_DEFAULTS, autoSave: false });
     await store.set(STORE_KEY, settings);
     await store.save();
   } catch (error) {
     console.warn("[Settings] Save failed:", error);
+  }
+}
+
+function readSettingsHandoff(): PersistedSettings | null {
+  try {
+    const rawValue = window.localStorage.getItem(SETTINGS_HANDOFF_KEY);
+    if (!rawValue) return null;
+
+    const raw = JSON.parse(rawValue) as { settings?: unknown };
+    return validateSettings(raw.settings);
+  } catch (error) {
+    console.warn("[Settings] Handoff read failed:", error);
+    return null;
   }
 }
 
