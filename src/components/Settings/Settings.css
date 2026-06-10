@@ -41,7 +41,6 @@
   z-index: 1;
   width: min(640px, calc(100vw - 48px));
   min-height: 430px;
-  max-height: min(760px, calc(100vh - 64px));
   display: grid;
   grid-template-columns: 180px 1fr;
   overflow: hidden;
@@ -184,9 +183,6 @@
   position: relative;
   z-index: 1;
   padding: 34px;
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .settings-panel__placeholder {
@@ -617,7 +613,6 @@
 
   .settings-panel {
     width: min(640px, calc(100vw - 24px));
-    max-height: calc(100vh - 36px);
     grid-template-columns: 1fr;
   }
 

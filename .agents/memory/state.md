@@ -106,8 +106,6 @@ None.
 - B3.7 Settings DISPLAY controls can switch Main/Fullscreen/Mini and toggle Always On Top; last non-mini mode and always-on-top persist through existing settings store.
 - B3 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` exited 0. Rust tests included valid/invalid window-mode parser coverage.
 - B3 Tauri smoke started `npm run tauri dev`, detected `VinylDeck` window, then stopped the process tree; no VinylDeck dev process remained after teardown.
-- B3 manual follow-up fixed Display tab overflow by giving Settings panel a viewport-bounded max height and internal content scroll.
-- B3 manual follow-up changed mini window creation to `WebviewUrl::default()` to avoid blank/white mini content in Tauri dev, added a compact 280px MiniView layout with black fallback background, ambient layer, and top drag strip using `data-tauri-drag-region`.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note

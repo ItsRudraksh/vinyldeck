@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use tauri::{AppHandle, Manager, WebviewWindowBuilder};
+use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
 const MAIN_LABEL: &str = "main";
 const MINI_LABEL: &str = "mini";
@@ -96,7 +96,7 @@ fn show_mini(app: &AppHandle) -> Result<(), String> {
 
     let mini = match app.get_webview_window(MINI_LABEL) {
         Some(window) => window,
-        None => WebviewWindowBuilder::new(app, MINI_LABEL, Default::default())
+        None => WebviewWindowBuilder::new(app, MINI_LABEL, WebviewUrl::App("index.html".into()))
             .title("VinylDeck Mini")
             .inner_size(280.0, 280.0)
             .resizable(false)
