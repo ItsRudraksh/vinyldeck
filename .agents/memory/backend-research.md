@@ -245,7 +245,7 @@ Already corrected through Backend Phase 3:
 
 Still outstanding after Backend Phase 3:
 
-- Mini/main cross-WebView theme/settings authority is unresolved and parked as BUG-002: `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
+- Mini/main cross-WebView theme/settings authority fix is documented in BUG-002: `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`. Main is the only persisted-settings writer; mini is read-only for persistence.
 - No TauriSource/SMTC adapter is implemented yet.
 - No tray module, close-to-tray lifecycle, focused shortcuts, or installer hardening are implemented yet.
 - Zustand `setSource()` subscription cleanup should be reviewed when replacing `MockSource` with `TauriSource`.

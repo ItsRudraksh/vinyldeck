@@ -37,7 +37,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 
 - User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
 - Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, and Phase 3 window modes are verified; paused at Manual Checkpoint B3.
-- Settings persistence is implemented through Zustand-owned settings plus Tauri Store, but mini/main cross-WebView theme persistence is **pending/skipped** for later diagnosis. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
+- Settings persistence is implemented through Zustand-owned settings plus Tauri Store. Mini/main cross-WebView theme persistence fix: main is the only persisted-settings writer; mini reads/hydrates settings only. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
 - Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
 - System tray and keyboard shortcuts.
 

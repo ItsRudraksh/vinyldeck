@@ -30,7 +30,7 @@ User approval locks these recommended resolutions:
 6. **Close behavior:** window close hides to tray. Explicit tray Quit exits process.
 7. **Settings:** persisted settings become Zustand-owned. Browser uses defaults/in-memory behavior; Tauri uses `tauri-plugin-store`.
 
-> Caveat: mini/main cross-WebView theme/settings authority is parked as pending BUG-002. Continue the backend list, but do not treat mini theme persistence as fully resolved until `.agents/memory/bugs/BUG-002-mini-theme-persistence.md` is revisited.
+> Note: mini/main cross-WebView theme/settings authority is resolved by making the main WebView the only persisted-settings writer. Mini loads/hydrates settings for visuals but must remain read-only for persistence. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
 
 ## Known PRD Corrections
 
@@ -168,7 +168,7 @@ User approval locks these recommended resolutions:
 - Change every setting, quit explicitly, reopen.
 - Values persist and behaviors remain wired.
 - Browser development still works without Tauri APIs.
-- Known caveat after B3 follow-ups: mini/main cross-WebView theme persistence is pending BUG-002.
+- B3 follow-up fix: mini/main cross-WebView theme persistence uses main-only write authority; mini reads settings but does not persist.
 
 ---
 
@@ -214,7 +214,7 @@ User approval locks these recommended resolutions:
 - Main ↔ mini works repeatedly without duplicate mini windows.
 - Mini remains always-on-top and main restores correctly.
 - Multi-monitor focus/position behavior is acceptable.
-- Known caveat: mini may not reliably inherit persisted theme/customization state; BUG-002 is skipped for later.
+- B3 follow-up fix: mini inherits persisted theme/customization state by hydration, while persistence writes remain main-only.
 
 ---
 

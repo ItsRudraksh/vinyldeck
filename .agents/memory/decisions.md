@@ -43,7 +43,7 @@
 | 2026-06-08 | Color Extraction     | **fast-average-color simple**      | Best generalized ambient mood extraction across all album art types. See above.                                                        |
 | 2026-06-08 | Ambient Rendering    | **mix-blend-mode: screen**         | Screen blend on OLED black makes any color bloom luminously. Dark orb without it = dark smudge. |
 | 2026-06-10 | Perf Exceptions      | **Aurora/Vapor background-position exceptions** | Phase 11 keeps animation paths transform/opacity-first, but Aurora gradient shift and Vapor grid travel intentionally animate `background-position` on isolated background layers because they define those theme identities. |
-| 2026-06-11 | Settings Authority Caveat | **Cross-WebView settings authority unresolved** | Zustand-owned settings plus Tauri Store are implemented, but main/mini are separate WebViews with independent stores. Mini theme persistence is parked as BUG-002 until a stronger architecture is chosen. |
+| 2026-06-11 | Settings Authority | **Main WebView owns persisted settings writes** | Main/mini are separate WebViews with independent Zustand stores. Mini may load/hydrate settings for visuals, but only main may subscribe to persistence or flush settings to Tauri Store. Fixes BUG-002 poison writes. |
 
 ---
 

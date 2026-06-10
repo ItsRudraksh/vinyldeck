@@ -139,7 +139,7 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
 - Backend Phase 0, Phase 1, Phase 2, and Phase 3 are complete; current stop point is Manual Checkpoint B3 unless user approves moving forward.
-- Mini/main cross-WebView theme/settings persistence is pending and intentionally skipped for now. Read `C:\Coding\vinyldeck\.agents\memory\bugs\BUG-002-mini-theme-persistence.md`; do not spend more implementation time on it unless user explicitly reopens that bug.
+- Mini/main cross-WebView theme/settings persistence root fix: main is the only persisted-settings writer; mini loads/hydrates settings for visuals but does not subscribe/flush. Read `C:\Coding\vinyldeck\.agents\memory\bugs\BUG-002-mini-theme-persistence.md` before changing this behavior.
 - Current backend checkpoint commits include:
   - `043cebc docs(backend): approve Windows execution plan`
   - `2507430 docs(backend): record phase 0 baseline`
@@ -177,7 +177,7 @@ Do **not** restart at B0. Current stop point is Manual Checkpoint B3.
 
 If the user says to continue/move ahead, begin **Backend Phase 4 — Tray and Application Lifecycle** at **B4.1** in `backend_master_task_list.md`.
 
-If the user asks to reopen mini theme persistence, first read `.agents/memory/bugs/BUG-002-mini-theme-persistence.md` and use systematic debugging. Do not repeat the removed `localStorage` handoff approach.
+If the user asks to change mini theme persistence, first read `.agents/memory/bugs/BUG-002-mini-theme-persistence.md` and use systematic debugging. Do not repeat the removed `localStorage` handoff approach, and do not give mini direct persistence write authority.
 
 ## ENGINEERING RULES
 
@@ -207,7 +207,7 @@ If the user asks to reopen mini theme persistence, first read `.agents/memory/bu
 
 ## SUCCESS CONDITION FOR THIS FRESH SESSION
 
-Current checkpoint state is accurately loaded, BUG-002 remains parked unless explicitly reopened, and no work proceeds beyond Manual Checkpoint B3 without user approval.
+Current checkpoint state is accurately loaded, BUG-002's main-only write authority fix is preserved, and no work proceeds beyond Manual Checkpoint B3 without user approval.
 
 Start now.
 ```
