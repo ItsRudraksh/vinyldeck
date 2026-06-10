@@ -120,3 +120,4 @@ Planned scope:
 - B3.5-B3.6: functional MiniView added and App routes by Tauri window label; browser stays on MainView.
 - B3.7: Settings DISPLAY controls switch modes and toggle always-on-top; persisted settings keep last non-mini mode plus always-on-top.
 - Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `npm run tauri dev` window smoke.
+- Manual follow-up: fixed Display tab modal overflow and mini blank/white window risk; MiniView now uses compact 280px layout and a top drag region.
