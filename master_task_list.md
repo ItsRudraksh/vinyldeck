@@ -225,6 +225,7 @@ Every phase ends with a **🧪 Manual Checkpoint** — do not start the next pha
 
 ## PHASE 12 — Tauri Shell & Window Management
 > Stage 3. Requires Phases 0–11 complete.
+> Detailed atomic execution plan: `backend_master_task_list.md` (approved and ready).
 
 - [ ] **12.1** Frameless window, transparent bg, `resizable: true`, min `400×500`, default `600×700`
 - [ ] **12.2** Custom titlebar — traffic light dots, `height: 32px` drag region, theme-styled
@@ -240,6 +241,7 @@ Every phase ends with a **🧪 Manual Checkpoint** — do not start the next pha
 
 ## PHASE 13 — SMTC / Real Media Source
 > Stage 4. Rust backend. Requires Phase 12.
+> Detailed atomic execution plan: `backend_master_task_list.md` (approved and ready).
 
 - [ ] **13.1** Rust SMTC polling loop in `src-tauri/src/smtc.rs`
 - [ ] **13.2** Tauri commands: `get_now_playing`, `media_play`, `media_pause`, `media_next`, `media_previous`
@@ -269,8 +271,8 @@ Every phase ends with a **🧪 Manual Checkpoint** — do not start the next pha
 | 9 — Settings Modal | ✅ Complete | Settings shell, tabs, theme cards, toggles, display controls, particles |
 | 10 — Empty State | ✅ Complete | Empty-state QA toggle and full polish approved |
 | 11 — Performance | ✅ Complete | Keyframe/will-change cleanup build-verified and manually approved |
-| 12 — Tauri Shell | 🔲 Stage 3 | New session |
-| 13 — SMTC | 🔲 Stage 4 | New session |
+| 12 — Tauri Shell | ▶ Ready | Approved detailed backend plan starts at B0.1 |
+| 13 — SMTC | 📋 Planned | Included in approved backend plan after shell checkpoints |
 
 ---
 

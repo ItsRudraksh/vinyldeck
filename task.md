@@ -78,10 +78,13 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Idle Centerpiece Transform complete and user-approved.
+Complete Windows backend implementation plan approved. Fresh session begins at B0.1 in `backend_master_task_list.md`.
 
-Behavior:
+Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
-- Idle: vinyl glides to viewport center and scales up.
-- Activity: vinyl returns to normal layout with UI restored.
-- Transform-only path preserves performance.
+Planned scope:
+
+- Tauri shell, settings persistence, window modes, tray, lifecycle, and focused shortcuts.
+- SMTC model, artwork, controls, cached polling, TauriSource adapter, and source lifecycle.
+- End-to-end hardening and Windows installers.
+- Reuse `.agents/memory/backend-research.md`; do not repeat completed web research.

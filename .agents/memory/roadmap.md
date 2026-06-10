@@ -35,7 +35,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 
 ### [ ] Stage 3 — Tauri Shell & Window Management
 
-- Parked until user explicitly says to move beyond visual work.
+- User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
 - Settings persistence.
 - Window modes (Main, Fullscreen, Mini always-on-top).
 - System tray and keyboard shortcuts.

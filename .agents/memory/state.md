@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Stage 2 Visual Engine Polish — complete, waiting for next instruction
+**Current Stage:** Windows backend — approved plan ready for execution
 
 ## Active Work
-No active implementation task. Waiting for user instruction.
+Detailed Windows backend plan approved. Fresh session should begin at `backend_master_task_list.md` task B0.1.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -18,7 +18,8 @@ Current task track:
 - Phase 10 Empty State polish is complete and user-approved.
 - Phase 11 Performance & GPU Hardening is complete, build-verified, and user-approved.
 - Idle Centerpiece Transform is complete and user-approved: when idle triggers during playback, vinyl area moves toward true viewport center and scales up using transform-only CSS transition; activity restores original layout.
-- Backend/Tauri shell work remains parked until user is visually satisfied.
+- User confirmed visual satisfaction and authorized backend planning.
+- Backend plan is approved and ready to build.
 
 ## Stage 2 Final Status
 - Core visual engine sub-stages 2a–2k implemented and verified.
@@ -67,6 +68,10 @@ None.
 - User manually approved Phase 10 Empty State pass.
 - User manually approved Phase 11 Performance & GPU Hardening: "very performant indeed no visual loss."
 - User manually approved Idle Centerpiece Transform.
+- User confirmed visual satisfaction and requested complete Windows backend plan.
+- Backend research found required corrections to PRD snippets: use runtime `isTauri()` source selection, retain Tauri event unlisten functions, cache SMTC artwork outside 500ms light polling, and honor SMTC command `bool` results.
+- Backend plan approved. Research synthesis saved at `.agents/memory/backend-research.md`; future sessions should not repeat this research.
+- Fresh-session execution prompt saved at `backend_fresh_session_prompt.md`.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note
