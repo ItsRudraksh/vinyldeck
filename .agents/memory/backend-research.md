@@ -232,15 +232,23 @@ Do not read and base64-encode artwork every 500ms.
 
 ---
 
-## Current Repo Corrections Required
+## Current Repo Status and Corrections Required
 
-- `src-tauri/src/lib.rs` is untouched scaffold with only `greet`.
-- `src-tauri/tauri.conf.json` still uses scaffold product/title.
-- `src-tauri/capabilities/default.json` only has default/opener permissions.
-- `src/App.tsx` always creates `MockSource`.
-- `src/components/Settings/index.tsx` keeps most settings in local React state.
-- Zustand `setSource()` currently discards source subscription unsubscribe.
-- No TauriSource, settings adapter, window service, tray, keyboard shortcut hook, MiniView, or SMTC modules exist.
+Already corrected through Backend Phase 3:
+
+- Tauri product/title/identifier/window labels are VinylDeck-specific.
+- `greet` scaffold command and opener plugin were removed.
+- Least-privilege capabilities cover `main` and `mini` windows plus window/event/store needs.
+- Settings adapter exists and persists Zustand-owned settings through `tauri-plugin-store`.
+- Window service exists for main/fullscreen/mini modes.
+- Functional `MiniView` exists.
+
+Still outstanding after Backend Phase 3:
+
+- Mini/main cross-WebView theme/settings authority is unresolved and parked as BUG-002: `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
+- No TauriSource/SMTC adapter is implemented yet.
+- No tray module, close-to-tray lifecycle, focused shortcuts, or installer hardening are implemented yet.
+- Zustand `setSource()` subscription cleanup should be reviewed when replacing `MockSource` with `TauriSource`.
 
 ## Primary References
 

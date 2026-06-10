@@ -43,6 +43,7 @@
 | 2026-06-08 | Color Extraction     | **fast-average-color simple**      | Best generalized ambient mood extraction across all album art types. See above.                                                        |
 | 2026-06-08 | Ambient Rendering    | **mix-blend-mode: screen**         | Screen blend on OLED black makes any color bloom luminously. Dark orb without it = dark smudge. |
 | 2026-06-10 | Perf Exceptions      | **Aurora/Vapor background-position exceptions** | Phase 11 keeps animation paths transform/opacity-first, but Aurora gradient shift and Vapor grid travel intentionally animate `background-position` on isolated background layers because they define those theme identities. |
+| 2026-06-11 | Settings Authority Caveat | **Cross-WebView settings authority unresolved** | Zustand-owned settings plus Tauri Store are implemented, but main/mini are separate WebViews with independent stores. Mini theme persistence is parked as BUG-002 until a stronger architecture is chosen. |
 
 ---
 
@@ -61,4 +62,4 @@
 
 **NEVER use `--force`, `--yes` combined with destructive scaffold tools, or any flag that overwrites/clears an existing non-empty directory in `c:\Coding\vinyldeck\`.** On 2026-06-08, `npx create-tauri-app . --force` destroyed all pre-existing files. User restored from backup. Always scaffold into a clean temp directory and copy only what is needed.
 
-**Last Updated:** 2026-06-10
+**Last Updated:** 2026-06-11

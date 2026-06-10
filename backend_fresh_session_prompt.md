@@ -15,7 +15,7 @@ Workspace:
 `C:\Coding\vinyldeck`
 
 Current date:
-June 10, 2026
+June 11, 2026
 
 ## PRIMARY OBJECTIVE
 
@@ -23,7 +23,7 @@ Execute the approved Windows backend plan in:
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-Start at task **B0.1** and proceed sequentially. Do not skip tasks. Do not combine unrelated tasks. Stop at every manual checkpoint and wait for user approval before entering the next backend phase.
+Backend Phase 0, Phase 1, Phase 2, and Phase 3 are already complete. Current stop point is **Manual Checkpoint B3**. Do not proceed into Backend Phase 4 unless the user explicitly approves moving ahead.
 
 The backend plan is already approved. Do not re-plan it unless direct code/runtime evidence proves a plan assumption wrong.
 
@@ -138,30 +138,17 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Stage 2 Visual Engine is complete and user-approved.
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
-- Latest committed feature:
-  `0a9aa18 feat(idle): add vinyl centerpiece mode`
-- Prior rollback checkpoint:
-  `0af8491 chore: checkpoint visual engine`
-- Backend remains scaffold-only:
-  - Rust only exposes `greet`.
-  - Tauri config still has scaffold product/title.
-  - No SMTC modules.
-  - No tray/window service.
-  - No TauriSource.
-  - Settings controls are mostly local React state.
-- Planning/research docs are intentionally uncommitted and must be committed in B0.1.
-
-Expected uncommitted planning files include:
-
-- `backend_master_task_list.md`
-- `backend_fresh_session_prompt.md`
-- `.agents/memory/backend-research.md`
-- `.agents/memory/state.md`
-- `.agents/memory/roadmap.md`
-- `task.md`
-- `master_task_list.md`
-
-Do not discard them.
+- Backend Phase 0, Phase 1, Phase 2, and Phase 3 are complete; current stop point is Manual Checkpoint B3 unless user approves moving forward.
+- Mini/main cross-WebView theme/settings persistence is pending and intentionally skipped for now. Read `C:\Coding\vinyldeck\.agents\memory\bugs\BUG-002-mini-theme-persistence.md`; do not spend more implementation time on it unless user explicitly reopens that bug.
+- Current backend checkpoint commits include:
+  - `043cebc docs(backend): approve Windows execution plan`
+  - `2507430 docs(backend): record phase 0 baseline`
+  - `74f34d3 feat(shell): establish Tauri foundation`
+  - `1198369 feat(settings): persist visual preferences`
+  - `f9f44e7 feat(window): add desktop window modes`
+  - `ad39b0d docs(bugs): park mini theme persistence`
+- Rust/Tauri shell is no longer scaffold-only: window modes and settings persistence exist. Tray, lifecycle, shortcuts, and SMTC source remain future backend phases.
+- `backend_continuation_prompt.md` may exist as an untracked user/generated file. Do not delete or stage it unless user explicitly asks.
 
 ## EXECUTION WORKFLOW
 
@@ -186,68 +173,11 @@ For each atomic task:
 
 ## FIRST EXECUTION BLOCK
 
-Begin with Backend Phase 0 only.
+Do **not** restart at B0. Current stop point is Manual Checkpoint B3.
 
-### B0.1
+If the user says to continue/move ahead, begin **Backend Phase 4 — Tray and Application Lifecycle** at **B4.1** in `backend_master_task_list.md`.
 
-Commit approved backend planning documents, then confirm clean working tree.
-
-Required commit:
-
-```text
-docs(backend): approve Windows execution plan
-
-Co-Authored-By: Codex <codex@openai.com>
-```
-
-Before commit:
-
-- Inspect `git status --short`.
-- Verify no unrelated/user-generated change is being accidentally included.
-- Stage approved plan/research/living-doc files.
-
-After commit:
-
-- Run `git status --short`.
-- Expected: empty.
-
-### B0.2
-
-Verify baseline:
-
-```powershell
-node --version
-npm --version
-rustc --version
-cargo --version
-cargo tauri --version
-npm run build
-cargo check --manifest-path src-tauri/Cargo.toml
-```
-
-Record exact versions and outcomes.
-
-### B0.3
-
-Verify SMTC runtime availability with a minimal temporary Rust probe:
-
-- Probe only requests `GlobalSystemMediaTransportControlsSessionManager`.
-- It may report whether a current session exists and basic source identity.
-- Do not build the full backend yet.
-- Do not add permanent architecture during probe.
-- Remove temporary probe after results are recorded.
-- Run once with current system state.
-- If user needs to start media for second case, stop and give exact instruction.
-
-### B0.4
-
-Record verified SMTC behavior/errors in:
-
-`C:\Coding\vinyldeck\.agents\memory\state.md`
-
-Mark B0 tasks only after verification.
-
-Then stop at **Manual Checkpoint B0**. Do not begin B1 without user approval.
+If the user asks to reopen mini theme persistence, first read `.agents/memory/bugs/BUG-002-mini-theme-persistence.md` and use systematic debugging. Do not repeat the removed `localStorage` handoff approach.
 
 ## ENGINEERING RULES
 
@@ -277,8 +207,7 @@ Then stop at **Manual Checkpoint B0**. Do not begin B1 without user approval.
 
 ## SUCCESS CONDITION FOR THIS FRESH SESSION
 
-Backend Phase 0 is fully verified, documented, committed, and presented at Manual Checkpoint B0. No Backend Phase 1 implementation begins until user approves B0.
+Current checkpoint state is accurately loaded, BUG-002 remains parked unless explicitly reopened, and no work proceeds beyond Manual Checkpoint B3 without user approval.
 
 Start now.
 ```
-
