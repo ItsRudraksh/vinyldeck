@@ -86,7 +86,7 @@ export function Settings({ open, onClose }: SettingsProps) {
           <SettingsParticles />
 
           <motion.section
-            className="settings-panel"
+            className={`settings-panel settings-panel--${activeTab.toLowerCase()}`}
             initial={{ opacity: 0, scale: 0.95, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -172,7 +172,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                   />
                 </div>
               ) : activeTab === "DISPLAY" ? (
-                <div className="settings-toggle-list">
+                <div className="settings-toggle-list settings-display">
                   <div className="settings-slider-row">
                     <div className="settings-slider-row__header">
                       <span className="settings-toggle-row__copy">
@@ -180,7 +180,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                         <span className="settings-toggle-row__description">Switch between main, fullscreen, and mini player.</span>
                       </span>
                     </div>
-                    <div className="settings-theme-grid" role="group" aria-label="Window mode">
+                    <div className="settings-window-mode-grid" role="group" aria-label="Window mode">
                       {(["main", "fullscreen", "mini"] as const).map((mode) => {
                         const active = mode !== "mini" && settings.windowMode === mode;
 
@@ -188,7 +188,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                           <button
                             key={mode}
                             type="button"
-                            className={`settings-theme-card${active ? " settings-theme-card--active" : ""}`}
+                            className={`settings-theme-card settings-window-mode-card${active ? " settings-theme-card--active" : ""}`}
                             onClick={() => handleWindowModeSelect(mode)}
                           >
                             <span className="settings-theme-card__copy">
@@ -204,24 +204,26 @@ export function Settings({ open, onClose }: SettingsProps) {
                       })}
                     </div>
                   </div>
-                  <SettingsToggle
-                    label="Always On Top"
-                    description="Keep VinylDeck above other windows."
-                    checked={settings.alwaysOnTop}
-                    onToggle={handleAlwaysOnTopToggle}
-                  />
-                  <SettingsToggle
-                    label="Lean-Back Mode"
-                    description="Let controls disappear while the record becomes the room."
-                    checked={settings.leanBackMode}
-                    onToggle={() => updateSettings({ leanBackMode: !settings.leanBackMode })}
-                  />
-                  <SettingsToggle
-                    label="Cursor Hide"
-                    description="Hide the pointer when playback settles into idle."
-                    checked={settings.cursorHide}
-                    onToggle={() => updateSettings({ cursorHide: !settings.cursorHide })}
-                  />
+                  <div className="settings-display__switch-grid">
+                    <SettingsToggle
+                      label="Always On Top"
+                      description="Keep VinylDeck above other windows."
+                      checked={settings.alwaysOnTop}
+                      onToggle={handleAlwaysOnTopToggle}
+                    />
+                    <SettingsToggle
+                      label="Lean-Back Mode"
+                      description="Let controls disappear while the record becomes the room."
+                      checked={settings.leanBackMode}
+                      onToggle={() => updateSettings({ leanBackMode: !settings.leanBackMode })}
+                    />
+                    <SettingsToggle
+                      label="Cursor Hide"
+                      description="Hide the pointer when playback settles into idle."
+                      checked={settings.cursorHide}
+                      onToggle={() => updateSettings({ cursorHide: !settings.cursorHide })}
+                    />
+                  </div>
                   <div className="settings-slider-row">
                     <div className="settings-slider-row__header">
                       <span className="settings-toggle-row__copy">

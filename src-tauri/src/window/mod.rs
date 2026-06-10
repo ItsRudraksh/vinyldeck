@@ -27,6 +27,7 @@ impl FromStr for WindowMode {
 
 #[tauri::command]
 pub fn cmd_set_window_mode(app: AppHandle, mode: String) -> Result<(), String> {
+    window_debug_log(&format!("cmd_set_window_mode requested: {mode}"));
     set_window_mode(&app, WindowMode::from_str(&mode)?)
 }
 
@@ -90,27 +91,48 @@ fn show_fullscreen(app: &AppHandle) -> Result<(), String> {
 }
 
 fn show_mini(app: &AppHandle) -> Result<(), String> {
+    window_debug_log("show_mini: start");
+
     if let Some(main) = app.get_webview_window(MAIN_LABEL) {
+        window_debug_log("show_mini: hiding main window");
         main.hide().map_err(|error| error.to_string())?;
     }
 
     let mini = match app.get_webview_window(MINI_LABEL) {
-        Some(window) => window,
-        None => WebviewWindowBuilder::new(app, MINI_LABEL, WebviewUrl::App("index.html".into()))
-            .title("VinylDeck Mini")
-            .inner_size(280.0, 280.0)
-            .resizable(false)
-            .decorations(false)
-            .always_on_top(true)
-            .skip_taskbar(true)
-            .build()
-            .map_err(|error| error.to_string())?,
+        Some(window) => {
+            window_debug_log("show_mini: reusing existing mini window");
+            window
+        }
+        None => {
+            window_debug_log("show_mini: building mini window at app URL index.html");
+            WebviewWindowBuilder::new(app, MINI_LABEL, WebviewUrl::App("index.html".into()))
+                .title("VinylDeck Mini")
+                .inner_size(280.0, 280.0)
+                .resizable(false)
+                .decorations(false)
+                .always_on_top(true)
+                .skip_taskbar(true)
+                .build()
+                .map_err(|error| error.to_string())?
+        }
     };
 
+    match mini.url() {
+        Ok(url) => window_debug_log(&format!("show_mini: current url {url}")),
+        Err(error) => window_debug_log(&format!("show_mini: url read failed: {error}")),
+    }
+
     mini.show().map_err(|error| error.to_string())?;
+    window_debug_log("show_mini: shown");
     mini.set_focus().map_err(|error| error.to_string())?;
+    window_debug_log("show_mini: focused");
 
     Ok(())
+}
+
+fn window_debug_log(message: &str) {
+    #[cfg(debug_assertions)]
+    println!("[VinylDeck window] {message}");
 }
 
 #[cfg(test)]

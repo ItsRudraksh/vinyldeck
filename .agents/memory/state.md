@@ -30,7 +30,7 @@ Current task track:
 - Dev server: http://localhost:1420/
 
 ## Known Broken
-None.
+- Mini mode can open as a blank/white 280px window in manual testing. Current evidence: installed Tauri 2.11.2 source documents a known Windows WebView2 deadlock/half-create risk when `WebviewWindowBuilder::new(...).build()` runs inside a synchronous command or event handler. `cmd_set_window_mode` currently creates the mini window from a sync `#[tauri::command]`. Debug logging has been added around the mini create/show/focus path; next manual mini test should capture `[VinylDeck window] show_mini: ...` lines in the `npm run tauri dev` terminal.
 
 ## Latest Session Notes
 - Added Settings modal shell in `src/components/Settings/index.tsx`.
@@ -107,6 +107,9 @@ None.
 - B3 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` exited 0. Rust tests included valid/invalid window-mode parser coverage.
 - B3 Tauri smoke started `npm run tauri dev`, detected `VinylDeck` window, then stopped the process tree; no VinylDeck dev process remained after teardown.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
+- Follow-up `75c2354 fix(window): repair display modal and mini view` was reverted by `b60a7de` at user request.
+- Current follow-up pass fixes only Settings DISPLAY modal height UX by widening the Display panel and compacting controls into a three-column window-mode deck plus three compact switch cards; it intentionally avoids a scrollable modal solution.
+- Current follow-up pass also adds debug-only Rust window logs for mini mode without changing mini URL/architecture. Smoke on 2026-06-10 opened the main `VinylDeck` window and printed `[VinylDeck window] cmd_set_window_mode requested: main`; mini still needs manual trigger to capture the new mini logs.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

@@ -120,3 +120,10 @@ Planned scope:
 - B3.5-B3.6: functional MiniView added and App routes by Tauri window label; browser stays on MainView.
 - B3.7: Settings DISPLAY controls switch modes and toggle always-on-top; persisted settings keep last non-mini mode plus always-on-top.
 - Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `npm run tauri dev` window smoke.
+
+## Current Follow-Up
+
+- User reported Settings DISPLAY tab makes modal too tall and Mini mode opens as a blank/white window.
+- Reverted first follow-up fix (`75c2354`) with `b60a7de` at user request.
+- Current pass fixes only the Settings DISPLAY modal UX: no scrollable modal; Display tab uses a wider panel, compact 3-column window-mode deck, and compact switch cards.
+- Mini mode is not behavior-fixed in this pass. Systematic debugging found a strong local clue in installed Tauri 2.11.2 source: creating a `WebviewWindow` inside a synchronous command on Windows has a documented WebView2 deadlock/half-create risk. Added debug-only Rust logs around mini create/show/focus so next manual test can show whether the white window is failing at build, navigation URL, show, or focus.

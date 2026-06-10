@@ -139,6 +139,8 @@ Recommended:
 
 Do not create duplicate Mini windows. Reuse existing label.
 
+Installed Tauri 2.11.2 source warning: `WebviewWindowBuilder::new(...).build()` has a known Windows/WebView2 deadlock risk when used in synchronous commands or event handlers. If mini creation opens a blank/white window or hangs, convert the window-mode command path to an async command or spawn creation off the sync command path before trying visual/CSS fixes.
+
 ### Windows Installer
 
 Tauri supports:
@@ -256,4 +258,3 @@ Do not read and base64-encode artwork every 500ms.
 - Microsoft GSMTC media properties: https://learn.microsoft.com/en-us/uwp/api/windows.media.control.globalsystemmediatransportcontrolssessionmediaproperties
 - Microsoft thumbnail property: https://learn.microsoft.com/en-us/uwp/api/windows.media.control.globalsystemmediatransportcontrolssessionmediaproperties.thumbnail
 - Microsoft `globalMediaControl`: https://learn.microsoft.com/en-us/windows/uwp/schemas/appxpackage/uapmanifestschema/element-uap7-capability
-
