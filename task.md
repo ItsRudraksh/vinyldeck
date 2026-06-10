@@ -131,3 +131,4 @@ Planned scope:
 - Follow-up mini root fix: `cmd_set_window_mode` changed to async Tauri command and mini creation now completes before hiding the main window.
 - User confirmed mini window now works.
 - Current mini UX polish: vinyl centered, controls removed from document flow, controls reveal as absolute bottom overlay on pointer/touch activity and fade back down after idle.
+- Current mini customization polish: mini renders AmbientLayer/film grain, VaporGrid, and Noir artwork ambient extraction like the main view; adds soft monitor-corner snap when dragged near a corner; adds hover-revealed top-right return-to-main control.
