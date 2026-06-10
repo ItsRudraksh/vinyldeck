@@ -31,6 +31,7 @@ User approval locks these recommended resolutions:
 7. **Settings:** persisted settings become Zustand-owned. Browser uses defaults/in-memory behavior; Tauri uses `tauri-plugin-store`.
 
 > Note: mini/main cross-WebView theme/settings authority is resolved by making the main WebView the only persisted-settings writer. Mini loads/hydrates settings for visuals but must remain read-only for persistence. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
+> Forward decision: if the Phase 3 backend-owned authority extension proves clean, migrate settings and future dynamic state to backend-owned command/event authority later. Frontend windows should become readers/controllers, not persistence/state authorities.
 
 ## Known PRD Corrections
 
@@ -215,6 +216,73 @@ User approval locks these recommended resolutions:
 - Mini remains always-on-top and main restores correctly.
 - Multi-monitor focus/position behavior is acceptable.
 - B3 follow-up fix: mini inherits persisted theme/customization state by hydration, while persistence writes remain main-only.
+
+---
+
+## BACKEND PHASE 3 EXTENSION — Backend-Owned Playback Authority
+
+> New gate before tray/lifecycle. Do not enter Backend Phase 4 until B3.8-B3.14 are approved and manually verified.
+>
+> Goal: eliminate main/mini playback divergence before adding tray, shortcuts, or SMTC. Every Tauri window must read playback state from one backend-owned authority and send controls to that authority. Browser remains visual-dev-only with `MockSource`.
+
+- [ ] **B3.8** Define the backend-owned playback authority contract.
+  - Create/modify Rust model types so the backend event payload maps exactly to frontend `PlaybackState`.
+  - Include track, artist, album, artwork data URL, duration, position, `isPlaying`, source name/id, `canSeek`, `canSkip`, and `canControl`.
+  - Keep the locked frontend `PlaybackState`/`PlaybackSource` interface intact.
+  - Do not implement SMTC here; use a backend mock provider to prove the authority and multi-window sync shape.
+
+- [ ] **B3.9** Implement a backend mock media authority.
+  - The backend owns one mutable media state, not the WebViews.
+  - Backend mock supports play, pause, toggle, next, previous, seek, and position ticking.
+  - It emits snapshots to all windows on semantic changes and periodic position resync.
+  - This is temporary provider plumbing that later SMTC replaces behind the same authority contract.
+
+- [ ] **B3.10** Add Tauri media commands/events for authority access.
+  - Commands: get current snapshot, play, pause, toggle, next, previous, seek.
+  - Events: media snapshot changed and media session ended/empty.
+  - Commands must route to backend authority, never to a frontend-owned source.
+  - Events must be safe for any number of windows to subscribe.
+
+- [ ] **B3.11** Create frontend `TauriSource` as a thin backend proxy.
+  - In Tauri, `PlaybackSource.start()` subscribes to backend media events and fetches initial snapshot.
+  - `PlaybackSource.play/pause/toggle/next/previous/seekTo` invoke backend commands.
+  - `PlaybackSource.stop()` must call all retained Tauri event unlisten functions.
+  - No Tauri WebView creates its own `MockSource`.
+
+- [ ] **B3.12** Refactor source selection and App boot.
+  - Browser keeps `MockSource`.
+  - Tauri main and mini both use `TauriSource`.
+  - Main and mini can mount independently and still receive the same backend state.
+  - Preserve main-only settings write authority from BUG-002.
+
+- [ ] **B3.13** Verify seamless main/mini playback sync.
+  - Main and mini show the same track, play/pause state, artwork, source, and position.
+  - Controls from either window update the same backend state and reflect in all open windows.
+  - Rapid main ↔ mini switching does not reset track, position, or play/pause.
+  - No duplicate frontend mock timers or duplicate playback authorities exist in Tauri.
+
+- [ ] **B3.14** Record backend authority migration rule for future settings/dynamic state.
+  - Update memory docs: backend-owned state is preferred for multi-window dynamic state.
+  - Note that settings remain main-write-only temporarily, but should migrate to backend-owned authority after B3.8-B3.14 proves the pattern.
+  - Future tray, shortcuts, SMTC, and settings should talk to backend commands/events instead of window-to-window bridges.
+
+### Automated Checkpoint B3 Extension
+
+- `npm run build` passes.
+- `cargo check --manifest-path src-tauri/Cargo.toml` passes.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passes.
+- `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings` passes.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passes.
+- Rust tests cover model conversion and backend mock command behavior.
+
+### Manual Checkpoint B3 Extension
+
+- Open main, switch to mini, return to main repeatedly: playback state remains continuous.
+- Main and mini show identical track/artwork/play-pause/source state.
+- Main controls update mini.
+- Mini controls update main.
+- Rapid switching cannot create duplicate playback authorities or reset state.
+- Browser development still uses `MockSource` and approved Stage 2 visuals remain unchanged.
 
 ---
 

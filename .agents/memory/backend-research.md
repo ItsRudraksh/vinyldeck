@@ -246,6 +246,7 @@ Already corrected through Backend Phase 3:
 Still outstanding after Backend Phase 3:
 
 - Mini/main cross-WebView theme/settings authority fix is documented in BUG-002: `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`. Main is the only persisted-settings writer; mini is read-only for persistence.
+- Phase 3 extension B3.8-B3.14 is required before tray/lifecycle: prove backend-owned playback authority with a backend mock provider and a thin frontend `TauriSource` proxy. This avoids window-to-window bridges and gives tray/shortcuts/SMTC one state/command authority.
 - No TauriSource/SMTC adapter is implemented yet.
 - No tray module, close-to-tray lifecycle, focused shortcuts, or installer hardening are implemented yet.
 - Zustand `setSource()` subscription cleanup should be reviewed when replacing `MockSource` with `TauriSource`.

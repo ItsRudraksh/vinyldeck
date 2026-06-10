@@ -8,8 +8,15 @@
 ## Architecture
 
 - **Visual Engine (React):** Responsible for the cinematic UI. Knows nothing about the media source. Communicates exclusively via a `PlaybackState` interface.
-- **Adapter Layer (Zustand):** Bridges `PlaybackSource` to the React components. Single source of truth.
-- **Backend (Tauri/Rust):** Polls the OS media APIs (Windows SMTC initially) and emits events to the frontend.
+- **Adapter Layer (Zustand):** Frontend cache for React components. In Tauri it must not be the authority for multi-window dynamic state.
+- **Backend (Tauri/Rust):** Owns cross-window dynamic state and commands. Playback authority moves here before tray/shortcuts/SMTC so any number of windows can subscribe to the same source of truth.
+
+## Multi-Window Authority Direction
+
+- Browser development can keep `MockSource`.
+- Tauri main and mini must read playback from the Rust backend via events/commands, not from separate frontend sources.
+- Avoid window-to-window bridges for core state. Windows are views/controllers; backend is authority.
+- Settings are currently main-write-only after BUG-002, but if the backend-owned playback pattern works cleanly, settings should migrate backend-owned too.
 
 ## Technology Stack
 

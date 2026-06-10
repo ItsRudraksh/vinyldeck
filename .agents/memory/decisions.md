@@ -44,17 +44,18 @@
 | 2026-06-08 | Ambient Rendering    | **mix-blend-mode: screen**         | Screen blend on OLED black makes any color bloom luminously. Dark orb without it = dark smudge. |
 | 2026-06-10 | Perf Exceptions      | **Aurora/Vapor background-position exceptions** | Phase 11 keeps animation paths transform/opacity-first, but Aurora gradient shift and Vapor grid travel intentionally animate `background-position` on isolated background layers because they define those theme identities. |
 | 2026-06-11 | Settings Authority | **Main WebView owns persisted settings writes** | Main/mini are separate WebViews with independent Zustand stores. Mini may load/hydrate settings for visuals, but only main may subscribe to persistence or flush settings to Tauri Store. Fixes BUG-002 poison writes. |
+| 2026-06-11 | Multi-Window Dynamic State | **Backend owns playback authority before tray/SMTC** | Main/mini/tray/shortcuts must not rely on window-to-window playback bridges. Rust backend will own playback state/commands; any number of windows subscribe to backend events and invoke backend commands. If this pattern works cleanly, settings and future dynamic state should migrate backend-owned too. |
 
 ---
 
 ## Architectural Principles
 
 1. The Visual Engine must remain independent of platform-specific APIs.
-2. All media information must flow through the `PlaybackSource` abstraction layer.
+2. All media information must flow through the `PlaybackSource` abstraction layer, with Tauri `PlaybackSource` acting only as a backend proxy.
 3. Runtime theme switching must never require component remounting.
 4. All animations must use spring-based motion rather than linear easing.
 5. The application must remain lightweight, native-feeling, and hardware-efficient.
-6. New media providers should be added by implementing `PlaybackSource` without modifying the Visual Engine.
+6. New media providers should be added behind the backend media authority without modifying the Visual Engine.
 
 ---
 

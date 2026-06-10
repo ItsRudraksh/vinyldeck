@@ -23,7 +23,7 @@ Execute the approved Windows backend plan in:
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-Backend Phase 0, Phase 1, Phase 2, and Phase 3 are already complete. Current stop point is **Manual Checkpoint B3**. Do not proceed into Backend Phase 4 unless the user explicitly approves moving ahead.
+Backend Phase 0, Phase 1, Phase 2, and Phase 3 are already complete. Current stop point is **Manual Checkpoint B3**. A new Phase 3 extension, B3.8-B3.14, is planned before Phase 4 to make playback state backend-owned and seamless across main/mini. Do not proceed into Backend Phase 4 until B3.8-B3.14 are approved, implemented, and manually verified.
 
 The backend plan is already approved. Do not re-plan it unless direct code/runtime evidence proves a plan assumption wrong.
 
@@ -138,8 +138,9 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Stage 2 Visual Engine is complete and user-approved.
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
-- Backend Phase 0, Phase 1, Phase 2, and Phase 3 are complete; current stop point is Manual Checkpoint B3 unless user approves moving forward.
+- Backend Phase 0, Phase 1, Phase 2, and Phase 3 are complete; current stop point is Manual Checkpoint B3. Next implementation, if approved, is Phase 3 extension B3.8-B3.14, not Phase 4.
 - Mini/main cross-WebView theme/settings persistence root fix: main is the only persisted-settings writer; mini loads/hydrates settings for visuals but does not subscribe/flush. Read `C:\Coding\vinyldeck\.agents\memory\bugs\BUG-002-mini-theme-persistence.md` before changing this behavior.
+- B3.8-B3.14 direction: Rust backend owns playback state/commands through a backend mock provider first; Tauri main/mini use a thin `TauriSource` proxy and both subscribe to backend events. Browser keeps `MockSource`.
 - Current backend checkpoint commits include:
   - `043cebc docs(backend): approve Windows execution plan`
   - `2507430 docs(backend): record phase 0 baseline`
@@ -175,7 +176,7 @@ For each atomic task:
 
 Do **not** restart at B0. Current stop point is Manual Checkpoint B3.
 
-If the user says to continue/move ahead, begin **Backend Phase 4 — Tray and Application Lifecycle** at **B4.1** in `backend_master_task_list.md`.
+If the user says to continue/move ahead after approving the new plan, begin **Backend Phase 3 Extension — Backend-Owned Playback Authority** at **B3.8** in `backend_master_task_list.md`.
 
 If the user asks to change mini theme persistence, first read `.agents/memory/bugs/BUG-002-mini-theme-persistence.md` and use systematic debugging. Do not repeat the removed `localStorage` handoff approach, and do not give mini direct persistence write authority.
 
