@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Stop at Manual Checkpoint B3 until user approves the Phase 3 backend-owned playback authority extension. Do not proceed to Backend Phase 4 until B3.8-B3.14 are planned, approved, implemented, and manually verified.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension is implemented except manual verification B3.13. Do not proceed to Backend Phase 4 until B3 Extension is manually verified and approved.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -134,4 +134,5 @@ Planned scope:
 - Current mini customization polish: mini renders AmbientLayer/film grain, VaporGrid, and Noir artwork ambient extraction like the main view; adds soft monitor-corner snap when dragged near a corner; adds hover-revealed top-right return-to-main control.
 - User reported mini theme/customizations still stale, dragging blocked, and app not exiting after returning to main then closing. Fixes: flush settings before native mode switch, use programmatic mini background dragging, add start-dragging permission, and destroy mini window on main/fullscreen return.
 - Mini theme crossing/settings persistence root fix: mini is read-only for persisted settings. Only main subscribes to settings persistence and flushes on unload/cleanup; mini still hydrates settings for correct visuals but cannot poison Tauri Store with DEFAULT_SETTINGS/stale state. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
-- Next planned gate: Phase 3 extension B3.8-B3.14 — backend-owned playback authority. Rust backend owns playback state and commands; Tauri main/mini use one backend proxy source; browser keeps MockSource. This removes playback race/desync before tray, shortcuts, and SMTC. If successful, migrate settings/future dynamic state toward backend ownership too.
+- Phase 3 extension B3.8-B3.12/B3.14 implemented: Rust backend owns playback state and commands through a backend mock authority; Tauri main/mini use one backend proxy source; browser keeps MockSource. B3.13 manual verification still required before Phase 4. If successful, migrate settings/future dynamic state toward backend ownership too.
+- B3 Extension automated verification on 2026-06-11 passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.

@@ -225,31 +225,31 @@ User approval locks these recommended resolutions:
 >
 > Goal: eliminate main/mini playback divergence before adding tray, shortcuts, or SMTC. Every Tauri window must read playback state from one backend-owned authority and send controls to that authority. Browser remains visual-dev-only with `MockSource`.
 
-- [ ] **B3.8** Define the backend-owned playback authority contract.
+- [x] **B3.8** Define the backend-owned playback authority contract.
   - Create/modify Rust model types so the backend event payload maps exactly to frontend `PlaybackState`.
   - Include track, artist, album, artwork data URL, duration, position, `isPlaying`, source name/id, `canSeek`, `canSkip`, and `canControl`.
   - Keep the locked frontend `PlaybackState`/`PlaybackSource` interface intact.
   - Do not implement SMTC here; use a backend mock provider to prove the authority and multi-window sync shape.
 
-- [ ] **B3.9** Implement a backend mock media authority.
+- [x] **B3.9** Implement a backend mock media authority.
   - The backend owns one mutable media state, not the WebViews.
   - Backend mock supports play, pause, toggle, next, previous, seek, and position ticking.
   - It emits snapshots to all windows on semantic changes and periodic position resync.
   - This is temporary provider plumbing that later SMTC replaces behind the same authority contract.
 
-- [ ] **B3.10** Add Tauri media commands/events for authority access.
+- [x] **B3.10** Add Tauri media commands/events for authority access.
   - Commands: get current snapshot, play, pause, toggle, next, previous, seek.
   - Events: media snapshot changed and media session ended/empty.
   - Commands must route to backend authority, never to a frontend-owned source.
   - Events must be safe for any number of windows to subscribe.
 
-- [ ] **B3.11** Create frontend `TauriSource` as a thin backend proxy.
+- [x] **B3.11** Create frontend `TauriSource` as a thin backend proxy.
   - In Tauri, `PlaybackSource.start()` subscribes to backend media events and fetches initial snapshot.
   - `PlaybackSource.play/pause/toggle/next/previous/seekTo` invoke backend commands.
   - `PlaybackSource.stop()` must call all retained Tauri event unlisten functions.
   - No Tauri WebView creates its own `MockSource`.
 
-- [ ] **B3.12** Refactor source selection and App boot.
+- [x] **B3.12** Refactor source selection and App boot.
   - Browser keeps `MockSource`.
   - Tauri main and mini both use `TauriSource`.
   - Main and mini can mount independently and still receive the same backend state.
@@ -261,7 +261,7 @@ User approval locks these recommended resolutions:
   - Rapid main ↔ mini switching does not reset track, position, or play/pause.
   - No duplicate frontend mock timers or duplicate playback authorities exist in Tauri.
 
-- [ ] **B3.14** Record backend authority migration rule for future settings/dynamic state.
+- [x] **B3.14** Record backend authority migration rule for future settings/dynamic state.
   - Update memory docs: backend-owned state is preferred for multi-window dynamic state.
   - Note that settings remain main-write-only temporarily, but should migrate to backend-owned authority after B3.8-B3.14 proves the pattern.
   - Future tray, shortcuts, SMTC, and settings should talk to backend commands/events instead of window-to-window bridges.

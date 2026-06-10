@@ -3,7 +3,9 @@
 // All Stage 2 sub-stages wired here.
 
 import { useEffect, useState } from "react";
+import { isTauri } from "@tauri-apps/api/core";
 import { createMockSource } from "./lib/playback/mockSource";
+import { createTauriSource } from "./lib/playback/tauriSource";
 import { useVinylDeckStore } from "./lib/playback/store";
 import {
   flushSettingsPersistence,
@@ -26,7 +28,8 @@ function App() {
   const [renderMode, setRenderMode] = useState<RenderWindowMode>("main");
 
   useEffect(() => {
-    let source = createMockSource();
+    const forceMockSource = import.meta.env.VITE_FORCE_MOCK_SOURCE === "true";
+    let source = isTauri() && !forceMockSource ? createTauriSource() : createMockSource();
     let unsubscribeSettings = () => {};
     let cancelled = false;
     // Only the main WebView is allowed to write persisted settings.

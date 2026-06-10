@@ -29,6 +29,7 @@ export interface PlaybackStoreState {
 
   // Active source (runtime, not persisted)
   source: PlaybackSource | null;
+  sourceUnsubscribe: (() => void) | null;
 
   // Dev visual QA: force no-media state without stopping MockSource.
   devForceEmpty: boolean;
@@ -89,16 +90,20 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     artAmbient: false,
     settings: DEFAULT_SETTINGS,
     source: null,
+    sourceUnsubscribe: null,
     devForceEmpty: false,
 
     // ── Set source and subscribe to its state changes ─────────
     setSource(source) {
       const existing = get().source;
+      const existingUnsubscribe = get().sourceUnsubscribe;
+      if (existingUnsubscribe) existingUnsubscribe();
       if (existing) existing.stop();
 
       const initialState = source.getState();
       set({
         source,
+        sourceUnsubscribe: null,
         playback: initialState,
         lastKnownPosition: initialState.position,
         lastSyncTime: Date.now(),
@@ -109,12 +114,10 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
         get().updatePlayback(state);
       });
 
+      set({ sourceUnsubscribe: unsubscribe });
+
       // Start the source
       source.start().catch(console.error);
-
-      // Store unsubscribe for cleanup (not in state — closure)
-      // Cleanup happens when setSource is called again or source.stop()
-      void unsubscribe; // captured in closure, source.stop() ends it
     },
 
     // ── Update playback snapshot from source event ────────────

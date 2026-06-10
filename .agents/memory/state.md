@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Manual Checkpoint B3; proposed Phase 3 backend-owned playback authority extension pending approval
+**Current Stage:** Windows backend — Phase 3 backend-owned playback authority extension implemented; Manual Checkpoint B3 Extension pending user verification
 
 ## Active Work
-Backend Phase 3 window modes verified. Do not move to Backend Phase 4 yet. User wants a Phase 3 extension inserted before tray/lifecycle so playback and dynamic state are backend-owned and seamless across main/mini windows.
+Backend Phase 3 window modes verified. Phase 3 extension B3.8-B3.12 and B3.14 are implemented. Stop before Backend Phase 4 until user manually verifies B3.13/B3 Extension.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -115,7 +115,8 @@ Current task track:
 - Mini now follows main-window visual customizations in mini mode: AmbientLayer uses persisted Film Grain, VaporGrid renders for Vapor, and Noir Album Art Ambient extraction runs when enabled. Mini also adds soft corner snapping near monitor work-area corners while preserving free placement elsewhere, plus a hover-revealed top-right return-to-main button.
 - Mini bug follow-up: user logs showed mini first-create URL is initially `about:blank`, then reused mini loads `http://localhost:1420/`. One attempted mini-theme fix made Settings save before opening native mini, but later evidence showed cross-WebView persistence remained unresolved. Drag was blocked because full-cover child layers sat above CSS drag region; mini now uses `startDragging()` from background mouse-down with controls/buttons excluded. Closing main after mini return did not exit because hidden mini stayed alive; returning main/fullscreen now destroys the mini window instead of hiding it.
 - Mini theme-crossing/settings persistence root fix: only the main WebView has persisted-settings write authority. Mini still loads/hydrates settings for visuals, but `App.tsx` gates `subscribeToSettingsPersistence()`, `beforeunload` flush, and cleanup `flushSettingsPersistence()` behind `currentRenderMode === "main"`. Root cause was mini cleanup flushing DEFAULT_SETTINGS/stale Zustand state into Tauri Store before/after hydration. Canonical bug note: `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
-- Proposed Phase 3 extension (B3.8-B3.14): before tray/lifecycle, move playback authority to Rust backend using a backend mock provider first. Tauri main and mini both use a thin `TauriSource` proxy that subscribes to backend snapshots and invokes backend commands. This avoids window-to-window sync bridges and proves the future SMTC/tray/shortcut architecture. If clean, settings and future dynamic state should also migrate backend-owned so no frontend window is long-term authority.
+- Phase 3 extension B3.8-B3.12/B3.14 implemented: Rust backend now owns playback state through a backend mock media authority and emits snapshots to all windows. Tauri main and mini use a thin `TauriSource` proxy that subscribes to backend snapshots and invokes backend commands. Browser still uses `MockSource` unless `VITE_FORCE_MOCK_SOURCE=true` is set in Tauri. B3.13 manual verification remains: confirm main/mini show identical state, controls work from both windows, and rapid switching does not reset playback.
+- B3 Extension automated verification on 2026-06-11: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check` exited 0. Rust test count is now 4: backend mock media authority plus window-mode parser coverage.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
