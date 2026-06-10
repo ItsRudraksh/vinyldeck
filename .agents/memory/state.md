@@ -17,6 +17,7 @@ Current task track:
 - Phase 10.1 Empty disc wordmark is complete and user-approved.
 - Phase 10 Empty State polish is complete and user-approved.
 - Phase 11 Performance & GPU Hardening is complete, build-verified, and user-approved.
+- Idle Centerpiece Transform is complete and user-approved: when idle triggers during playback, vinyl area moves toward true viewport center and scales up using transform-only CSS transition; activity restores original layout.
 - Backend/Tauri shell work remains parked until user is visually satisfied.
 
 ## Stage 2 Final Status
@@ -52,6 +53,7 @@ None.
 - Phase 11 perf pass: changed `ledPulse` and `glow-pulse` keyframes to opacity-only pulses, moved vinyl wrapper `will-change` to playing-only wobble state, removed permanent `will-change` from static vinyl label and Settings nav items.
 - Phase 11 audit confirmed `useVinylRotation` still uses RAF + direct DOM transform mutation, mouse specular remains direct CSS property mutation, Settings particle canvas cleans RAF/listeners on unmount and respects reduced motion, Vapor grid remains pure CSS.
 - Deliberate visual-theme exceptions remain: Aurora background shift and Vapor grid travel animate `background-position` because those effects are the theme identity and are scoped to one background layer.
+- Added idle centerpiece behavior in `MainView`: vinyl area transitions with `translate3d(0, clamp(72px, 8.8vh, 96px), 0) scale(1.22)` while idle, then returns to the normal stacked appliance layout on activity.
 - `npm run build` passes after changes.
 - User manually approved Phase 9.1.
 - User manually approved Phase 9.2.
@@ -64,6 +66,7 @@ None.
 - User manually approved Phase 10.1.
 - User manually approved Phase 10 Empty State pass.
 - User manually approved Phase 11 Performance & GPU Hardening: "very performant indeed no visual loss."
+- User manually approved Idle Centerpiece Transform.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note

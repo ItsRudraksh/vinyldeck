@@ -78,10 +78,10 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-No active implementation task. Waiting for next user instruction.
+Idle Centerpiece Transform complete and user-approved.
 
-Next likely tracks:
+Behavior:
 
-- Continue visual-only polish if user requests.
-- Start Stage 3 / Phase 12 Tauri shell only after user explicitly approves moving beyond visual phase.
-- Keep backend Phase 13 parked until user says visual work is satisfactory.
+- Idle: vinyl glides to viewport center and scales up.
+- Activity: vinyl returns to normal layout with UI restored.
+- Transform-only path preserves performance.

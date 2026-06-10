@@ -35,6 +35,7 @@ const RING_SIZE = VINYL_SIZE + 28;
 // Shared transition for idle fade in/out
 const IDLE_TRANSITION = "opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), pointer-events 0ms";
 const IDLE_RETURN_TRANSITION = "opacity 400ms cubic-bezier(0.16, 1, 0.3, 1)";
+const IDLE_CENTERPIECE_TRANSITION = "transform 900ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function MainView() {
   const playback = useVinylDeckStore(selectPlayback);
@@ -98,6 +99,15 @@ export function MainView() {
     transition: isIdle ? IDLE_TRANSITION : IDLE_RETURN_TRANSITION,
   };
 
+  const idleVinylAreaStyle = {
+    transform: isIdle
+      ? "translate3d(0, clamp(72px, 8.8vh, 96px), 0) scale(1.22)"
+      : "translate3d(0, 0, 0) scale(1)",
+    transformOrigin: "center center",
+    transition: IDLE_CENTERPIECE_TRANSITION,
+    willChange: isPlaying ? "transform" as const : undefined,
+  };
+
   return (
     <>
       {/* z:0 — Ambient background */}
@@ -131,6 +141,7 @@ export function MainView() {
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
+            ...idleVinylAreaStyle,
           }}
         >
           {/* Progress ring — Phase 8: receives onSeek */}
