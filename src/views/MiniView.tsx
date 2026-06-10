@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { MouseEvent } from "react";
 import { currentMonitor, getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
 import { AmbientLayer } from "../components/AmbientLayer";
@@ -38,6 +39,19 @@ export function MiniView() {
     controlsTimerRef.current = setTimeout(() => setControlsVisible(false), MINI_CONTROLS_HIDE_MS);
   }
 
+  function handleMouseDown(event: MouseEvent<HTMLElement>) {
+    revealControls();
+    if (event.button !== 0 || !isTauri()) return;
+
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (target.closest("button, .mini-view__controls, .mini-view__return")) return;
+
+    void getCurrentWindow().startDragging().catch((error) => {
+      console.warn("[Window] Mini drag failed:", error);
+    });
+  }
+
   useEffect(() => {
     return () => {
       if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
@@ -50,9 +64,8 @@ export function MiniView() {
   return (
     <main
       className="mini-view"
-      data-tauri-drag-region
       onMouseMove={revealControls}
-      onMouseDown={revealControls}
+      onMouseDown={handleMouseDown}
       onTouchStart={revealControls}
     >
       <AmbientLayer filmGrain={settings.filmGrain} />

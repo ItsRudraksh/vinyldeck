@@ -54,7 +54,7 @@ fn set_window_mode(app: &AppHandle, mode: WindowMode) -> Result<(), String> {
 
 fn show_main(app: &AppHandle) -> Result<(), String> {
     if let Some(mini) = app.get_webview_window(MINI_LABEL) {
-        mini.hide().map_err(|error| error.to_string())?;
+        mini.destroy().map_err(|error| error.to_string())?;
     }
 
     let main = app
@@ -73,7 +73,7 @@ fn show_main(app: &AppHandle) -> Result<(), String> {
 
 fn show_fullscreen(app: &AppHandle) -> Result<(), String> {
     if let Some(mini) = app.get_webview_window(MINI_LABEL) {
-        mini.hide().map_err(|error| error.to_string())?;
+        mini.destroy().map_err(|error| error.to_string())?;
     }
 
     let main = app
