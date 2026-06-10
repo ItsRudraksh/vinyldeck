@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — approved plan ready for execution
+**Current Stage:** Windows backend — Manual Checkpoint B0
 
 ## Active Work
-Detailed Windows backend plan approved. Fresh session should begin at `backend_master_task_list.md` task B0.1.
+Backend Phase 0 baseline and safety gate verified. Stop at Manual Checkpoint B0 until user approves Backend Phase 1.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -72,6 +72,12 @@ None.
 - Backend research found required corrections to PRD snippets: use runtime `isTauri()` source selection, retain Tauri event unlisten functions, cache SMTC artwork outside 500ms light polling, and honor SMTC command `bool` results.
 - Backend plan approved. Research synthesis saved at `.agents/memory/backend-research.md`; future sessions should not repeat this research.
 - Fresh-session execution prompt saved at `backend_fresh_session_prompt.md`.
+- B0.1 committed approved backend planning documents in commit `043cebc docs(backend): approve Windows execution plan`; post-commit `git status --short` was empty.
+- B0.2 baseline verified on 2026-06-10: `node --version` -> `v24.12.0`; `npm --version` -> `11.6.2`; `rustc --version` -> `rustc 1.96.0 (ac68faa20 2026-05-25)`; `cargo --version` -> `cargo 1.96.0 (30a34c682 2026-05-25)`; `cargo tauri --version` -> `tauri-cli 2.11.2`; `npm run build` exited 0; `cargo check --manifest-path src-tauri/Cargo.toml` exited 0.
+- B0.3 temporary Rust SMTC probe verified `GlobalSystemMediaTransportControlsSessionManager::RequestAsync()` succeeds in this interactive Windows session.
+- B0.3 no-media run: manager request ok; `GetCurrentSession()` returned no session with message `The operation completed successfully. (0x00000000)`.
+- B0.3 media-playing run: manager request ok; current session visible; `SourceAppUserModelId()` returned `Spotify.exe`.
+- Temporary probe file `src-tauri/examples/smtc_probe.rs` was removed after both runs; no permanent backend architecture added in B0.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note
@@ -80,7 +86,8 @@ None.
 ## Environment (Verified)
 - Node.js: v24.12.0
 - npm: v11.6.2
-- Rust/cargo: 1.96.0
+- Rust: rustc 1.96.0 (ac68faa20 2026-05-25)
+- Cargo: cargo 1.96.0 (30a34c682 2026-05-25)
 - cargo-tauri CLI: v2.11.2
 
 ## What Is On Disk (Stage 2 — Final)

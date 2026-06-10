@@ -43,23 +43,23 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 0 — Baseline and Safety Gate
 
-- [ ] **B0.1** Commit approved backend planning documents, then confirm clean Git working tree.
+- [x] **B0.1** Commit approved backend planning documents, then confirm clean Git working tree.
   - Include: `backend_master_task_list.md`, `.agents/memory/backend-research.md`, and linked living-doc updates.
   - Run after commit: `git status --short`
   - Expected: empty.
 
-- [ ] **B0.2** Verify toolchain and existing frontend/backend builds.
+- [x] **B0.2** Verify toolchain and existing frontend/backend builds.
   - Run: `node --version`, `npm --version`, `rustc --version`, `cargo tauri --version`
   - Run: `npm run build`
   - Run: `cargo check --manifest-path src-tauri/Cargo.toml`
   - Expected: all exit 0.
 
-- [ ] **B0.3** Verify Windows SMTC runtime availability with a minimal Rust probe before building architecture.
+- [x] **B0.3** Verify Windows SMTC runtime availability with a minimal Rust probe before building architecture.
   - Probe only requests `GlobalSystemMediaTransportControlsSessionManager`.
   - Test once with no media and once with Spotify/browser media playing.
   - Remove probe after findings are recorded.
 
-- [ ] **B0.4** Record verified SMTC behavior and any environment-specific errors in `.agents/memory/state.md`.
+- [x] **B0.4** Record verified SMTC behavior and any environment-specific errors in `.agents/memory/state.md`.
 
 ### Manual Checkpoint B0
 

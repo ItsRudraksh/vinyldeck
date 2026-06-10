@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Complete Windows backend implementation plan approved. Fresh session begins at B0.1 in `backend_master_task_list.md`.
+Backend Phase 0 baseline and safety gate verified. Stop at Manual Checkpoint B0 until user approves Backend Phase 1.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -88,3 +88,10 @@ Planned scope:
 - SMTC model, artwork, controls, cached polling, TauriSource adapter, and source lifecycle.
 - End-to-end hardening and Windows installers.
 - Reuse `.agents/memory/backend-research.md`; do not repeat completed web research.
+
+## Backend Phase 0 Evidence
+
+- B0.1: committed approved planning/research/living docs as `043cebc docs(backend): approve Windows execution plan`; post-commit status clean.
+- B0.2: `node --version`, `npm --version`, `rustc --version`, `cargo --version`, `cargo tauri --version`, `npm run build`, and `cargo check --manifest-path src-tauri/Cargo.toml` all exited 0.
+- B0.3: temporary SMTC probe requested `GlobalSystemMediaTransportControlsSessionManager` only. No-media run showed manager request ok and no current session. Media-playing run showed manager request ok and current session `Spotify.exe`.
+- B0.4: B0 findings recorded in `.agents/memory/state.md`.
