@@ -71,31 +71,31 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 1 — Tauri Shell Foundation
 
-- [ ] **B1.1** Replace scaffold identity in `src-tauri/tauri.conf.json`.
+- [x] **B1.1** Replace scaffold identity in `src-tauri/tauri.conf.json`.
   - Product/title: `VinylDeck`
   - Identifier: `com.vinyldeck.app`
   - Main label: `main`
   - Native decorated, centered, resizable main window.
   - Set intentional default/min dimensions after testing approved visual layout.
 
-- [ ] **B1.2** Configure Windows bundle and WebView2 bootstrapper.
+- [x] **B1.2** Configure Windows bundle and WebView2 bootstrapper.
   - Keep NSIS/MSI targets.
   - Add Windows `downloadBootstrapper` WebView2 install mode.
   - Keep existing Tauri icons until a final VinylDeck icon asset exists.
 
-- [ ] **B1.3** Replace default capabilities with least-privilege main/mini permissions.
+- [x] **B1.3** Replace default capabilities with least-privilege main/mini permissions.
   - Add only required window, event, and store permissions.
   - Include both `main` and `mini` labels.
   - Remove unused opener permission/plugin unless About content needs external links.
 
-- [ ] **B1.4** Replace scaffold `greet` command and organize Rust root modules.
+- [x] **B1.4** Replace scaffold `greet` command and organize Rust root modules.
   - Modify: `src-tauri/src/lib.rs`
   - Keep: `src-tauri/src/main.rs` as thin binary entry.
   - Create module declarations for `media`, `window`, and `tray`.
 
-- [ ] **B1.5** Register `tauri-plugin-store` in Rust builder.
+- [x] **B1.5** Register `tauri-plugin-store` in Rust builder.
 
-- [ ] **B1.6** Add backend verification scripts/documented commands.
+- [x] **B1.6** Add backend verification scripts/documented commands.
   - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
   - `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`
   - `cargo test --manifest-path src-tauri/Cargo.toml`

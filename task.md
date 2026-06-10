@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 0 baseline and safety gate verified. Stop at Manual Checkpoint B0 until user approves Backend Phase 1.
+Backend Phase 1 Tauri shell foundation verified. Stop at Manual Checkpoint B1 until user approves Backend Phase 2.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -95,3 +95,12 @@ Planned scope:
 - B0.2: `node --version`, `npm --version`, `rustc --version`, `cargo --version`, `cargo tauri --version`, `npm run build`, and `cargo check --manifest-path src-tauri/Cargo.toml` all exited 0.
 - B0.3: temporary SMTC probe requested `GlobalSystemMediaTransportControlsSessionManager` only. No-media run showed manager request ok and no current session. Media-playing run showed manager request ok and current session `Spotify.exe`.
 - B0.4: B0 findings recorded in `.agents/memory/state.md`.
+
+## Backend Phase 1 Evidence
+
+- B1.1-B1.2: `tauri.conf.json` now uses VinylDeck identity, `main` label, native decorated centered/resizable window, MSI/NSIS targets, and WebView2 download bootstrapper.
+- B1.3: default capability now covers `main` and `mini` with window/event/store permissions only.
+- B1.4-B1.5: scaffold `greet` and opener plugin removed; Rust root modules `media`, `window`, `tray` added; Store plugin registered.
+- B1.6: npm verification scripts added and verified.
+- Automated checks passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run check:rust`, `npm run fmt:rust`, `npm run clippy:rust`, `npm run test:rust`.
+- Dev launch probe passed: `npm run tauri dev` opened exact window title `VinylDeck`; process tree was stopped after detection.

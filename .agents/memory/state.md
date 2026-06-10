@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Manual Checkpoint B0
+**Current Stage:** Windows backend — Manual Checkpoint B1
 
 ## Active Work
-Backend Phase 0 baseline and safety gate verified. Stop at Manual Checkpoint B0 until user approves Backend Phase 1.
+Backend Phase 1 Tauri shell foundation verified. Stop at Manual Checkpoint B1 until user approves Backend Phase 2.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -78,6 +78,15 @@ None.
 - B0.3 no-media run: manager request ok; `GetCurrentSession()` returned no session with message `The operation completed successfully. (0x00000000)`.
 - B0.3 media-playing run: manager request ok; current session visible; `SourceAppUserModelId()` returned `Spotify.exe`.
 - Temporary probe file `src-tauri/examples/smtc_probe.rs` was removed after both runs; no permanent backend architecture added in B0.
+- B1.1 set Tauri product/window identity to VinylDeck, main window label `main`, native decorations, centered/resizable `900x700`, min `700x560`.
+- B1.2 set Windows bundle targets to `msi` and `nsis`, added WebView2 `downloadBootstrapper`, retained existing scaffold icons.
+- B1.3 expanded default capability to `main` and `mini` with window/event/store permissions; removed unused opener permission.
+- B1.4 removed scaffold `greet`, created root module stubs for `media`, `window`, and `tray`.
+- B1.5 registered `tauri-plugin-store` in Rust builder and removed unused opener plugin dependencies from npm/Cargo.
+- B1.6 added npm verification scripts: `check:rust`, `fmt:rust`, `clippy:rust`, `test:rust`.
+- B1 verification on 2026-06-10: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run check:rust`, `npm run fmt:rust`, `npm run clippy:rust`, and `npm run test:rust` exited 0.
+- B1 dev launch probe started `npm run tauri dev`, detected exact window title `VinylDeck`, then stopped the process tree; no VinylDeck dev process remained after teardown.
+- Rust components `rustfmt` and `clippy` were missing initially and installed with `rustup component add rustfmt clippy`; rerun checks passed.
 - Browser verification is user-controlled for now; do not use Browser unless user explicitly asks.
 
 ## Incident Note

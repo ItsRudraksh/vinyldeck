@@ -36,6 +36,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 ### [ ] Stage 3 — Tauri Shell & Window Management
 
 - User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
+- Backend Phase 0 baseline/safety gate and Phase 1 Tauri shell foundation are verified; paused at Manual Checkpoint B1.
 - Settings persistence.
 - Window modes (Main, Fullscreen, Mini always-on-top).
 - System tray and keyboard shortcuts.
