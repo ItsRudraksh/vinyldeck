@@ -26,7 +26,7 @@ impl FromStr for WindowMode {
 }
 
 #[tauri::command]
-pub fn cmd_set_window_mode(app: AppHandle, mode: String) -> Result<(), String> {
+pub async fn cmd_set_window_mode(app: AppHandle, mode: String) -> Result<(), String> {
     window_debug_log(&format!("cmd_set_window_mode requested: {mode}"));
     set_window_mode(&app, WindowMode::from_str(&mode)?)
 }
@@ -93,11 +93,6 @@ fn show_fullscreen(app: &AppHandle) -> Result<(), String> {
 fn show_mini(app: &AppHandle) -> Result<(), String> {
     window_debug_log("show_mini: start");
 
-    if let Some(main) = app.get_webview_window(MAIN_LABEL) {
-        window_debug_log("show_mini: hiding main window");
-        main.hide().map_err(|error| error.to_string())?;
-    }
-
     let mini = match app.get_webview_window(MINI_LABEL) {
         Some(window) => {
             window_debug_log("show_mini: reusing existing mini window");
@@ -116,6 +111,12 @@ fn show_mini(app: &AppHandle) -> Result<(), String> {
                 .map_err(|error| error.to_string())?
         }
     };
+    window_debug_log("show_mini: mini window ready");
+
+    if let Some(main) = app.get_webview_window(MAIN_LABEL) {
+        window_debug_log("show_mini: hiding main window");
+        main.hide().map_err(|error| error.to_string())?;
+    }
 
     match mini.url() {
         Ok(url) => window_debug_log(&format!("show_mini: current url {url}")),

@@ -30,7 +30,7 @@ Current task track:
 - Dev server: http://localhost:1420/
 
 ## Known Broken
-- Mini mode can open as a blank/white 280px window in manual testing. Current evidence: installed Tauri 2.11.2 source documents a known Windows WebView2 deadlock/half-create risk when `WebviewWindowBuilder::new(...).build()` runs inside a synchronous command or event handler. `cmd_set_window_mode` currently creates the mini window from a sync `#[tauri::command]`. Debug logging has been added around the mini create/show/focus path; next manual mini test should capture `[VinylDeck window] show_mini: ...` lines in the `npm run tauri dev` terminal.
+- Mini mode blank/white-window root cause under active verification: manual logs showed execution stuck at `show_mini: building mini window at app URL index.html`, before URL/show/focus logs. This confirms the mini hang is inside `WebviewWindowBuilder::build()`, matching installed Tauri 2.11.2's Windows/WebView2 warning about building webview windows from synchronous commands. `cmd_set_window_mode` has been changed to an async Tauri command, and mini creation now completes before hiding main so failed creation cannot strand the user with the main window hidden.
 
 ## Latest Session Notes
 - Added Settings modal shell in `src/components/Settings/index.tsx`.
@@ -110,6 +110,7 @@ Current task track:
 - Follow-up `75c2354 fix(window): repair display modal and mini view` was reverted by `b60a7de` at user request.
 - Current follow-up pass fixes only Settings DISPLAY modal height UX by widening the Display panel and compacting controls into a three-column window-mode deck plus three compact switch cards; it intentionally avoids a scrollable modal solution.
 - Current follow-up pass also adds debug-only Rust window logs for mini mode without changing mini URL/architecture. Smoke on 2026-06-10 opened the main `VinylDeck` window and printed `[VinylDeck window] cmd_set_window_mode requested: main`; mini still needs manual trigger to capture the new mini logs.
+- User-provided mini logs on 2026-06-10 captured the hang boundary: `cmd_set_window_mode requested: mini` → `show_mini: start` → `show_mini: hiding main window` → `show_mini: building mini window at app URL index.html`, then no further app logs until manual Ctrl+C. Follow-up fix made `cmd_set_window_mode` async and moved main hide after mini build.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
