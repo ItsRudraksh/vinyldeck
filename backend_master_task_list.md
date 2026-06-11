@@ -494,7 +494,7 @@ User approval locks these recommended resolutions:
   - Start once from Tauri setup.
   - Poller survives transient SMTC errors.
 
-- [ ] **B8.2** Cache media properties/artwork by session + track identity.
+- [x] **B8.2** Cache media properties/artwork by session + track identity.
   - Playback/timeline stays lightweight.
   - Artwork reloads only on semantic track/session change.
 

@@ -47,6 +47,37 @@ pub(crate) async fn current_media_snapshot_with_metadata(
 
 #[cfg(windows)]
 #[allow(dead_code)]
+pub(crate) async fn current_media_snapshot_with_artwork(
+) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
+    let Some(session) = current_session().await? else {
+        return Ok(None);
+    };
+
+    let mut snapshot = current_lightweight_snapshot_from_session(&session);
+    if let Ok(properties) = session.TryGetMediaPropertiesAsync()?.await {
+        snapshot.track = properties
+            .Title()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        snapshot.artist = properties
+            .Artist()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        snapshot.album = properties
+            .AlbumTitle()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+
+        if let Ok(thumbnail) = properties.Thumbnail() {
+            snapshot.artwork_data_url = super::artwork::thumbnail_to_data_url(thumbnail).await?;
+        }
+    }
+
+    Ok(Some(snapshot))
+}
+
+#[cfg(windows)]
+#[allow(dead_code)]
 pub(crate) async fn current_lightweight_snapshot(
 ) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
     let Some(session) = current_session().await? else {
@@ -202,6 +233,13 @@ pub(crate) async fn current_session_metadata() -> anyhow::Result<Option<SmtcSess
 #[cfg(not(windows))]
 #[allow(dead_code)]
 pub(crate) async fn current_media_snapshot_with_metadata(
+) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
+    Ok(None)
+}
+
+#[cfg(not(windows))]
+#[allow(dead_code)]
+pub(crate) async fn current_media_snapshot_with_artwork(
 ) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
     Ok(None)
 }
