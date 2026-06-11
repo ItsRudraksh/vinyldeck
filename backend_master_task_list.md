@@ -354,7 +354,7 @@ User approval locks these recommended resolutions:
   - Create: `src-tauri/src/tray.rs`
   - Items: Open VinylDeck, Mini Player, Play/Pause, Previous, Next, Quit.
 
-- [ ] **B4.2** Reuse window-mode service from tray events.
+- [x] **B4.2** Reuse window-mode service from tray events.
   - No duplicated window creation/show/hide logic.
 
 - [ ] **B4.3** Route tray playback items through media command service.

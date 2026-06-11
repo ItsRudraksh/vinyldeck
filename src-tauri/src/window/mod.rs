@@ -6,7 +6,7 @@ const MAIN_LABEL: &str = "main";
 const MINI_LABEL: &str = "mini";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum WindowMode {
+pub(crate) enum WindowMode {
     Main,
     Fullscreen,
     Mini,
@@ -44,7 +44,7 @@ pub fn cmd_set_always_on_top(app: AppHandle, enabled: bool) -> Result<(), String
     Ok(())
 }
 
-fn set_window_mode(app: &AppHandle, mode: WindowMode) -> Result<(), String> {
+pub(crate) fn set_window_mode(app: &AppHandle, mode: WindowMode) -> Result<(), String> {
     match mode {
         WindowMode::Main => show_main(app),
         WindowMode::Fullscreen => show_fullscreen(app),

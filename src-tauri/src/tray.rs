@@ -1,8 +1,10 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
-    App,
+    App, AppHandle,
 };
+
+use crate::window::{self, WindowMode};
 
 pub const TRAY_ID: &str = "vinyldeck-tray";
 pub const MENU_OPEN: &str = "open-vinyldeck";
@@ -40,10 +42,11 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
         .menu(&menu)
         .tooltip("VinylDeck")
         .show_menu_on_left_click(false)
-        .on_menu_event(|app, event| {
-            if event.id().as_ref() == MENU_QUIT {
-                app.exit(0);
-            }
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            MENU_OPEN => set_tray_window_mode(app, WindowMode::Main),
+            MENU_MINI => set_tray_window_mode(app, WindowMode::Mini),
+            MENU_QUIT => app.exit(0),
+            _ => {}
         });
 
     if let Some(icon) = app.default_window_icon() {
@@ -53,4 +56,13 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
     builder.build(app)?;
 
     Ok(())
+}
+
+fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        if let Err(error) = window::set_window_mode(&app, mode) {
+            eprintln!("[VinylDeck tray] failed to set window mode: {error}");
+        }
+    });
 }
