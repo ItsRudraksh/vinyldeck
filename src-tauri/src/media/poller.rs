@@ -61,19 +61,26 @@ struct SmtcPoller {
 
 impl SmtcPoller {
     async fn next_event_snapshot(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
-        let Some(snapshot) = self.snapshot_for_poll().await? else {
-            return Ok(self.session_ended_snapshot());
-        };
+        let snapshot = self.snapshot_for_poll().await?;
+        Ok(self.handle_polled_snapshot(snapshot, Instant::now()))
+    }
 
+    fn handle_polled_snapshot(
+        &mut self,
+        snapshot: Option<MediaSnapshot>,
+        now: Instant,
+    ) -> Option<MediaSnapshot> {
+        let Some(snapshot) = snapshot else {
+            return self.session_ended_snapshot();
+        };
         self.had_session = true;
-        let now = Instant::now();
         if self.should_emit_snapshot(&snapshot, now) {
             self.last_emitted_key = Some(snapshot.semantic_key());
             self.last_emit_at = Some(now);
-            return Ok(Some(snapshot));
+            return Some(snapshot);
         }
 
-        Ok(None)
+        None
     }
 
     async fn snapshot_for_poll(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
@@ -324,5 +331,70 @@ mod tests {
         let ended = poller.session_ended_snapshot();
         assert_eq!(ended, Some(MediaSnapshot::default()));
         assert_eq!(poller.session_ended_snapshot(), None);
+    }
+
+    #[test]
+    fn fake_snapshot_state_machine_matches_event_policy() {
+        let mut poller = SmtcPoller::default();
+        let now = std::time::Instant::now();
+        let playing = MediaSnapshot {
+            track: "Track".to_string(),
+            artist: "Artist".to_string(),
+            album: "Album".to_string(),
+            source_id: "spotify".to_string(),
+            duration: 180.0,
+            position: 10.0,
+            is_playing: true,
+            can_seek: true,
+            can_skip: true,
+            can_control: true,
+            ..MediaSnapshot::default()
+        };
+
+        assert_eq!(
+            poller.handle_polled_snapshot(Some(playing.clone()), now),
+            Some(playing.clone())
+        );
+
+        let position_only = MediaSnapshot {
+            position: 10.5,
+            ..playing.clone()
+        };
+        assert_eq!(
+            poller.handle_polled_snapshot(
+                Some(position_only.clone()),
+                now + Duration::from_millis(500),
+            ),
+            None
+        );
+        assert_eq!(
+            poller.handle_polled_snapshot(
+                Some(position_only.clone()),
+                now + position_resync_interval(),
+            ),
+            Some(position_only.clone())
+        );
+
+        let track_changed = MediaSnapshot {
+            track: "Next Track".to_string(),
+            position: 0.0,
+            ..position_only
+        };
+        assert_eq!(
+            poller.handle_polled_snapshot(
+                Some(track_changed.clone()),
+                now + position_resync_interval() + Duration::from_millis(500),
+            ),
+            Some(track_changed)
+        );
+
+        assert_eq!(
+            poller.handle_polled_snapshot(None, now + Duration::from_secs(3)),
+            Some(MediaSnapshot::default())
+        );
+        assert_eq!(
+            poller.handle_polled_snapshot(None, now + Duration::from_secs(4)),
+            None
+        );
     }
 }

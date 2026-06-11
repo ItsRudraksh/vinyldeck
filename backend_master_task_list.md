@@ -505,7 +505,7 @@ User approval locks these recommended resolutions:
 
 - [x] **B8.4** Prevent duplicate pollers and redundant events.
 
-- [ ] **B8.5** Add poller state-machine tests using fake snapshots.
+- [x] **B8.5** Add poller state-machine tests using fake snapshots.
 
 - [ ] **B8.6** Log errors tersely with rate limiting to avoid console floods.
 

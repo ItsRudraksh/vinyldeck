@@ -29,7 +29,7 @@ Rebuild state from local project files, determine last completed backend task, t
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-As of this handoff, Backend Phase 0 through Phase 7 are complete and manually approved, and B8.1-B8.4 are implemented and verified. The next unchecked task is **B8.5** in **Backend Phase 8 — Polling and Event Bridge**.
+As of this handoff, Backend Phase 0 through Phase 7 are complete and manually approved, and B8.1-B8.5 are implemented and verified. The next unchecked task is **B8.6** in **Backend Phase 8 — Polling and Event Bridge**.
 
 ## REQUIRED STARTUP ORDER
 
@@ -125,7 +125,7 @@ If browsing happens, use official Tauri or Microsoft docs only, then update:
 - B7 SMTC commands are approved and manually tested against Spotify: `cmd_smtc_snapshot`, `cmd_smtc_play`, `cmd_smtc_pause`, `cmd_smtc_toggle_play_pause`, `cmd_smtc_next`, `cmd_smtc_previous`, `cmd_smtc_seek`.
 - `cmd_smtc_snapshot` intentionally returns `artworkDataUrl: null` for now. SMTC artwork is available as a WinRT stream, but artwork stream refs are not safe inside Tauri command futures. Phase 8 should handle artwork inside the poller/backend boundary, convert stream -> bytes -> data URL, then emit plain `MediaSnapshot`.
 - Current `TauriSource` still calls `cmd_media_*` backend mock authority. B9 is the frontend real-source integration phase; do not prematurely rewrite frontend source wiring during B8 unless needed for checkpoint verification.
-- B8.1-B8.4 are complete: `src-tauri/src/media/poller.rs` starts one guarded 500ms SMTC poller from setup, survives transient SMTC errors, caches media properties/artwork by source + duration track identity, emits immediate semantic changes, emits 2s position resyncs, sends one empty snapshot on session end, blocks duplicate pollers, and suppresses redundant unchanged events. Next work: B8.5 add poller state-machine tests using fake snapshots.
+- B8.1-B8.5 are complete: `src-tauri/src/media/poller.rs` starts one guarded 500ms SMTC poller from setup, survives transient SMTC errors, caches media properties/artwork by source + duration track identity, emits immediate semantic changes, emits 2s position resyncs, sends one empty snapshot on session end, blocks duplicate pollers, suppresses redundant unchanged events, and has fake-snapshot state-machine tests. Next work: B8.6 rate-limit repeated transient SMTC errors.
 
 ## CONTINUATION WORKFLOW
 

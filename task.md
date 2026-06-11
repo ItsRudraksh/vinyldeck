@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 7 is approved; Backend Phase 8 polling/event bridge is in progress; next task B8.5.
+Session focus: Stage 2 visual polish is complete; Backend Phase 7 is approved; Backend Phase 8 polling/event bridge is in progress; next task B8.6.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.4 are implemented and verified. Next unchecked backend task is B8.5: add poller state-machine tests using fake snapshots.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.5 are implemented and verified. Next unchecked backend task is B8.6: rate-limit repeated transient SMTC errors.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -167,3 +167,4 @@ Planned scope:
 - Backend Phase 8 B8.2 caches media properties/artwork by source + duration track identity. Poller keeps 500ms playback/timeline/capability reads lightweight and reloads full metadata/artwork only on cache miss or semantic track/session change. WinRT thumbnail conversion is run from a dedicated named OS thread via `tauri::async_runtime::block_on` because Tauri async spawn requires `Send` and thumbnail refs are `!Send`. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` -> 21 passed.
 - Backend Phase 8 B8.3 defines poller event emission policy: first snapshot and semantic changes emit immediately; position-only drift emits only on a 2s resync interval; session loss emits one default empty snapshot and then remains quiet until a new session appears. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, and `cargo test --manifest-path src-tauri/Cargo.toml` -> 23 passed.
 - Backend Phase 8 B8.4 verified duplicate/redundant event prevention: `SMTC_POLLER_STARTED.compare_exchange` blocks duplicate pollers, `should_emit_snapshot` suppresses unchanged 500ms events, and `session_ended_snapshot` emits only one empty transition. Verification passed: `cargo test --manifest-path src-tauri/Cargo.toml media::poller` -> 5 passed, `cargo check --manifest-path src-tauri/Cargo.toml`, and code scan for relevant guard/policy functions.
+- Backend Phase 8 B8.5 added fake-snapshot state-machine test coverage through pure `handle_polled_snapshot()`: first event, suppressed unchanged poll, 2s position resync, semantic track change, one empty transition, and repeated no-session silence. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` -> 6 passed, and `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`.
