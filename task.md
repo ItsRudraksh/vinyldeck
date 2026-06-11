@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 9 is manually approved; Backend Phase 10 hardening is active at B10.4.
+Session focus: Stage 2 visual polish is complete; Backend Phase 9 is manually approved; Backend Phase 10 hardening is active at B10.5.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.7 is manually approved. Backend Phase 10 B10.1-B10.3 are implemented and verified; next task is B10.4.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.7 is manually approved. Backend Phase 10 B10.1-B10.4 are implemented and verified; next task is B10.5.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -182,3 +182,4 @@ Planned scope:
 - Backend Phase 10 B10.1 added Rust poller regression coverage for cold no-media, media starts after app, media app exits, repeated no-media silence, media restarts, and session switches between players. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, focused B10.1 test, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` -> 8 passed, and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 10 B10.2 added/verified metadata/artwork edge coverage: missing artwork, empty title/artist/album, oversized/unknown artwork bytes, unknown/non-finite duration handling, sparse poller snapshots, and frontend adapter acceptance/rejection. Verification passed: Rust model/poller/artwork focused tests, `npm run test:frontend -- tauriSource`, and `npm run build`.
 - Backend Phase 10 B10.3 added frontend capability gates/tests and wired `canSkip` separately from `canControl` into Controls, Main/Mini, and keyboard shortcuts. Rust SMTC false-command tests now keep action-specific pause/next/seek error messages. Verification passed: `npm run test:frontend -- capabilities`, `npm run build`, rustfmt check, and `cargo test --manifest-path src-tauri/Cargo.toml media::smtc`.
+- Backend Phase 10 B10.4 added pure lifecycle tests for close-to-tray labels, explicit quit destroy order, tray tooltip fallback, and persisted window-mode reopen behavior. Real repeated main/mini restore remains for Manual Checkpoint B10 with live WebViews. Verification passed: rustfmt check, `cargo test --manifest-path src-tauri/Cargo.toml app_lifecycle`, `cargo test --manifest-path src-tauri/Cargo.toml tray`, `cargo test --manifest-path src-tauri/Cargo.toml settings`, and `cargo check --manifest-path src-tauri/Cargo.toml`.

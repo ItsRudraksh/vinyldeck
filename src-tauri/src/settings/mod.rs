@@ -286,4 +286,34 @@ mod tests {
         assert_eq!(settings.idle_timeout_seconds, 1);
         assert_eq!(settings.window_mode, "fullscreen");
     }
+
+    #[test]
+    fn reopen_persists_only_main_or_fullscreen_window_modes() {
+        let current = PersistedSettings::default();
+        let fullscreen = apply_patch(
+            &current,
+            SettingsPatch {
+                window_mode: Some("fullscreen".to_string()),
+                ..SettingsPatch::default()
+            },
+        );
+        let mini_attempt = apply_patch(
+            &fullscreen,
+            SettingsPatch {
+                window_mode: Some("mini".to_string()),
+                ..SettingsPatch::default()
+            },
+        );
+        let main = apply_patch(
+            &mini_attempt,
+            SettingsPatch {
+                window_mode: Some("main".to_string()),
+                ..SettingsPatch::default()
+            },
+        );
+
+        assert_eq!(fullscreen.window_mode, "fullscreen");
+        assert_eq!(mini_attempt.window_mode, "fullscreen");
+        assert_eq!(main.window_mode, "main");
+    }
 }

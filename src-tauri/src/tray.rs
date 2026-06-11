@@ -89,7 +89,7 @@ pub fn handle_window_close(window: &tauri::Window, event: &tauri::WindowEvent) {
         return;
     };
 
-    if !matches!(window.label(), MAIN_LABEL | MINI_LABEL) {
+    if !should_hide_to_tray(window.label()) {
         return;
     }
 
@@ -100,6 +100,10 @@ pub fn handle_window_close(window: &tauri::Window, event: &tauri::WindowEvent) {
             window.label()
         );
     }
+}
+
+fn should_hide_to_tray(label: &str) -> bool {
+    matches!(label, MAIN_LABEL | MINI_LABEL)
 }
 
 fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {
@@ -196,5 +200,30 @@ fn tray_tooltip(track: &str, artist: &str, source_name: &str) -> String {
         format!("VinylDeck - {source_name}")
     } else {
         "VinylDeck".to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{should_hide_to_tray, tray_tooltip};
+    use crate::window::{MAIN_LABEL, MINI_LABEL};
+
+    #[test]
+    fn close_to_tray_applies_only_to_player_windows() {
+        assert!(should_hide_to_tray(MAIN_LABEL));
+        assert!(should_hide_to_tray(MINI_LABEL));
+        assert!(!should_hide_to_tray("settings"));
+        assert!(!should_hide_to_tray("devtools"));
+    }
+
+    #[test]
+    fn tray_tooltip_falls_back_across_media_metadata() {
+        assert_eq!(
+            tray_tooltip("Track", "Artist", "Spotify"),
+            "VinylDeck - Track by Artist"
+        );
+        assert_eq!(tray_tooltip("Track", "", "Spotify"), "VinylDeck - Track");
+        assert_eq!(tray_tooltip("", "", "Spotify"), "VinylDeck - Spotify");
+        assert_eq!(tray_tooltip("", "", ""), "VinylDeck");
     }
 }

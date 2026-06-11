@@ -607,11 +607,14 @@ User approval locks these recommended resolutions:
   - Added Rust command rejection action-context coverage for false SMTC command results.
   - Verified with `npm run test:frontend -- capabilities` (4 passed), `npm run build`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, and `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` (6 passed).
 
-- [ ] **B10.4** Test lifecycle edge cases.
+- [x] **B10.4** Test lifecycle edge cases.
   - Close-to-tray while playing.
   - Restore main/mini repeatedly.
   - Explicit quit.
   - Reopen with persisted settings.
+  - Added pure lifecycle coverage for close-to-tray window labels, explicit quit destroy order, tray tooltip fallback, and persisted window-mode reopen behavior.
+  - Real repeated main/mini restore remains in Manual Checkpoint B10 because it requires live WebView windows.
+  - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml app_lifecycle`, `cargo test --manifest-path src-tauri/Cargo.toml tray`, `cargo test --manifest-path src-tauri/Cargo.toml settings`, and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 - [ ] **B10.5** Run complete verification suite.
   - `npm run build`
