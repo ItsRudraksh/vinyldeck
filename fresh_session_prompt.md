@@ -9,7 +9,7 @@ Workspace:
 C:\Coding\vinyldeck
 
 Core rule:
-Do not restart planning. Rebuild current state from local docs, memory, and git, then continue from the next approved task or the user's newest instruction.
+Do not restart planning. Rebuild current state from local docs, memory, and git, then wait for the user's newest instruction.
 
 Startup sequence:
 
