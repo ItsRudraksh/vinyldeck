@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 10 end-to-end hardening automated checkpoint passed; stop at Manual Checkpoint B10
+**Current Stage:** V1 documentation baseline — Backend Phase 10 hardening preserved; Phase 11 Windows distribution is on hold
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 B9.1-B9.7 are implemented, automated-checkpoint verified, and manually approved. Backend Phase 10 B10.1-B10.5 are implemented and automated-checkpoint verified. Stop at Manual Checkpoint B10 for user approval before Backend Phase 11.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 B9.1-B9.7 are implemented, automated-checkpoint verified, and manually approved. Backend Phase 10 B10.1-B10.5 are implemented and automated-checkpoint verified. User confirmed real playback sync is seamless. Phase 11 Windows distribution is intentionally deferred; current work finalizes the V1 documentation baseline.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -29,8 +29,11 @@ Current task track:
 - Zero TypeScript errors. Zero unused dependencies. Vite HMR clean.
 - Dev server: http://localhost:1420/
 
-## Known Broken
-- Mini mode blank/white-window root cause under active verification: manual logs showed execution stuck at `show_mini: building mini window at app URL index.html`, before URL/show/focus logs. This confirms the mini hang is inside `WebviewWindowBuilder::build()`, matching installed Tauri 2.11.2's Windows/WebView2 warning about building webview windows from synchronous commands. `cmd_set_window_mode` has been changed to an async Tauri command, and mini creation now completes before hiding main so failed creation cannot strand the user with the main window hidden.
+## Known Limitations / Deferred
+- Phase 11 Windows distribution remains on hold: release installers, clean installed-app SMTC validation, WebView2 bootstrapper, uninstall/reinstall, settings location, player compatibility matrix, and bundle identifier cleanup are deferred.
+- In-app playback controls use real `cmd_smtc_*` commands. Tray playback menu code still references the older backend media command path and should be unified/revalidated before distribution.
+- Debug build currently emits a non-blocking Tauri warning that identifier `com.vinyldeck.app` ends with `.app`; handle during Phase 11 distribution cleanup.
+- Mini mode async creation fix is implemented; no current mini white-window blocker is active in the V1 baseline.
 
 ## Latest Session Notes
 - Added Settings modal shell in `src/components/Settings/index.tsx`.
@@ -164,7 +167,8 @@ Current task track:
 - Backend Phase 10 B10.2 implemented on 2026-06-11: added/verified edge coverage for missing artwork, empty title/artist/album, oversized/unknown artwork bytes, and unknown duration/position. Rust model now verifies semantic keys normalize unknown/non-finite durations while preserving empty metadata; poller verifies sparse metadata/missing artwork snapshots emit cleanly and unknown timeline values resync without crashing; artwork tests already reject empty/unknown/oversized bytes; frontend adapter accepts empty metadata/null artwork/zero timeline and rejects non-finite or malformed payloads. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::model` (6 passed), `cargo test --manifest-path src-tauri/Cargo.toml media::poller` (9 passed), `cargo test --manifest-path src-tauri/Cargo.toml media::artwork` (3 passed), `npm run test:frontend -- tauriSource` (4 passed), and `npm run build`.
 - Backend Phase 10 B10.3 implemented on 2026-06-11: added frontend capability gates in `src/lib/playback/capabilities.ts` with tests for play/pause without seek, play/pause without skip, no transport control, and unknown-duration seek disablement. `Controls` now receives `canSkip` and disables previous/next independently from play/pause; Main/Mini pass `canSkip`; keyboard Left/Right shortcuts respect `canSkip`, while Space respects `canControl`. Rust SMTC tests now verify false command results preserve action-specific error context for pause/next/seek. Verification passed: `npm run test:frontend -- capabilities` (4 passed), `npm run build`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, and `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` (6 passed).
 - Backend Phase 10 B10.4 implemented on 2026-06-11: added pure lifecycle coverage for close-to-tray labels (`main`/`mini` only), explicit quit destroy order (mini before main), tray tooltip fallback, and persisted window-mode reopen behavior (main/fullscreen persist, mini does not). Real repeated main/mini restore remains in Manual Checkpoint B10 because it requires live WebView windows. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml app_lifecycle` (1 passed), `cargo test --manifest-path src-tauri/Cargo.toml tray` (2 passed), `cargo test --manifest-path src-tauri/Cargo.toml settings` (4 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
-- Backend Phase 10 B10.5 automated checkpoint passed on 2026-06-11: `npm run build`; `npm run test:frontend` (13 passed); `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`; `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`; `cargo test --manifest-path src-tauri/Cargo.toml` (35 passed); and `npm run tauri build -- --debug`. Debug build produced `src-tauri/target/debug/vinyldeck.exe`, `src-tauri/target/debug/bundle/msi/VinylDeck_0.1.0_x64_en-US.msi`, and `src-tauri/target/debug/bundle/nsis/VinylDeck_0.1.0_x64-setup.exe`. Tauri emitted a non-blocking warning that identifier `com.vinyldeck.app` ends with `.app`; consider during Phase 11 distribution cleanup. Stop at Manual Checkpoint B10.
+- Backend Phase 10 B10.5 automated checkpoint passed on 2026-06-11: `npm run build`; `npm run test:frontend` (13 passed); `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`; `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`; `cargo test --manifest-path src-tauri/Cargo.toml` (35 passed); and `npm run tauri build -- --debug`. Debug build produced `src-tauri/target/debug/vinyldeck.exe`, `src-tauri/target/debug/bundle/msi/VinylDeck_0.1.0_x64_en-US.msi`, and `src-tauri/target/debug/bundle/nsis/VinylDeck_0.1.0_x64-setup.exe`. Tauri emitted a non-blocking warning that identifier `com.vinyldeck.app` ends with `.app`; consider during Phase 11 distribution cleanup.
+- V1 documentation baseline started on 2026-06-11: README replaced, standard docs added under `docs/`, `CHANGELOG.md` and `llms.txt` added, stale B10 checkpoint language updated, and Phase 11 distribution marked on hold.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
@@ -200,7 +204,11 @@ Current task track:
 ### Lib
 - `lib/playback/types.ts` — PlaybackState + PlaybackSource interfaces (PRD-01 §6.1 locked)
 - `lib/playback/mockSource.ts` — 4-track mock, canvas-rendered PNG artwork (no auto-cycling), real JPEGs for tracks 1-2
-- `lib/playback/store.ts` — Zustand v5 + subscribeWithSelector, position extrapolation
+- `lib/playback/tauriSource.ts` — Tauri playback adapter over real `cmd_smtc_*` commands and `media-state-changed`
+- `lib/playback/sourceFactory.ts` — Browser/Tauri source selection with optional `VITE_FORCE_MOCK_SOURCE=true`
+- `lib/playback/store.ts` — Zustand v5 cache, source lifecycle, settings cache, position extrapolation
+- `lib/settings/` — frontend proxy/cache for backend-owned settings authority
+- `lib/window/` — frontend window-mode adapter
 - `lib/themes/applier.ts` — applyTheme(), applyAmbientColors(), resetAmbientColors()
 
 ### Views
@@ -209,7 +217,7 @@ Current task track:
 
 ### Entry Points
 - `main.tsx` — CSS imports + data-theme="noir" before first paint
-- `App.tsx` — Creates MockSource → setSource → renders MainView
+- `App.tsx` — Hydrates settings, creates runtime playback source, routes to MainView or MiniView
 
 ### Deleted (Stale Scaffold Artifacts)
 - `src/App.css` — Vite default scaffold, not used
@@ -220,7 +228,7 @@ Current task track:
 - `motion` ^12.40.0 — spring animations
 - `react` ^19.1.0, `react-dom` ^19.1.0
 - `zustand` ^5.0.14 — global state
-- `@tauri-apps/api` ^2, `@tauri-apps/plugin-opener` ^2, `@tauri-apps/plugin-store` ^2.4.3
+- `@tauri-apps/api` ^2
 
 ### Removed During Session
 - `@vibrant/core` — vibrance-first, wrong for ambient mood extraction

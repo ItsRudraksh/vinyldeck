@@ -1,0 +1,38 @@
+# VinylDeck
+
+VinylDeck is a Windows Tauri v2 + React 19 app that renders the active system media session as a cinematic vinyl player.
+
+## Read First
+
+- `README.md` - project overview and commands
+- `docs/ARCHITECTURE.md` - system design and Mermaid diagrams
+- `docs/API.md` - Tauri command/event contracts
+- `docs/DEVELOPMENT.md` - setup and verification
+- `.agents/memory/state.md` - current project state
+- `.agents/memory/backend-research.md` - completed SMTC/Tauri research; do not repeat
+
+## Core Contracts
+
+- Browser mode uses `MockSource`.
+- Tauri mode uses `TauriSource` over Rust `cmd_smtc_*` commands and `media-state-changed` events.
+- React components consume `PlaybackState`; they should not know about Windows APIs.
+- Rust owns persisted settings through `cmd_settings_*` and `settings-changed`.
+- Phase 11 distribution is on hold after the V1 baseline.
+
+## Verification
+
+Use:
+
+```powershell
+npm run build
+npm run test:frontend
+npm run fmt:rust
+npm run clippy:rust
+npm run test:rust
+```
+
+For bundle smoke:
+
+```powershell
+npm run tauri build -- --debug
+```

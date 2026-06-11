@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 9 is manually approved; Backend Phase 10 automated checkpoint passed; stop at Manual Checkpoint B10.
+Session focus: Finalize current build as V1 documentation baseline. Backend Phase 10 automated checkpoint passed; user confirmed live sync works; Phase 11 Windows distribution is on hold.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.7 is manually approved. Backend Phase 10 B10.1-B10.5 are implemented and automated-checkpoint verified. Stop at Manual Checkpoint B10.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.7 is manually approved. Backend Phase 10 B10.1-B10.5 are implemented and automated-checkpoint verified. Current task is V1 documentation cleanup/finalization. Phase 11 Windows distribution is deferred until explicitly resumed.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 

@@ -1,6 +1,6 @@
 // src/App.tsx
-// Root component. Initializes MockSource → Zustand store → MainView.
-// All Stage 2 sub-stages wired here.
+// Root component. Hydrates backend-approved settings, attaches the runtime
+// playback source, and routes the current window to MainView or MiniView.
 
 import { useEffect, useState } from "react";
 import { createPlaybackSource } from "./lib/playback/sourceFactory";

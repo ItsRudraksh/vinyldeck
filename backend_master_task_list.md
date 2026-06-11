@@ -264,7 +264,7 @@ User approval locks these recommended resolutions:
 
 - [x] **B3.14** Record backend authority migration rule for future settings/dynamic state.
   - Update memory docs: backend-owned state is preferred for multi-window dynamic state.
-  - Note that settings remain main-write-only temporarily, but should migrate to backend-owned authority after B3.8-B3.14 proves the pattern.
+  - Historical note: settings were main-write-only temporarily after BUG-002; this was superseded by B3.15-B3.21 backend-owned settings authority.
   - Future tray, shortcuts, SMTC, and settings should talk to backend commands/events instead of window-to-window bridges.
 
 ### Automated Checkpoint B3 Extension
@@ -637,6 +637,8 @@ User approval locks these recommended resolutions:
 ---
 
 ## BACKEND PHASE 11 — Windows Distribution
+
+> Status: **ON HOLD after V1 baseline.** Do not start Phase 11 until the user explicitly resumes distribution work. The V1 documentation baseline preserves Phase 10 as the current stable build; Phase 11 remains unchecked by design.
 
 - [ ] **B11.1** Build release installers.
   - Run: `npm run tauri build`
