@@ -577,16 +577,19 @@ User approval locks these recommended resolutions:
 - `npm run tauri dev` displays real system media.
 - HMR/reloads do not duplicate events.
 - Artwork drives existing Noir ambient path.
+- User manually approved B9 on 2026-06-11: "all works all approved lets move to next !!"
 
 ---
 
 ## BACKEND PHASE 10 — End-to-End Hardening
 
-- [ ] **B10.1** Test full no-media lifecycle.
+- [x] **B10.1** Test full no-media lifecycle.
   - Cold start with no media.
   - Media starts after app.
   - Media app exits.
   - Session switches between players.
+  - Added Rust poller regression test `full_no_media_lifecycle_emits_clean_transitions`.
+  - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, focused B10.1 test, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` (8 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 - [ ] **B10.2** Test metadata/artwork edge cases.
   - Missing artwork.

@@ -471,6 +471,66 @@ mod tests {
     }
 
     #[test]
+    fn full_no_media_lifecycle_emits_clean_transitions() {
+        let mut poller = SmtcPoller::default();
+        let now = std::time::Instant::now();
+        let spotify = MediaSnapshot {
+            track: "Spotify Track".to_string(),
+            artist: "Artist".to_string(),
+            album: "Album".to_string(),
+            source_name: "Spotify".to_string(),
+            source_id: "Spotify.exe".to_string(),
+            duration: 180.0,
+            position: 0.0,
+            is_playing: true,
+            can_seek: true,
+            can_skip: true,
+            can_control: true,
+            ..MediaSnapshot::default()
+        };
+        let chrome = MediaSnapshot {
+            track: "Browser Track".to_string(),
+            source_name: "Chrome".to_string(),
+            source_id: "chrome.exe".to_string(),
+            position: 12.0,
+            ..spotify.clone()
+        };
+
+        assert_eq!(poller.handle_polled_snapshot(None, now), None);
+        assert_eq!(
+            poller.handle_polled_snapshot(None, now + Duration::from_millis(500)),
+            None
+        );
+
+        assert_eq!(
+            poller.handle_polled_snapshot(Some(spotify.clone()), now + Duration::from_secs(1)),
+            Some(spotify.clone())
+        );
+
+        assert_eq!(
+            poller.handle_polled_snapshot(None, now + Duration::from_secs(2)),
+            Some(MediaSnapshot::default())
+        );
+        assert_eq!(
+            poller.handle_polled_snapshot(None, now + Duration::from_secs(3)),
+            None
+        );
+
+        let restarted = MediaSnapshot {
+            position: 0.0,
+            ..spotify
+        };
+        assert_eq!(
+            poller.handle_polled_snapshot(Some(restarted.clone()), now + Duration::from_secs(4)),
+            Some(restarted)
+        );
+        assert_eq!(
+            poller.handle_polled_snapshot(Some(chrome.clone()), now + Duration::from_secs(5)),
+            Some(chrome)
+        );
+    }
+
+    #[test]
     fn poll_errors_are_rate_limited() {
         let mut limiter = ErrorRateLimiter::new(error_log_interval());
         let now = std::time::Instant::now();
