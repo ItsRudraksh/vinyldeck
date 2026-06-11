@@ -419,7 +419,7 @@ User approval locks these recommended resolutions:
   - `MediaSnapshot` must map exactly to frontend `PlaybackState`.
   - Include explicit capabilities and source/session identity.
 
-- [ ] **B6.3** Add pure model tests.
+- [x] **B6.3** Add pure model tests.
   - Empty snapshot.
   - TimeSpan ticks-to-seconds conversion.
   - Friendly source names.

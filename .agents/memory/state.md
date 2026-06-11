@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 6 SMTC core/data model in progress; B6.1-B6.2 complete
+**Current Stage:** Windows backend — Phase 6 SMTC core/data model in progress; B6.1-B6.3 complete
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 has started; B6.1-B6.2 are complete. Next unchecked task is B6.3.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 has started; B6.1-B6.3 are complete. Next unchecked task is B6.4.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -135,6 +135,7 @@ Current task track:
 - User manually approved Backend Phase 5 on 2026-06-11: shortcuts work. User reported WebView2/Chromium shutdown log `Failed to unregister class Chrome_WidgetWin_0. Error = 1412` after quit. Research indicates this is upstream WebView2/Chromium teardown noise when the app otherwise exits cleanly; VinylDeck still hardened explicit quit by destroying main/mini windows before `app.exit(0)`.
 - Backend Phase 6 B6.1 implemented on 2026-06-11: added direct `anyhow = "1"` backend error dependency, confirmed `windows v0.56.0` remains pinned, removed direct unused `image = "0.25"` dependency from `Cargo.toml` while Tauri still uses `image` transitively for `image-png`. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, `rg "^image =|^anyhow =|windows = \\{ version" src-tauri/Cargo.toml`, and `cargo tree --manifest-path src-tauri/Cargo.toml -e normal -p vinyldeck`.
 - Backend Phase 6 B6.2 verified on 2026-06-11: existing `src-tauri/src/media/model.rs` from backend authority work already defines serializable `MediaSnapshot` matching locked frontend `PlaybackState`: track, artist, album, artwork data URL, duration, position, `isPlaying`, source name/id, and `canSeek`/`canSkip`/`canControl`, with serde `rename_all = "camelCase"`. No code rewrite was needed.
+- Backend Phase 6 B6.3 implemented on 2026-06-11: added pure model helpers/tests in `src-tauri/src/media/model.rs` for empty snapshot defaults, Windows 100ns tick-to-seconds conversion, friendly source names, and semantic snapshot keys that ignore position drift but change on track/capability changes. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::model` (5 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
