@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 6 SMTC core/data model in progress; B6.1-B6.5 complete
+**Current Stage:** Windows backend — Phase 6 SMTC core/data model in progress; B6.1-B6.6 complete
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 has started; B6.1-B6.5 are complete. Next unchecked task is B6.6.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 has started; B6.1-B6.6 are complete. Next unchecked task is B6.7.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -138,6 +138,7 @@ Current task track:
 - Backend Phase 6 B6.3 implemented on 2026-06-11: added pure model helpers/tests in `src-tauri/src/media/model.rs` for empty snapshot defaults, Windows 100ns tick-to-seconds conversion, friendly source names, and semantic snapshot keys that ignore position drift but change on track/capability changes. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::model` (5 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 6 B6.4 implemented on 2026-06-11: added `src-tauri/src/media/smtc.rs` with minimal GSMTC session acquisition using `GlobalSystemMediaTransportControlsSessionManager::RequestAsync()`, `GetCurrentSession()`, safe `Ok(None)` no-session behavior, and source id/friendly name mapping. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 6 B6.5 implemented on 2026-06-11: `current_lightweight_snapshot()` reads SMTC playback status, timeline duration/position, and controls/capabilities without calling `TryGetMediaPropertiesAsync()` or touching artwork. It preserves source id/name from session acquisition. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 6 B6.6 implemented on 2026-06-11: `current_media_snapshot_without_artwork()` reads SMTC title, artist, and album via `TryGetMediaPropertiesAsync()` while leaving artwork for B6.7. Missing/inconsistent metadata falls back to empty strings. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

@@ -434,7 +434,7 @@ User approval locks these recommended resolutions:
 - [x] **B6.5** Implement lightweight playback/timeline/capability read.
   - Do not fetch media properties/artwork in this path.
 
-- [ ] **B6.6** Implement media property read.
+- [x] **B6.6** Implement media property read.
   - Track, artist, album, source identity.
   - Handle empty/inconsistent metadata.
 

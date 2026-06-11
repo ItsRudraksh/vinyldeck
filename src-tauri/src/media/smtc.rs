@@ -8,7 +8,7 @@ pub(crate) struct SmtcSessionMetadata {
 #[cfg(windows)]
 #[allow(dead_code)]
 pub(crate) async fn current_session_metadata() -> anyhow::Result<Option<SmtcSessionMetadata>> {
-    Ok(current_lightweight_snapshot()
+    Ok(current_media_snapshot_without_artwork()
         .await?
         .map(|snapshot| SmtcSessionMetadata {
             source_id: snapshot.source_id,
@@ -18,19 +18,56 @@ pub(crate) async fn current_session_metadata() -> anyhow::Result<Option<SmtcSess
 
 #[cfg(windows)]
 #[allow(dead_code)]
-pub(crate) async fn current_lightweight_snapshot(
+pub(crate) async fn current_media_snapshot_without_artwork(
 ) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
-    use super::model::{friendly_source_name, ticks_to_seconds};
-    use windows::Media::Control::{
-        GlobalSystemMediaTransportControlsSessionManager,
-        GlobalSystemMediaTransportControlsSessionPlaybackStatus,
-    };
+    use windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager;
 
     let manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync()?.await?;
     let session = match manager.GetCurrentSession() {
         Ok(session) => session,
         Err(_) => return Ok(None),
     };
+
+    let mut snapshot = current_lightweight_snapshot_from_session(&session);
+    if let Ok(properties) = session.TryGetMediaPropertiesAsync()?.await {
+        snapshot.track = properties
+            .Title()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        snapshot.artist = properties
+            .Artist()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        snapshot.album = properties
+            .AlbumTitle()
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+    }
+
+    Ok(Some(snapshot))
+}
+
+#[cfg(windows)]
+#[allow(dead_code)]
+pub(crate) async fn current_lightweight_snapshot(
+) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
+    use windows::Media::Control::GlobalSystemMediaTransportControlsSessionManager;
+
+    let manager = GlobalSystemMediaTransportControlsSessionManager::RequestAsync()?.await?;
+    let session = match manager.GetCurrentSession() {
+        Ok(session) => session,
+        Err(_) => return Ok(None),
+    };
+
+    Ok(Some(current_lightweight_snapshot_from_session(&session)))
+}
+
+#[cfg(windows)]
+fn current_lightweight_snapshot_from_session(
+    session: &windows::Media::Control::GlobalSystemMediaTransportControlsSession,
+) -> super::model::MediaSnapshot {
+    use super::model::{friendly_source_name, ticks_to_seconds};
+    use windows::Media::Control::GlobalSystemMediaTransportControlsSessionPlaybackStatus;
 
     let source_id = session
         .SourceAppUserModelId()
@@ -67,12 +104,19 @@ pub(crate) async fn current_lightweight_snapshot(
         }
     }
 
-    Ok(Some(snapshot))
+    snapshot
 }
 
 #[cfg(not(windows))]
 #[allow(dead_code)]
 pub(crate) async fn current_session_metadata() -> anyhow::Result<Option<SmtcSessionMetadata>> {
+    Ok(None)
+}
+
+#[cfg(not(windows))]
+#[allow(dead_code)]
+pub(crate) async fn current_media_snapshot_without_artwork(
+) -> anyhow::Result<Option<super::model::MediaSnapshot>> {
     Ok(None)
 }
 
