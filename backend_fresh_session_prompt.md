@@ -23,7 +23,7 @@ Execute the approved Windows backend plan in:
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-Backend Phase 0 through Phase 8 are already complete and manually approved, including the B8 same-duration track/artwork sync fix. Backend Phase 9 is active: B9.1-B9.5 are implemented and verified. Continue from the next unchecked backend task, currently **B9.6**.
+Backend Phase 0 through Phase 8 are already complete and manually approved, including the B8 same-duration track/artwork sync fix. Backend Phase 9 is active: B9.1-B9.6 are implemented and verified. Continue from the next unchecked backend task, currently **B9.7**.
 
 The backend plan is already approved. Do not re-plan it unless direct code/runtime evidence proves a plan assumption wrong.
 
@@ -141,7 +141,7 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Stage 2 Visual Engine is complete and user-approved.
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
-- Backend Phase 0 through Phase 8 are complete and manually approved. B8.1-B8.6 plus the sync fix are verified; user confirmed real Spotify sync is seamless. Backend Phase 9 B9.1-B9.5 are implemented and verified. Continue from B9.6.
+- Backend Phase 0 through Phase 8 are complete and manually approved. B8.1-B8.6 plus the sync fix are verified; user confirmed real Spotify sync is seamless. Backend Phase 9 B9.1-B9.6 are implemented and verified. Continue from B9.7.
 - Mini/main cross-WebView theme/settings persistence root fix from BUG-002 is superseded: Rust backend now owns persisted settings writes. WebViews load/cache/control settings through backend commands/events only.
 - Bottom ThemePicker UI also commits theme and Album Art Ambient changes through backend settings authority; do not reintroduce direct `setTheme` / `setArtAmbient` persistence bypasses.
 - B3.8-B3.14 direction implemented and approved: Rust backend owns playback state/commands through a backend mock provider first; Tauri main/mini use a thin `TauriSource` proxy and both subscribe to backend events. Browser keeps `MockSource`.
@@ -151,7 +151,7 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - B6 SMTC data model/core is approved: direct `windows = 0.56`, `MediaSnapshot`, SMTC acquisition, lightweight playback/timeline/capability read, metadata read, bounded artwork stream-to-data-URL helper.
 - B7 SMTC commands are approved and manually tested against Spotify: `cmd_smtc_snapshot`, `cmd_smtc_play`, `cmd_smtc_pause`, `cmd_smtc_toggle_play_pause`, `cmd_smtc_next`, `cmd_smtc_previous`, `cmd_smtc_seek`. The snapshot command intentionally returns `artworkDataUrl: null` because artwork stream refs are not safe inside Tauri command futures; Phase 8 poller must place artwork stream reads on the correct backend boundary.
 - B8 polling/event bridge is complete: `src-tauri/src/media/poller.rs` starts one guarded SMTC poller, polls every 500ms, reads metadata text every poll, caches artwork by semantic track identity, emits `media-state-changed` snapshots with duplicate suppression and rate-limited errors, projects progress from SMTC `LastUpdatedTime`, and user manually approved the sync fix.
-- B9.1-B9.5 are complete: `src/lib/playback/tauriSource.ts` validates unknown Tauri IPC/event payloads against the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, subscribes to `media-state-changed`, fetches initial state through `cmd_smtc_snapshot`, handles start/stop listener races so retained unlisteners run once, and invokes real `cmd_smtc_*` controls in fire-and-forget mode with bounded error logging. Zustand store owns source teardown through `clearSource(source?)`. Runtime source factory exists at `src/lib/playback/sourceFactory.ts`.
+- B9.1-B9.6 are complete: `src/lib/playback/tauriSource.ts` validates unknown Tauri IPC/event payloads against the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, subscribes to `media-state-changed`, fetches initial state through `cmd_smtc_snapshot`, handles start/stop listener races so retained unlisteners run once, and invokes real `cmd_smtc_*` controls in fire-and-forget mode with bounded error logging. Zustand store owns source teardown through `clearSource(source?)`. Runtime source factory exists at `src/lib/playback/sourceFactory.ts`, and App uses it.
 - Current backend checkpoint commits include:
   - `043cebc docs(backend): approve Windows execution plan`
   - `2507430 docs(backend): record phase 0 baseline`
@@ -189,7 +189,7 @@ For each atomic task:
 
 Do **not** restart at B0/B4/B6/B7/B8. Current active phase is Backend Phase 9.
 
-Continue **Backend Phase 9 — Frontend TauriSource Integration** from the next unchecked task in `backend_master_task_list.md`, currently **B9.6**.
+Continue **Backend Phase 9 — Frontend TauriSource Integration** from the next unchecked task in `backend_master_task_list.md`, currently **B9.7**.
 
 Phase 8 implementation target:
 

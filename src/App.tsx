@@ -3,9 +3,7 @@
 // All Stage 2 sub-stages wired here.
 
 import { useEffect, useState } from "react";
-import { isTauri } from "@tauri-apps/api/core";
-import { createMockSource } from "./lib/playback/mockSource";
-import { createTauriSource } from "./lib/playback/tauriSource";
+import { createPlaybackSource } from "./lib/playback/sourceFactory";
 import { useVinylDeckStore } from "./lib/playback/store";
 import {
   loadSettings,
@@ -28,8 +26,7 @@ function App() {
   const [renderMode, setRenderMode] = useState<RenderWindowMode>("main");
 
   useEffect(() => {
-    const forceMockSource = import.meta.env.VITE_FORCE_MOCK_SOURCE === "true";
-    let source = isTauri() && !forceMockSource ? createTauriSource() : createMockSource();
+    const source = createPlaybackSource();
     let unsubscribeSettings = () => {};
     let cancelled = false;
 

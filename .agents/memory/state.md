@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 9 frontend TauriSource integration active; B9.1-B9.5 complete, next B9.6
+**Current Stage:** Windows backend — Phase 9 frontend TauriSource integration active; B9.1-B9.6 complete, next B9.7
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 is active; B9.1-B9.5 are implemented and verified. Next task is B9.6 wire source factory into App.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 is active; B9.1-B9.6 are implemented and verified. Next task is B9.7 adapter mapping/lifecycle tests.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -156,6 +156,7 @@ Current task track:
 - Backend Phase 9 B9.3 implemented on 2026-06-11: TauriSource play/pause/toggle/next/previous/seek now invoke real `cmd_smtc_*` commands in fire-and-forget mode. Command responses are ignored so the B8 poller/event stream remains authoritative for UI state, and repeated command failures are rate-limited to one warning per command per 5 seconds. Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, command registration scan, and `git diff --check`.
 - Backend Phase 9 B9.4 implemented on 2026-06-11: Zustand playback store now owns source teardown through `clearSource(source?)`, which calls the retained source subscription unsubscribe and `source.stop()` together, resets playback to `EMPTY_PLAYBACK`, ignores stale cleanup requests for non-current sources, and prevents same-source duplicate subscriptions. `App.tsx` cleanup now calls `clearSource(source)` instead of directly stopping the source. Verification passed: `npm run build` and lifecycle scan.
 - Backend Phase 9 B9.5 implemented on 2026-06-11: added `src/lib/playback/sourceFactory.ts` with `createPlaybackSource()` and `isForceMockSourceEnabled()`. Browser resolves to `MockSource`; Tauri resolves to `TauriSource` unless `VITE_FORCE_MOCK_SOURCE=true`. App wiring remains for B9.6. Verification passed: `npm run build`.
+- Backend Phase 9 B9.6 implemented on 2026-06-11: `src/App.tsx` now calls `createPlaybackSource()` from `src/lib/playback/sourceFactory.ts` instead of duplicating `isTauri()` and `VITE_FORCE_MOCK_SOURCE` source-selection logic. Verification passed: `npm run build` and source-selection scan.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

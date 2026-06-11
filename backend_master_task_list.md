@@ -554,7 +554,9 @@ User approval locks these recommended resolutions:
   - Tauri resolves to TauriSource unless `VITE_FORCE_MOCK_SOURCE=true`.
   - Verified with `npm run build`.
 
-- [ ] **B9.6** Wire source factory into `src/App.tsx`.
+- [x] **B9.6** Wire source factory into `src/App.tsx`.
+  - `App.tsx` now calls `createPlaybackSource()` instead of duplicating `isTauri()` / force-mock logic.
+  - Verified with `npm run build` and source-selection scan.
 
 - [ ] **B9.7** Add adapter mapping/lifecycle tests.
 
