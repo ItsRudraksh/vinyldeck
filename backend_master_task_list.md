@@ -503,7 +503,7 @@ User approval locks these recommended resolutions:
   - Periodic: position resync.
   - Ended: emit empty/session-ended once.
 
-- [ ] **B8.4** Prevent duplicate pollers and redundant events.
+- [x] **B8.4** Prevent duplicate pollers and redundant events.
 
 - [ ] **B8.5** Add poller state-machine tests using fake snapshots.
 
