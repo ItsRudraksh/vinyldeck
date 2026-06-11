@@ -526,9 +526,9 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 9 — Frontend TauriSource Integration
 
-- [ ] **B9.1** Create strict Rust snapshot TypeScript contract.
-  - Create: `src/lib/playback/tauriSource.ts`
-  - Map Rust snake_case fields to locked `PlaybackState`.
+- [x] **B9.1** Create strict Rust snapshot TypeScript contract.
+  - `src/lib/playback/tauriSource.ts` now accepts unknown IPC payloads, validates the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, and outputs the locked `PlaybackState`.
+  - Verified with `npm run build`.
 
 - [ ] **B9.2** Implement initial snapshot fetch and event listeners.
   - Retain all unlisten functions.

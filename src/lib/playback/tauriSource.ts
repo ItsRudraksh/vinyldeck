@@ -5,12 +5,88 @@ import type { PlaybackSource, PlaybackState } from "./types";
 
 const MEDIA_SNAPSHOT_EVENT = "media-state-changed";
 
+export interface BackendMediaSnapshot {
+  track: string;
+  artist: string;
+  album: string;
+  artworkDataUrl: string | null;
+  duration: number;
+  position: number;
+  isPlaying: boolean;
+  sourceName: string;
+  sourceId: string;
+  canSeek: boolean;
+  canSkip: boolean;
+  canControl: boolean;
+}
+
 type MediaCommand =
   | "cmd_media_play"
   | "cmd_media_pause"
   | "cmd_media_toggle_play_pause"
   | "cmd_media_next"
   | "cmd_media_previous";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isNonNegativeFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return typeof value === "string" || value === null;
+}
+
+export function isBackendMediaSnapshot(value: unknown): value is BackendMediaSnapshot {
+  if (!isRecord(value)) return false;
+
+  return (
+    typeof value.track === "string" &&
+    typeof value.artist === "string" &&
+    typeof value.album === "string" &&
+    isNullableString(value.artworkDataUrl) &&
+    isNonNegativeFiniteNumber(value.duration) &&
+    isNonNegativeFiniteNumber(value.position) &&
+    typeof value.isPlaying === "boolean" &&
+    typeof value.sourceName === "string" &&
+    typeof value.sourceId === "string" &&
+    typeof value.canSeek === "boolean" &&
+    typeof value.canSkip === "boolean" &&
+    typeof value.canControl === "boolean"
+  );
+}
+
+export function mapBackendMediaSnapshot(
+  snapshot: BackendMediaSnapshot | null | undefined,
+): PlaybackState {
+  if (!snapshot) return EMPTY_PLAYBACK;
+
+  return {
+    track: snapshot.track,
+    artist: snapshot.artist,
+    album: snapshot.album,
+    artworkDataUrl: snapshot.artworkDataUrl,
+    duration: snapshot.duration,
+    position: snapshot.position,
+    isPlaying: snapshot.isPlaying,
+    sourceName: snapshot.sourceName,
+    sourceId: snapshot.sourceId,
+    canSeek: snapshot.canSeek,
+    canSkip: snapshot.canSkip,
+    canControl: snapshot.canControl,
+  };
+}
+
+function parseBackendMediaSnapshot(payload: unknown): PlaybackState {
+  if (payload === null || payload === undefined) return EMPTY_PLAYBACK;
+  if (!isBackendMediaSnapshot(payload)) {
+    throw new Error("Invalid backend media snapshot payload");
+  }
+
+  return mapBackendMediaSnapshot(payload);
+}
 
 export function createTauriSource(): PlaybackSource {
   let currentState = EMPTY_PLAYBACK;
@@ -25,8 +101,8 @@ export function createTauriSource(): PlaybackSource {
 
   function invokeCommand(command: MediaCommand) {
     if (!isTauri()) return;
-    void invoke<PlaybackState>(command)
-      .then(notify)
+    void invoke<unknown>(command)
+      .then((payload) => notify(parseBackendMediaSnapshot(payload)))
       .catch((error) => console.warn(`[TauriSource] ${command} failed:`, error));
   }
 
@@ -39,15 +115,19 @@ export function createTauriSource(): PlaybackSource {
       if (!isTauri() || started) return;
       started = true;
 
-      const unlistenSnapshot = await listen<PlaybackState>(
+      const unlistenSnapshot = await listen<unknown>(
         MEDIA_SNAPSHOT_EVENT,
         ({ payload }) => {
-          notify(payload);
+          try {
+            notify(parseBackendMediaSnapshot(payload));
+          } catch (error) {
+            console.warn("[TauriSource] media-state-changed payload rejected:", error);
+          }
         },
       );
       unlisteners.push(unlistenSnapshot);
 
-      notify(await invoke<PlaybackState>("cmd_media_snapshot"));
+      notify(parseBackendMediaSnapshot(await invoke<unknown>("cmd_media_snapshot")));
     },
 
     stop() {
@@ -85,8 +165,8 @@ export function createTauriSource(): PlaybackSource {
 
     seekTo(seconds: number) {
       if (!isTauri()) return;
-      void invoke<PlaybackState>("cmd_media_seek", { seconds })
-        .then(notify)
+      void invoke<unknown>("cmd_media_seek", { seconds })
+        .then((payload) => notify(parseBackendMediaSnapshot(payload)))
         .catch((error) => console.warn("[TauriSource] cmd_media_seek failed:", error));
     },
   };
