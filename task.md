@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 has started; B4.1-B4.4 are complete and next unchecked task is B4.5.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 has started; B4.1-B4.5 are complete and next unchecked task is B4.6.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -145,3 +145,4 @@ Planned scope:
 - Backend Phase 4 B4.2 routes tray `Open VinylDeck` and `Mini Player` through the existing Rust window-mode service instead of duplicating show/hide/create logic. B4.2 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.3 routes tray Play/Pause, Previous, and Next through shared backend media command helpers. Missing media state gracefully logs/no-ops. B4.3 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.4 implements close-to-tray: main/mini close requests prevent close and hide windows; tray Quit remains explicit process exit. B4.4 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 4 B4.5 makes tray left-click release restore/focus Main through the shared window-mode service. B4.5 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.

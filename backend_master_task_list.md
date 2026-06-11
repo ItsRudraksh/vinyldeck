@@ -365,7 +365,7 @@ User approval locks these recommended resolutions:
   - Explicit Quit exits process.
   - Avoid close-request recursion.
 
-- [ ] **B4.5** Implement tray left-click show/focus behavior.
+- [x] **B4.5** Implement tray left-click show/focus behavior.
 
 - [ ] **B4.6** Update tray tooltip/menu enabled state from media snapshot when feasible.
 
