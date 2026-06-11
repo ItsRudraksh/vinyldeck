@@ -536,7 +536,11 @@ User approval locks these recommended resolutions:
   - Empty/session-ended/null snapshots map to `EMPTY_PLAYBACK`.
   - Verified with `npm run build` and `git diff --check`.
 
-- [ ] **B9.3** Implement fire-and-forget control methods with bounded error logging.
+- [x] **B9.3** Implement fire-and-forget control methods with bounded error logging.
+  - Play/pause/toggle/next/previous/seek now invoke real `cmd_smtc_*` commands.
+  - Command responses are ignored; poller events remain the playback truth source.
+  - Repeated command failures are rate-limited to one warning per command per 5 seconds.
+  - Verified with `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, command registration scan, and `git diff --check`.
 
 - [ ] **B9.4** Fix Zustand source lifecycle.
   - Retain/call source subscription unsubscribe.

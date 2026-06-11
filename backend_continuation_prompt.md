@@ -29,7 +29,7 @@ Rebuild state from local project files, determine last completed backend task, t
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-As of this handoff, Backend Phase 0 through Phase 8 are complete and manually approved, including the B8 same-duration track/artwork sync fix. Backend Phase 9 is active: B9.1-B9.2 are implemented and verified. Continue from the next unchecked task in `backend_master_task_list.md`, currently **B9.3**.
+As of this handoff, Backend Phase 0 through Phase 8 are complete and manually approved, including the B8 same-duration track/artwork sync fix. Backend Phase 9 is active: B9.1-B9.3 are implemented and verified. Continue from the next unchecked task in `backend_master_task_list.md`, currently **B9.4**.
 
 ## REQUIRED STARTUP ORDER
 
@@ -124,9 +124,9 @@ If browsing happens, use official Tauri or Microsoft docs only, then update:
 - B6 SMTC data model/core is approved: direct `windows = 0.56`, Rust `MediaSnapshot`, SMTC acquisition, lightweight playback/timeline/capability read, metadata read, bounded artwork stream-to-data-URL helper.
 - B7 SMTC commands are approved and manually tested against Spotify: `cmd_smtc_snapshot`, `cmd_smtc_play`, `cmd_smtc_pause`, `cmd_smtc_toggle_play_pause`, `cmd_smtc_next`, `cmd_smtc_previous`, `cmd_smtc_seek`.
 - `cmd_smtc_snapshot` intentionally returns `artworkDataUrl: null` for now. SMTC artwork is available as a WinRT stream, but artwork stream refs are not safe inside Tauri command futures. Phase 8 should handle artwork inside the poller/backend boundary, convert stream -> bytes -> data URL, then emit plain `MediaSnapshot`.
-- Current `TauriSource` still calls `cmd_media_*` backend mock authority. B9 is the frontend real-source integration phase; do not prematurely rewrite frontend source wiring during B8 unless needed for checkpoint verification.
+- Current `TauriSource` no longer calls the old `cmd_media_*` backend mock authority for Tauri playback. Initial load uses `cmd_smtc_snapshot`, events come from the B8 poller, and controls invoke real `cmd_smtc_*` commands. Browser mock behavior remains separate.
 - B8.1-B8.6 plus sync fix are complete and manually approved: `src-tauri/src/media/poller.rs` starts one guarded 500ms SMTC poller from setup, survives transient SMTC errors with rate-limited logs, reads metadata text every poll, caches artwork by source + track + artist + album + duration identity, emits immediate semantic changes, emits 2s position resyncs, sends one empty snapshot on session end, blocks duplicate pollers, suppresses redundant unchanged events, and has fake-snapshot state-machine tests. User confirmed real Spotify sync is seamless.
-- B9.1-B9.2 are complete: `src/lib/playback/tauriSource.ts` validates unknown Tauri IPC/event payloads against the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, subscribes to `media-state-changed`, fetches initial state through `cmd_smtc_snapshot`, and handles start/stop listener races so retained unlisteners run once. Next work: B9.3 real SMTC control methods with bounded error logging.
+- B9.1-B9.3 are complete: `src/lib/playback/tauriSource.ts` validates unknown Tauri IPC/event payloads against the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, subscribes to `media-state-changed`, fetches initial state through `cmd_smtc_snapshot`, handles start/stop listener races so retained unlisteners run once, and invokes real `cmd_smtc_*` controls in fire-and-forget mode with bounded error logging. Next work: B9.4 Zustand source lifecycle.
 
 ## CONTINUATION WORKFLOW
 

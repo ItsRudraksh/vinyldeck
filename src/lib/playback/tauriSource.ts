@@ -5,6 +5,7 @@ import type { PlaybackSource, PlaybackState } from "./types";
 
 const MEDIA_SNAPSHOT_EVENT = "media-state-changed";
 const SMTC_SNAPSHOT_COMMAND = "cmd_smtc_snapshot";
+const COMMAND_ERROR_LOG_INTERVAL_MS = 5_000;
 
 export interface BackendMediaSnapshot {
   track: string;
@@ -22,11 +23,12 @@ export interface BackendMediaSnapshot {
 }
 
 type MediaCommand =
-  | "cmd_media_play"
-  | "cmd_media_pause"
-  | "cmd_media_toggle_play_pause"
-  | "cmd_media_next"
-  | "cmd_media_previous";
+  | "cmd_smtc_play"
+  | "cmd_smtc_pause"
+  | "cmd_smtc_toggle_play_pause"
+  | "cmd_smtc_next"
+  | "cmd_smtc_previous"
+  | "cmd_smtc_seek";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -94,6 +96,7 @@ export function createTauriSource(): PlaybackSource {
   let started = false;
   const listeners = new Set<(state: PlaybackState) => void>();
   const unlisteners: Array<() => void> = [];
+  const commandErrors = new Map<MediaCommand, { lastLoggedAt: number; suppressed: number }>();
 
   function notify(state: PlaybackState) {
     currentState = state;
@@ -128,11 +131,23 @@ export function createTauriSource(): PlaybackSource {
     return true;
   }
 
-  function invokeCommand(command: MediaCommand) {
+  function warnCommandError(command: MediaCommand, error: unknown) {
+    const now = Date.now();
+    const previous = commandErrors.get(command);
+    if (previous && now - previous.lastLoggedAt < COMMAND_ERROR_LOG_INTERVAL_MS) {
+      previous.suppressed += 1;
+      return;
+    }
+
+    const suppressed = previous?.suppressed ?? 0;
+    commandErrors.set(command, { lastLoggedAt: now, suppressed: 0 });
+    const suffix = suppressed > 0 ? ` (${suppressed} repeats suppressed)` : "";
+    console.warn(`[TauriSource] ${command} failed${suffix}:`, error);
+  }
+
+  function invokeCommand(command: MediaCommand, args?: Record<string, unknown>) {
     if (!isTauri()) return;
-    void invoke<unknown>(command)
-      .then((payload) => notify(parseBackendMediaSnapshot(payload)))
-      .catch((error) => console.warn(`[TauriSource] ${command} failed:`, error));
+    void invoke<unknown>(command, args).catch((error) => warnCommandError(command, error));
   }
 
   return {
@@ -177,30 +192,28 @@ export function createTauriSource(): PlaybackSource {
     },
 
     play() {
-      invokeCommand("cmd_media_play");
+      invokeCommand("cmd_smtc_play");
     },
 
     pause() {
-      invokeCommand("cmd_media_pause");
+      invokeCommand("cmd_smtc_pause");
     },
 
     togglePlayPause() {
-      invokeCommand("cmd_media_toggle_play_pause");
+      invokeCommand("cmd_smtc_toggle_play_pause");
     },
 
     next() {
-      invokeCommand("cmd_media_next");
+      invokeCommand("cmd_smtc_next");
     },
 
     previous() {
-      invokeCommand("cmd_media_previous");
+      invokeCommand("cmd_smtc_previous");
     },
 
     seekTo(seconds: number) {
-      if (!isTauri()) return;
-      void invoke<unknown>("cmd_media_seek", { seconds })
-        .then((payload) => notify(parseBackendMediaSnapshot(payload)))
-        .catch((error) => console.warn("[TauriSource] cmd_media_seek failed:", error));
+      if (!Number.isFinite(seconds) || seconds < 0) return;
+      invokeCommand("cmd_smtc_seek", { seconds });
     },
   };
 }
