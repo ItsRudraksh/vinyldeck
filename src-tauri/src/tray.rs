@@ -6,6 +6,7 @@ use tauri::{
 use tokio::time::{interval, Duration};
 
 use crate::{
+    app_lifecycle,
     media::{self, MediaState},
     window::{self, WindowMode, MAIN_LABEL, MINI_LABEL},
 };
@@ -53,7 +54,7 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
             MENU_PLAY_PAUSE => control_media_from_tray(app, TrayMediaAction::TogglePlayPause),
             MENU_PREVIOUS => control_media_from_tray(app, TrayMediaAction::Previous),
             MENU_NEXT => control_media_from_tray(app, TrayMediaAction::Next),
-            MENU_QUIT => app.exit(0),
+            MENU_QUIT => app_lifecycle::quit(app),
             _ => {}
         })
         .on_tray_icon_event(|tray, event| {

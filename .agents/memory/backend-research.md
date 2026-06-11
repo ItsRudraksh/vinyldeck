@@ -47,6 +47,16 @@ When a new search is necessary, prefer official Tauri documentation, Microsoft L
 
 ## Tauri v2 Findings
 
+### WebView2 Shutdown Log
+
+On 2026-06-11, manual B5 verification produced this shutdown log after explicit quit:
+
+```text
+Failed to unregister class Chrome_WidgetWin_0. Error = 1412
+```
+
+This message is emitted by Chromium/WebView2 during Windows shutdown/teardown and is tracked upstream in Chromium/WebView2/Tauri discussions. Treat it as non-blocking when the app exits cleanly and no process remains. VinylDeck still hardened explicit quit after this finding: backend `cmd_quit` and tray Quit now destroy `mini` and `main` windows before `app.exit(0)` to encourage orderly WebView teardown. If the message persists without a crash or leftover process, do not block backend phases on it.
+
 ### Runtime Detection
 
 Use:

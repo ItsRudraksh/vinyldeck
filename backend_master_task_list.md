@@ -409,7 +409,7 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 6 — SMTC Core and Data Model
 
-- [ ] **B6.1** Add direct backend error dependency and confirm pinned WinRT features.
+- [x] **B6.1** Add direct backend error dependency and confirm pinned WinRT features.
   - Add direct `anyhow` dependency or equivalent internal error type.
   - Keep `windows = 0.56` initially.
   - Remove unused Rust image dependency if artwork is passed through unchanged.
