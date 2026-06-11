@@ -489,7 +489,7 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 8 — Polling and Event Bridge
 
-- [ ] **B8.1** Implement 500ms polling service.
+- [x] **B8.1** Implement 500ms polling service.
   - Create: `src-tauri/src/media/poller.rs`
   - Start once from Tauri setup.
   - Poller survives transient SMTC errors.

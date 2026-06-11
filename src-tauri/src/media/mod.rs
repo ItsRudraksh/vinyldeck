@@ -1,18 +1,17 @@
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 use tokio::sync::Mutex;
-use tokio::time::{interval, Duration};
 
 pub mod artwork;
 pub mod commands;
 mod mock;
 pub mod model;
+pub mod poller;
 pub mod smtc;
 
 use mock::MockMediaAuthority;
 use model::MediaSnapshot;
 
 pub const MEDIA_SNAPSHOT_EVENT: &str = "media-state-changed";
-const MEDIA_TICK_MS: u64 = 500;
 
 pub struct MediaState {
     authority: Mutex<MockMediaAuthority>,
@@ -64,27 +63,6 @@ impl MediaState {
         authority.seek_to(seconds);
         authority.snapshot()
     }
-
-    async fn tick(&self) -> Option<MediaSnapshot> {
-        let mut authority = self.authority.lock().await;
-        authority.tick()
-    }
-}
-
-pub fn start_mock_media_loop(app: AppHandle) {
-    tauri::async_runtime::spawn(async move {
-        let mut ticker = interval(Duration::from_millis(MEDIA_TICK_MS));
-
-        loop {
-            ticker.tick().await;
-            let Some(state) = app.try_state::<MediaState>() else {
-                continue;
-            };
-            if let Some(snapshot) = state.tick().await {
-                emit_media_snapshot(&app, &snapshot);
-            }
-        }
-    });
 }
 
 pub fn emit_media_snapshot(app: &AppHandle, snapshot: &MediaSnapshot) {

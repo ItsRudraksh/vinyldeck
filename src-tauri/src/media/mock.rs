@@ -119,16 +119,6 @@ impl MockMediaAuthority {
         self.last_tick = Instant::now();
     }
 
-    pub fn tick(&mut self) -> Option<MediaSnapshot> {
-        if !self.is_playing {
-            self.last_tick = Instant::now();
-            return None;
-        }
-
-        self.advance_position();
-        Some(self.snapshot())
-    }
-
     fn advance_position(&mut self) {
         if !self.is_playing {
             self.last_tick = Instant::now();

@@ -36,7 +36,7 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             tauri::async_runtime::block_on(settings::initialize_settings(app_handle))?;
-            media::start_mock_media_loop(app.handle().clone());
+            media::poller::start_smtc_poller(app.handle().clone());
             tray::setup_tray(app)?;
             Ok(())
         })
