@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 frontend TauriSource integration is active at B9.5.
+Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 frontend TauriSource integration is active at B9.6.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.4 are implemented and verified; next task is B9.5.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.5 are implemented and verified; next task is B9.6.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -174,3 +174,4 @@ Planned scope:
 - Backend Phase 9 B9.2 switched `TauriSource.start()` initial load to real `cmd_smtc_snapshot`, keeps listening to `media-state-changed`, maps null/no-session to `EMPTY_PLAYBACK`, and handles start/stop races so late listener registrations are unlistened exactly once. Verification passed: `npm run build` and `git diff --check`.
 - Backend Phase 9 B9.3 switched TauriSource controls to fire-and-forget real `cmd_smtc_*` commands, ignores command response snapshots so the poller remains authoritative, and rate-limits repeated command errors to one warning per command per 5 seconds. Verification passed: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, command registration scan, and `git diff --check`.
 - Backend Phase 9 B9.4 moved source teardown ownership into the Zustand store via `clearSource(source?)`: unsubscribe, source stop, current-source guard, empty playback reset, and same-source duplicate subscription prevention. App cleanup now calls `clearSource(source)`. Verification passed: `npm run build` and lifecycle scan.
+- Backend Phase 9 B9.5 added runtime source factory at `src/lib/playback/sourceFactory.ts`: browser creates MockSource; Tauri creates TauriSource unless `VITE_FORCE_MOCK_SOURCE=true`. App wiring remains B9.6. Verification passed: `npm run build`.

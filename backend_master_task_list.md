@@ -548,11 +548,11 @@ User approval locks these recommended resolutions:
   - `setSource()` ignores same-source duplicate subscription attempts and clears failed starts only if that source is still current.
   - Verified with `npm run build` and lifecycle scan.
 
-- [ ] **B9.5** Add runtime source factory.
-  - Create: `src/lib/playback/sourceFactory.ts`
-  - Browser → MockSource.
-  - Tauri → TauriSource.
-  - Explicit force-mock override supported.
+- [x] **B9.5** Add runtime source factory.
+  - Created `src/lib/playback/sourceFactory.ts`.
+  - Browser resolves to MockSource.
+  - Tauri resolves to TauriSource unless `VITE_FORCE_MOCK_SOURCE=true`.
+  - Verified with `npm run build`.
 
 - [ ] **B9.6** Wire source factory into `src/App.tsx`.
 
