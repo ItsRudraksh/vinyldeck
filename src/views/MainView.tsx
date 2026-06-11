@@ -28,6 +28,7 @@ import { SourceBadge } from "../components/SourceBadge";
 import { Settings } from "../components/Settings";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useIdleMode } from "../hooks/useIdleMode";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 
 const VINYL_SIZE = 420;
 const RING_SIZE = VINYL_SIZE + 28;
@@ -50,6 +51,12 @@ export function MainView() {
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
   const artworkDataUrl = devForceEmpty ? null : rawArtworkDataUrl;
+
+  useKeyboardShortcuts({
+    renderMode: "main",
+    isSettingsOpen,
+    onCloseSettings: () => setIsSettingsOpen(false),
+  });
 
   // Client-side extrapolated position (updated every 500ms)
   const [position, setPosition] = useState(0);

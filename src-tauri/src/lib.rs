@@ -1,3 +1,4 @@
+mod app_lifecycle;
 mod media;
 mod settings;
 mod tray;
@@ -21,6 +22,7 @@ pub fn run() {
             settings::cmd_settings_snapshot,
             settings::cmd_settings_update,
             settings::cmd_settings_reset,
+            app_lifecycle::cmd_quit,
             window::cmd_set_always_on_top,
             window::cmd_set_window_mode,
         ])

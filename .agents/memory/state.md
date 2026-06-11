@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 4 tray/application lifecycle complete; awaiting manual checkpoint B4 approval
+**Current Stage:** Windows backend — Phase 5 focused-window keyboard shortcuts complete; awaiting manual checkpoint B5 approval
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B4 approval before Backend Phase 5.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B5 approval before Backend Phase 6.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -129,6 +129,9 @@ Current task track:
 - Backend Phase 4 B4.5 implemented on 2026-06-11: tray left-click release routes through the shared window-mode service to show/focus Main. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.6 implemented on 2026-06-11: tray menu presentation loop reads backend `MediaState` every 500ms, updates Play/Pause text, enables/disables playback menu items, and updates tooltip with current track/artist/source when available. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 7 passed, 0 failed. Stop at Manual Checkpoint B4.
+- User manually approved Backend Phase 4 on 2026-06-11: "all approved fully works move to next."
+- Backend Phase 5 B5.1-B5.4 implemented on 2026-06-11: added `src/hooks/useKeyboardShortcuts.ts`, mounted it once in `MainView` and `MiniView`, ignored shortcuts from input/textarea/select/button/contenteditable targets, wired Space/Left/Right/F/M/T/Escape/Ctrl+Q, added frontend `quitApplication()`, and registered Rust `cmd_quit` for explicit process exit. Escape closes Settings before exiting fullscreen. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, and `npm run build`.
+- Backend Phase 5 automated verification passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 7 passed, 0 failed. Stop at Manual Checkpoint B5.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

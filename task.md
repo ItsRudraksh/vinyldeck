@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is implemented and awaiting Manual Checkpoint B4 approval before Backend Phase 5.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is implemented and awaiting Manual Checkpoint B5 approval before Backend Phase 6.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -148,3 +148,6 @@ Planned scope:
 - Backend Phase 4 B4.5 makes tray left-click release restore/focus Main through the shared window-mode service. B4.5 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.6 updates tray menu presentation from backend media snapshots every 500ms: Play/Pause text, control enabled state, skip enabled state, and tooltip. B4.6 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 7 passed, 0 failed. Stop at Manual Checkpoint B4.
+- User manually approved Backend Phase 4 on 2026-06-11: "all approved fully works move to next."
+- Backend Phase 5 B5.1-B5.4 added focused-window keyboard shortcuts: Space toggles playback, Left/Right previous/next, F fullscreen toggle, M mini toggle, T theme cycle, Escape closes Settings before fullscreen exit, and Ctrl+Q invokes backend `cmd_quit`. Shortcut hook ignores form/control/editable targets and is mounted once in main/mini. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, and `npm run build`.
+- Backend Phase 5 automated verification passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 7 passed, 0 failed. Stop at Manual Checkpoint B5.

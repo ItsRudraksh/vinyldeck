@@ -8,6 +8,7 @@ import { TrackInfo } from "../components/TrackInfo";
 import { VinylRecord } from "../components/VinylRecord";
 import { VaporGrid } from "../components/VaporGrid";
 import { useColorExtraction } from "../hooks/useColorExtraction";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { setNativeWindowMode } from "../lib/window";
 import { EMPTY_PLAYBACK, selectArtwork, selectIsPlaying, selectPlayback, selectTheme, useVinylDeckStore } from "../lib/playback/store";
 import "./MiniView.css";
@@ -26,6 +27,8 @@ export function MiniView() {
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const settings = useVinylDeckStore((s) => s.settings);
+
+  useKeyboardShortcuts({ renderMode: "mini" });
 
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;

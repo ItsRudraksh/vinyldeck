@@ -384,7 +384,7 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 5 — Focused-Window Keyboard Shortcuts
 
-- [ ] **B5.1** Create `src/hooks/useKeyboardShortcuts.ts`.
+- [x] **B5.1** Create `src/hooks/useKeyboardShortcuts.ts`.
   - Space: toggle play/pause.
   - Left/Right: previous/next.
   - F: toggle fullscreen.
@@ -393,11 +393,11 @@ User approval locks these recommended resolutions:
   - Escape: exit fullscreen/close settings first.
   - Ctrl+Q: explicit Tauri exit command.
 
-- [ ] **B5.2** Ignore shortcuts while typing or interacting with form controls.
+- [x] **B5.2** Ignore shortcuts while typing or interacting with form controls.
 
-- [ ] **B5.3** Mount shortcut hook once per active view/source.
+- [x] **B5.3** Mount shortcut hook once per active view/source.
 
-- [ ] **B5.4** Add explicit backend quit command instead of `window.close()`.
+- [x] **B5.4** Add explicit backend quit command instead of `window.close()`.
 
 ### Manual Checkpoint B5
 
