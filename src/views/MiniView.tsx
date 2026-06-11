@@ -96,6 +96,7 @@ export function MiniView() {
         <Controls
           isPlaying={isPlaying}
           canControl={effectivePlayback.canControl}
+          canSkip={effectivePlayback.canSkip}
           onPlay={() => source?.play()}
           onPause={() => source?.pause()}
           onNext={() => source?.next()}

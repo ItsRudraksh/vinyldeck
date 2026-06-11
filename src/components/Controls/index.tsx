@@ -14,6 +14,7 @@ import "./Controls.css";
 interface ControlsProps {
   isPlaying: boolean;
   canControl?: boolean;
+  canSkip?: boolean;
   onPlay: () => void;
   onPause: () => void;
   onNext: () => void;
@@ -65,23 +66,26 @@ const iconVariants = {
 export function Controls({
   isPlaying,
   canControl = true,
+  canSkip = true,
   onPlay,
   onPause,
   onNext,
   onPrevious,
 }: ControlsProps) {
+  const canUseSkip = canControl && canSkip;
+
   return (
     <div className="controls-pill" role="group" aria-label="Playback controls">
 
       {/* ── Previous ── */}
       <motion.button
         className="controls-btn-secondary"
-        disabled={!canControl}
+        disabled={!canUseSkip}
         onClick={onPrevious}
         aria-label="Previous track"
-        style={{ opacity: canControl ? 0.65 : 0.35 }}
-        whileHover={canControl ? { scale: 1.10 } : {}}
-        whileTap={canControl ? { scale: 0.86 } : {}}
+        style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
+        whileHover={canUseSkip ? { scale: 1.10 } : {}}
+        whileTap={canUseSkip ? { scale: 0.86 } : {}}
         transition={{ type: "spring", stiffness: 350, damping: 22 }}
       >
         <IconPrev />
@@ -130,12 +134,12 @@ export function Controls({
       {/* ── Next ── */}
       <motion.button
         className="controls-btn-secondary"
-        disabled={!canControl}
+        disabled={!canUseSkip}
         onClick={onNext}
         aria-label="Next track"
-        style={{ opacity: canControl ? 0.65 : 0.35 }}
-        whileHover={canControl ? { scale: 1.10 } : {}}
-        whileTap={canControl ? { scale: 0.86 } : {}}
+        style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
+        whileHover={canUseSkip ? { scale: 1.10 } : {}}
+        whileTap={canUseSkip ? { scale: 0.86 } : {}}
         transition={{ type: "spring", stiffness: 350, damping: 22 }}
       >
         <IconNext />

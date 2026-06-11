@@ -599,10 +599,13 @@ User approval locks these recommended resolutions:
   - Added/verified Rust model, poller, artwork, and frontend adapter coverage for these cases.
   - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::model`, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` (9 passed), `cargo test --manifest-path src-tauri/Cargo.toml media::artwork`, `npm run test:frontend -- tauriSource`, and `npm run build`.
 
-- [ ] **B10.3** Test command capability edge cases.
+- [x] **B10.3** Test command capability edge cases.
   - Can play but cannot seek.
   - Can pause but cannot skip.
   - Command returns false.
+  - Added frontend capability gates for transport, skip, and seek; Controls and keyboard shortcuts now respect `canSkip` separately from `canControl`.
+  - Added Rust command rejection action-context coverage for false SMTC command results.
+  - Verified with `npm run test:frontend -- capabilities` (4 passed), `npm run build`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, and `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` (6 passed).
 
 - [ ] **B10.4** Test lifecycle edge cases.
   - Close-to-tray while playing.

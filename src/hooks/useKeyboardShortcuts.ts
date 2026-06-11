@@ -4,6 +4,7 @@ import { commitSettings } from "../lib/settings";
 import { applyTheme, resetAmbientColors } from "../lib/themes/applier";
 import type { ThemeId } from "../lib/themes/applier";
 import { quitApplication } from "../lib/appLifecycle";
+import { canUseSkipControls, canUseTransportControls } from "../lib/playback/capabilities";
 import { useVinylDeckStore } from "../lib/playback/store";
 import { setNativeWindowMode } from "../lib/window";
 import type { RenderWindowMode, WindowMode } from "../lib/window/types";
@@ -31,7 +32,7 @@ export function useKeyboardShortcuts({
     function handleKeyDown(event: KeyboardEvent) {
       if (shouldIgnoreShortcut(event)) return;
 
-      const source = useVinylDeckStore.getState().source;
+      const { playback, source } = useVinylDeckStore.getState();
 
       if (event.ctrlKey && event.code === "KeyQ") {
         event.preventDefault();
@@ -44,15 +45,15 @@ export function useKeyboardShortcuts({
       switch (event.code) {
         case "Space":
           event.preventDefault();
-          source?.togglePlayPause();
+          if (canUseTransportControls(playback)) source?.togglePlayPause();
           break;
         case "ArrowLeft":
           event.preventDefault();
-          source?.previous();
+          if (canUseSkipControls(playback)) source?.previous();
           break;
         case "ArrowRight":
           event.preventDefault();
-          source?.next();
+          if (canUseSkipControls(playback)) source?.next();
           break;
         case "KeyF":
           event.preventDefault();

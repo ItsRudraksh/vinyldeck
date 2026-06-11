@@ -23,7 +23,7 @@ Execute the approved Windows backend plan in:
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-Backend Phase 0 through Phase 9 are already complete and manually approved, including the B8 same-duration track/artwork sync fix and B9 frontend TauriSource integration. Backend Phase 10 is active: B10.1-B10.2 are implemented and verified. Continue from the next unchecked task, currently **B10.3**.
+Backend Phase 0 through Phase 9 are already complete and manually approved, including the B8 same-duration track/artwork sync fix and B9 frontend TauriSource integration. Backend Phase 10 is active: B10.1-B10.3 are implemented and verified. Continue from the next unchecked task, currently **B10.4**.
 
 The backend plan is already approved. Do not re-plan it unless direct code/runtime evidence proves a plan assumption wrong.
 
@@ -141,7 +141,7 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Stage 2 Visual Engine is complete and user-approved.
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
-- Backend Phase 0 through Phase 9 are complete and manually approved. B8.1-B8.6 plus the sync fix are verified; user confirmed real Spotify sync is seamless. Backend Phase 9 B9.1-B9.7 are implemented, automated-checkpoint verified, and user-approved. Backend Phase 10 B10.1-B10.2 are implemented and verified. Continue from B10.3.
+- Backend Phase 0 through Phase 9 are complete and manually approved. B8.1-B8.6 plus the sync fix are verified; user confirmed real Spotify sync is seamless. Backend Phase 9 B9.1-B9.7 are implemented, automated-checkpoint verified, and user-approved. Backend Phase 10 B10.1-B10.3 are implemented and verified. Continue from B10.4.
 - Mini/main cross-WebView theme/settings persistence root fix from BUG-002 is superseded: Rust backend now owns persisted settings writes. WebViews load/cache/control settings through backend commands/events only.
 - Bottom ThemePicker UI also commits theme and Album Art Ambient changes through backend settings authority; do not reintroduce direct `setTheme` / `setArtAmbient` persistence bypasses.
 - B3.8-B3.14 direction implemented and approved: Rust backend owns playback state/commands through a backend mock provider first; Tauri main/mini use a thin `TauriSource` proxy and both subscribe to backend events. Browser keeps `MockSource`.
@@ -189,7 +189,7 @@ For each atomic task:
 
 Do **not** restart at B0/B4/B6/B7/B8. Current active phase is Backend Phase 9.
 
-Backend Phase 9 implementation tasks are checked through B9.7, automated checkpoint passed, and user approved. Backend Phase 10 B10.1-B10.2 are checked. Continue from B10.3.
+Backend Phase 9 implementation tasks are checked through B9.7, automated checkpoint passed, and user approved. Backend Phase 10 B10.1-B10.3 are checked. Continue from B10.4.
 
 Phase 8 implementation target:
 

@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { EMPTY_PLAYBACK, useVinylDeckStore, selectPlayback, selectIsPlaying, selectArtwork, selectTheme, selectSettings } from "../lib/playback/store";
+import { canUseSeekControl } from "../lib/playback/capabilities";
 
 import { AmbientLayer } from "../components/AmbientLayer";
 import { VaporGrid } from "../components/VaporGrid";
@@ -164,7 +165,7 @@ export function MainView() {
               position={position}
               isPlaying={isPlaying}
               size={RING_SIZE}
-              onSeek={effectivePlayback.canSeek ? handleSeek : undefined}
+              onSeek={canUseSeekControl(effectivePlayback) ? handleSeek : undefined}
             />
           </div>
 
@@ -197,6 +198,7 @@ export function MainView() {
           <Controls
             isPlaying={isPlaying}
             canControl={effectivePlayback.canControl}
+            canSkip={effectivePlayback.canSkip}
             onPlay={handlePlay}
             onPause={handlePause}
             onNext={handleNext}

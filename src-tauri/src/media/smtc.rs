@@ -391,6 +391,20 @@ mod tests {
     }
 
     #[test]
+    fn command_rejection_messages_keep_action_context() {
+        for (action, expected) in [
+            ("pause", "Media source rejected pause command"),
+            ("next", "Media source rejected next command"),
+            ("seek", "Media source rejected seek command"),
+        ] {
+            let error = require_command_accepted(false, action)
+                .expect_err("false command result must become an error")
+                .to_string();
+            assert_eq!(error, expected);
+        }
+    }
+
+    #[test]
     fn projects_playing_timeline_position_from_last_updated_time() {
         let now = UNIX_EPOCH + Duration::from_secs(1_000);
         let now_ticks = system_time_to_windows_ticks(now).unwrap();
