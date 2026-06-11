@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 4 tray/application lifecycle in progress; B4.1-B4.5 complete
+**Current Stage:** Windows backend — Phase 4 tray/application lifecycle complete; awaiting manual checkpoint B4 approval
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 has started. B4.1 tray module/menu, B4.2 tray-to-window-service routing, B4.3 tray playback routing, B4.4 close-to-tray lifecycle, and B4.5 tray left-click restore are implemented and verified; next unchecked task is B4.6.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B4 approval before Backend Phase 5.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -127,6 +127,8 @@ Current task track:
 - Backend Phase 4 B4.3 implemented on 2026-06-11: media command wrappers now share helper functions in `src-tauri/src/media/commands.rs`, and tray Play/Pause/Previous/Next menu events call those helpers against backend `MediaState`. Missing media state logs and no-ops instead of crashing. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.4 implemented on 2026-06-11: global Tauri window close events route through `tray::handle_window_close`; main/mini close requests call `api.prevent_close()` and hide instead of closing. Tray Quit remains explicit `app.exit(0)`. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.5 implemented on 2026-06-11: tray left-click release routes through the shared window-mode service to show/focus Main. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 4 B4.6 implemented on 2026-06-11: tray menu presentation loop reads backend `MediaState` every 500ms, updates Play/Pause text, enables/disables playback menu items, and updates tooltip with current track/artist/source when available. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 4 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 7 passed, 0 failed. Stop at Manual Checkpoint B4.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

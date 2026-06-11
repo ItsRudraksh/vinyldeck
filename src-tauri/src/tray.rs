@@ -1,8 +1,9 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
-    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    App, AppHandle, Manager,
+    tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
+    App, AppHandle, Manager, Runtime,
 };
+use tokio::time::{interval, Duration};
 
 use crate::{
     media::{self, MediaState},
@@ -16,6 +17,7 @@ pub const MENU_PLAY_PAUSE: &str = "play-pause";
 pub const MENU_PREVIOUS: &str = "previous";
 pub const MENU_NEXT: &str = "next";
 pub const MENU_QUIT: &str = "quit";
+const TRAY_MEDIA_STATE_MS: u64 = 500;
 
 pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, MENU_OPEN, "Open VinylDeck", true, None::<&str>)?;
@@ -69,7 +71,14 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
         builder = builder.icon(icon.clone());
     }
 
-    builder.build(app)?;
+    let tray = builder.build(app)?;
+    start_tray_media_state_loop(
+        app.handle().clone(),
+        tray,
+        play_pause.clone(),
+        previous.clone(),
+        next.clone(),
+    );
 
     Ok(())
 }
@@ -128,4 +137,63 @@ fn control_media_from_tray(app: &AppHandle, action: TrayMediaAction) {
             }
         }
     });
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct TrayPresentation {
+    play_pause_text: &'static str,
+    controls_enabled: bool,
+    skip_enabled: bool,
+    tooltip: String,
+}
+
+fn start_tray_media_state_loop<R: Runtime>(
+    app: AppHandle<R>,
+    tray: TrayIcon<R>,
+    play_pause: MenuItem<R>,
+    previous: MenuItem<R>,
+    next: MenuItem<R>,
+) {
+    tauri::async_runtime::spawn(async move {
+        let mut ticker = interval(Duration::from_millis(TRAY_MEDIA_STATE_MS));
+        let mut last: Option<TrayPresentation> = None;
+
+        loop {
+            ticker.tick().await;
+            let Some(state) = app.try_state::<MediaState>() else {
+                continue;
+            };
+
+            let snapshot = state.snapshot().await;
+            let presentation = TrayPresentation {
+                play_pause_text: if snapshot.is_playing { "Pause" } else { "Play" },
+                controls_enabled: snapshot.can_control,
+                skip_enabled: snapshot.can_skip,
+                tooltip: tray_tooltip(&snapshot.track, &snapshot.artist, &snapshot.source_name),
+            };
+
+            if last.as_ref() == Some(&presentation) {
+                continue;
+            }
+
+            let _ = play_pause.set_text(presentation.play_pause_text);
+            let _ = play_pause.set_enabled(presentation.controls_enabled);
+            let _ = previous.set_enabled(presentation.skip_enabled);
+            let _ = next.set_enabled(presentation.skip_enabled);
+            let _ = tray.set_tooltip(Some(&presentation.tooltip));
+            last = Some(presentation);
+        }
+    });
+}
+
+fn tray_tooltip(track: &str, artist: &str, source_name: &str) -> String {
+    if !track.is_empty() && !artist.is_empty() {
+        format!("VinylDeck - {track} by {artist}")
+    } else if !track.is_empty() {
+        format!("VinylDeck - {track}")
+    } else if !source_name.is_empty() {
+        format!("VinylDeck - {source_name}")
+    } else {
+        "VinylDeck".to_string()
+    }
 }

@@ -367,7 +367,7 @@ User approval locks these recommended resolutions:
 
 - [x] **B4.5** Implement tray left-click show/focus behavior.
 
-- [ ] **B4.6** Update tray tooltip/menu enabled state from media snapshot when feasible.
+- [x] **B4.6** Update tray tooltip/menu enabled state from media snapshot when feasible.
 
 ### Automated Checkpoint B4
 
