@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 7 SMTC commands complete; awaiting manual checkpoint B7 approval
+**Current Stage:** Windows backend — Phase 8 polling/event bridge ready; next task B8.1
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B7 approval before Backend Phase 8.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Next unchecked backend task is B8.1: implement the 500ms SMTC polling service.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -143,6 +143,7 @@ Current task track:
 - Backend Phase 6 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 15 passed, 0 failed. Stop at Manual Checkpoint B6.
 - User manually approved Backend Phase 6 on 2026-06-11: "all approved verified all fixed and working move to next go !!"
 - Backend Phase 7 B7.1-B7.6 implemented on 2026-06-11: added shared SMTC current-session command helper, real SMTC play/pause/toggle/next/previous/seek helpers that check returned bools, finite/non-negative seek validation with 100ns tick conversion, registered devtools-facing `cmd_smtc_*` commands in `lib.rs`, and added pure tests for seek conversion/rejection and false command-result handling. `cmd_smtc_snapshot` returns metadata/timeline/capabilities without artwork for now because Tauri command futures must be `Send` and WinRT thumbnail stream refs are `!Send`; artwork helper remains for the later poller/thread-bound integration. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` (3 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- User manually approved Backend Phase 7 on 2026-06-11: all SMTC devtools commands worked against Spotify. User asked why `artworkDataUrl` was null; answer recorded: SMTC artwork is a stream and should be converted stream -> bytes -> data URL inside the Phase 8 poller/backend boundary, not directly inside the B7 Tauri command future.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
