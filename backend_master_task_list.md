@@ -350,7 +350,7 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 4 — Tray and Application Lifecycle
 
-- [ ] **B4.1** Build tray module and menu.
+- [x] **B4.1** Build tray module and menu.
   - Create: `src-tauri/src/tray.rs`
   - Items: Open VinylDeck, Mini Player, Play/Pause, Previous, Next, Quit.
 

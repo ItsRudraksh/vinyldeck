@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; backend Phase 3 playback/settings authority is approved; ready for Backend Phase 4 when user starts it.
+Session focus: Stage 2 visual polish is complete; backend Phase 3 playback/settings authority is approved; Backend Phase 4 is in progress.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 can start at B4.1 when the user says to continue.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 has started; B4.1 is complete and next unchecked task is B4.2.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -141,3 +141,4 @@ Planned scope:
 - Phase 3 settings authority B3.15-B3.21 implemented and manually approved: Rust backend owns persisted settings, validates/migrates payloads, writes existing `settings.json` / `settings` key, emits `settings-changed`, and frontend WebViews only hydrate/cache/control via commands/events.
 - B3 Settings Authority automated verification passed on 2026-06-11: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
 - Final Phase 3 bug fix: bottom `ThemePicker` now commits theme and Album Art Ambient changes through backend `commitSettings()`, matching Settings modal behavior. Old direct `setTheme` / `setArtAmbient` store escape hatches were removed. This closes the final settings persistence bypass. Final verification passed: bypass scan returned no matches, `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
+- Backend Phase 4 B4.1 added a real Tauri tray module/menu with `Open VinylDeck`, `Mini Player`, `Play/Pause`, `Previous`, `Next`, and `Quit`, registered from `lib.rs`. B4.1 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.

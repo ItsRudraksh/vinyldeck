@@ -27,6 +27,7 @@ pub fn run() {
             let app_handle = app.handle().clone();
             tauri::async_runtime::block_on(settings::initialize_settings(app_handle))?;
             media::start_mock_media_loop(app.handle().clone());
+            tray::setup_tray(app)?;
             Ok(())
         })
         .run(tauri::generate_context!())

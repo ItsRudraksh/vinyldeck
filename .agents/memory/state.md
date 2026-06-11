@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 3 backend-owned playback/settings authority approved; ready for Backend Phase 4
+**Current Stage:** Windows backend — Phase 4 tray/application lifecycle in progress; B4.1 complete
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Phase 4 can start at B4.1 when the user asks to proceed in a new session.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 has started. B4.1 tray module/menu is implemented and verified; next unchecked task is B4.2.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -122,6 +122,7 @@ Current task track:
 - Phase 3 settings authority extension B3.15-B3.21 implemented and manually approved: Rust backend now owns persisted settings through `src-tauri/src/settings/mod.rs`, validates/migrates settings, writes existing `settings.json` / `settings` key via Rust `tauri-plugin-store`, and emits `settings-changed` to all windows. Frontend settings module is now a backend command/event proxy; WebViews no longer use `@tauri-apps/plugin-store`, `flushSettingsPersistence`, or settings persistence subscriptions.
 - B3 Settings Authority automated verification on 2026-06-11: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check` exited 0. Rust test count is now 7, including settings validation/clamp/mini-not-persisted coverage.
 - Final Phase 3 bug fix: bottom `ThemePicker` now commits theme and Album Art Ambient changes through backend `commitSettings()` instead of direct local store setters. User confirmed settings modal path already worked; this fixed the last persistence bypass before Phase 4. Old direct `setTheme` / `setArtAmbient` store escape hatches were removed. Final verification passed: bypass scan returned no matches, `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
+- Backend Phase 4 B4.1 implemented on 2026-06-11: `src-tauri/src/tray.rs` now builds one tray icon with menu items `Open VinylDeck`, `Mini Player`, `Play/Pause`, `Previous`, `Next`, and `Quit`; `src-tauri/src/lib.rs` registers tray setup during Tauri setup. Quit exits through `app.exit(0)`. Open/Mini/playback item behavior remains for B4.2-B4.5. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
