@@ -591,11 +591,13 @@ User approval locks these recommended resolutions:
   - Added Rust poller regression test `full_no_media_lifecycle_emits_clean_transitions`.
   - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, focused B10.1 test, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` (8 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
-- [ ] **B10.2** Test metadata/artwork edge cases.
+- [x] **B10.2** Test metadata/artwork edge cases.
   - Missing artwork.
   - Empty title/artist.
   - Oversized artwork.
   - Unknown duration/position.
+  - Added/verified Rust model, poller, artwork, and frontend adapter coverage for these cases.
+  - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::model`, `cargo test --manifest-path src-tauri/Cargo.toml media::poller` (9 passed), `cargo test --manifest-path src-tauri/Cargo.toml media::artwork`, `npm run test:frontend -- tauriSource`, and `npm run build`.
 
 - [ ] **B10.3** Test command capability edge cases.
   - Can play but cannot seek.

@@ -210,4 +210,38 @@ mod tests {
         assert_ne!(base.semantic_key(), next_track.semantic_key());
         assert_ne!(base.semantic_key(), no_seek.semantic_key());
     }
+
+    #[test]
+    fn semantic_key_handles_empty_metadata_and_unknown_duration() {
+        let empty_metadata = MediaSnapshot {
+            source_name: "Spotify".to_string(),
+            source_id: "Spotify.exe".to_string(),
+            duration: f64::NAN,
+            position: f64::NAN,
+            ..MediaSnapshot::default()
+        };
+        let negative_duration = MediaSnapshot {
+            duration: -1.0,
+            position: 12.0,
+            ..empty_metadata.clone()
+        };
+        let infinite_duration = MediaSnapshot {
+            duration: f64::INFINITY,
+            position: 24.0,
+            ..empty_metadata.clone()
+        };
+
+        assert_eq!(empty_metadata.track, "");
+        assert_eq!(empty_metadata.artist, "");
+        assert_eq!(empty_metadata.album, "");
+        assert_eq!(empty_metadata.artwork_data_url, None);
+        assert_eq!(
+            empty_metadata.semantic_key(),
+            negative_duration.semantic_key()
+        );
+        assert_eq!(
+            empty_metadata.semantic_key(),
+            infinite_duration.semantic_key()
+        );
+    }
 }

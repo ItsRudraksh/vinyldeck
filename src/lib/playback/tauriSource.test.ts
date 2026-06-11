@@ -29,8 +29,25 @@ describe("TauriSource backend snapshot adapter", () => {
     expect(mapBackendMediaSnapshot(undefined)).toEqual(EMPTY_PLAYBACK);
   });
 
+  it("accepts empty metadata, missing artwork, and unknown zero timeline values", () => {
+    const sparseSnapshot: BackendMediaSnapshot = {
+      ...VALID_SNAPSHOT,
+      track: "",
+      artist: "",
+      album: "",
+      artworkDataUrl: null,
+      duration: 0,
+      position: 0,
+    };
+
+    expect(isBackendMediaSnapshot(sparseSnapshot)).toBe(true);
+    expect(mapBackendMediaSnapshot(sparseSnapshot)).toEqual(sparseSnapshot);
+  });
+
   it("rejects malformed or unsafe payloads", () => {
     expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, duration: Number.NaN })).toBe(false);
+    expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, duration: Number.POSITIVE_INFINITY })).toBe(false);
+    expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, position: Number.NaN })).toBe(false);
     expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, position: -1 })).toBe(false);
     expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, artworkDataUrl: 123 })).toBe(false);
     expect(isBackendMediaSnapshot({ ...VALID_SNAPSHOT, canControl: "yes" })).toBe(false);

@@ -531,6 +531,47 @@ mod tests {
     }
 
     #[test]
+    fn metadata_artwork_edges_emit_without_crashing() {
+        let mut poller = SmtcPoller::default();
+        let now = std::time::Instant::now();
+        let empty_metadata_missing_artwork = MediaSnapshot {
+            source_name: "Spotify".to_string(),
+            source_id: "Spotify.exe".to_string(),
+            duration: 0.0,
+            position: 0.0,
+            is_playing: true,
+            can_control: true,
+            ..MediaSnapshot::default()
+        };
+
+        assert_eq!(
+            poller.handle_polled_snapshot(Some(empty_metadata_missing_artwork.clone()), now),
+            Some(empty_metadata_missing_artwork.clone())
+        );
+
+        let unknown_duration_position = MediaSnapshot {
+            duration: f64::INFINITY,
+            position: f64::NAN,
+            ..empty_metadata_missing_artwork
+        };
+
+        assert_eq!(
+            poller.handle_polled_snapshot(
+                Some(unknown_duration_position.clone()),
+                now + Duration::from_secs(1),
+            ),
+            None
+        );
+        let resynced = poller.handle_polled_snapshot(
+            Some(unknown_duration_position),
+            now + position_resync_interval(),
+        );
+        let resynced = resynced.expect("unknown timeline values should still resync");
+        assert!(resynced.duration.is_infinite());
+        assert!(resynced.position.is_nan());
+    }
+
+    #[test]
     fn poll_errors_are_rate_limited() {
         let mut limiter = ErrorRateLimiter::new(error_log_interval());
         let now = std::time::Instant::now();
