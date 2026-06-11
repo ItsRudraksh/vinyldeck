@@ -530,10 +530,11 @@ User approval locks these recommended resolutions:
   - `src/lib/playback/tauriSource.ts` now accepts unknown IPC payloads, validates the Rust `MediaSnapshot` camelCase serde contract, maps null/undefined snapshots to `EMPTY_PLAYBACK`, and outputs the locked `PlaybackState`.
   - Verified with `npm run build`.
 
-- [ ] **B9.2** Implement initial snapshot fetch and event listeners.
-  - Retain all unlisten functions.
-  - `stop()` calls every unlisten exactly once.
-  - Empty/session-ended maps to `EMPTY_PLAYBACK`.
+- [x] **B9.2** Implement initial snapshot fetch and event listeners.
+  - `TauriSource.start()` subscribes to `media-state-changed` and fetches initial real SMTC state via `cmd_smtc_snapshot`.
+  - Retains Tauri unlisten functions, handles start/stop races, and `stop()` releases each retained unlistener once.
+  - Empty/session-ended/null snapshots map to `EMPTY_PLAYBACK`.
+  - Verified with `npm run build` and `git diff --check`.
 
 - [ ] **B9.3** Implement fire-and-forget control methods with bounded error logging.
 

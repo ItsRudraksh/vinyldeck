@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 frontend TauriSource integration is active at B9.2.
+Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 frontend TauriSource integration is active at B9.3.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1 is implemented and verified; next task is B9.2.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.2 are implemented and verified; next task is B9.3.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -171,3 +171,4 @@ Planned scope:
 - Backend Phase 8 B8.6 rate-limits transient poll errors to one log per 5 seconds and folds suppressed-repeat counts into the next emitted error. Phase 8 automated checkpoint passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml` -> 25 passed, `npm run build`, and `git diff --check`. Stop at Manual Checkpoint B8.
 - Backend Phase 8 sync fix was manually approved on 2026-06-11: same-duration Spotify track changes now update metadata/artwork correctly, and progress is projected from SMTC `LastUpdatedTime`. User confirmed "all synced correctly now seamless."
 - Backend Phase 9 B9.1 added a strict frontend `BackendMediaSnapshot` runtime contract in `src/lib/playback/tauriSource.ts`: unknown IPC/event payloads are validated, null/undefined snapshots map to `EMPTY_PLAYBACK`, malformed events are rejected with a warning, and only locked `PlaybackState` values reach the store. Verification passed: `npm run build`.
+- Backend Phase 9 B9.2 switched `TauriSource.start()` initial load to real `cmd_smtc_snapshot`, keeps listening to `media-state-changed`, maps null/no-session to `EMPTY_PLAYBACK`, and handles start/stop races so late listener registrations are unlistened exactly once. Verification passed: `npm run build` and `git diff --check`.

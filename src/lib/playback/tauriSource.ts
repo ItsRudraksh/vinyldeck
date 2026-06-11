@@ -4,6 +4,7 @@ import { EMPTY_PLAYBACK } from "./store";
 import type { PlaybackSource, PlaybackState } from "./types";
 
 const MEDIA_SNAPSHOT_EVENT = "media-state-changed";
+const SMTC_SNAPSHOT_COMMAND = "cmd_smtc_snapshot";
 
 export interface BackendMediaSnapshot {
   track: string;
@@ -99,6 +100,34 @@ export function createTauriSource(): PlaybackSource {
     listeners.forEach((listener) => listener(state));
   }
 
+  function notifyFromBackendPayload(payload: unknown, context: string) {
+    try {
+      notify(parseBackendMediaSnapshot(payload));
+    } catch (error) {
+      console.warn(`[TauriSource] ${context} payload rejected:`, error);
+    }
+  }
+
+  function releaseUnlisteners() {
+    while (unlisteners.length > 0) {
+      try {
+        unlisteners.pop()?.();
+      } catch (error) {
+        console.warn("[TauriSource] event unlisten failed:", error);
+      }
+    }
+  }
+
+  function retainUnlistener(unlisten: () => void): boolean {
+    if (!started) {
+      unlisten();
+      return false;
+    }
+
+    unlisteners.push(unlisten);
+    return true;
+  }
+
   function invokeCommand(command: MediaCommand) {
     if (!isTauri()) return;
     void invoke<unknown>(command)
@@ -115,26 +144,30 @@ export function createTauriSource(): PlaybackSource {
       if (!isTauri() || started) return;
       started = true;
 
-      const unlistenSnapshot = await listen<unknown>(
-        MEDIA_SNAPSHOT_EVENT,
-        ({ payload }) => {
-          try {
-            notify(parseBackendMediaSnapshot(payload));
-          } catch (error) {
-            console.warn("[TauriSource] media-state-changed payload rejected:", error);
-          }
-        },
-      );
-      unlisteners.push(unlistenSnapshot);
+      try {
+        const unlistenSnapshot = await listen<unknown>(
+          MEDIA_SNAPSHOT_EVENT,
+          ({ payload }) => notifyFromBackendPayload(payload, MEDIA_SNAPSHOT_EVENT),
+        );
+        if (!retainUnlistener(unlistenSnapshot)) return;
+      } catch (error) {
+        started = false;
+        releaseUnlisteners();
+        console.warn(`[TauriSource] ${MEDIA_SNAPSHOT_EVENT} listener failed:`, error);
+        return;
+      }
 
-      notify(parseBackendMediaSnapshot(await invoke<unknown>("cmd_media_snapshot")));
+      try {
+        const payload = await invoke<unknown>(SMTC_SNAPSHOT_COMMAND);
+        if (started) notify(parseBackendMediaSnapshot(payload));
+      } catch (error) {
+        console.warn(`[TauriSource] ${SMTC_SNAPSHOT_COMMAND} failed:`, error);
+      }
     },
 
     stop() {
       started = false;
-      while (unlisteners.length > 0) {
-        unlisteners.pop()?.();
-      }
+      releaseUnlisteners();
       listeners.clear();
     },
 
