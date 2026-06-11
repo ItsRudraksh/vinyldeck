@@ -357,7 +357,7 @@ User approval locks these recommended resolutions:
 - [x] **B4.2** Reuse window-mode service from tray events.
   - No duplicated window creation/show/hide logic.
 
-- [ ] **B4.3** Route tray playback items through media command service.
+- [x] **B4.3** Route tray playback items through media command service.
   - Before SMTC exists, disable or gracefully no-op controls.
 
 - [ ] **B4.4** Implement close-to-tray lifecycle.

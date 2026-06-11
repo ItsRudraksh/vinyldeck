@@ -1,10 +1,13 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
-    App, AppHandle,
+    App, AppHandle, Manager,
 };
 
-use crate::window::{self, WindowMode};
+use crate::{
+    media::{self, MediaState},
+    window::{self, WindowMode},
+};
 
 pub const TRAY_ID: &str = "vinyldeck-tray";
 pub const MENU_OPEN: &str = "open-vinyldeck";
@@ -45,6 +48,9 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
         .on_menu_event(|app, event| match event.id().as_ref() {
             MENU_OPEN => set_tray_window_mode(app, WindowMode::Main),
             MENU_MINI => set_tray_window_mode(app, WindowMode::Mini),
+            MENU_PLAY_PAUSE => control_media_from_tray(app, TrayMediaAction::TogglePlayPause),
+            MENU_PREVIOUS => control_media_from_tray(app, TrayMediaAction::Previous),
+            MENU_NEXT => control_media_from_tray(app, TrayMediaAction::Next),
             MENU_QUIT => app.exit(0),
             _ => {}
         });
@@ -63,6 +69,35 @@ fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {
     tauri::async_runtime::spawn(async move {
         if let Err(error) = window::set_window_mode(&app, mode) {
             eprintln!("[VinylDeck tray] failed to set window mode: {error}");
+        }
+    });
+}
+
+#[derive(Debug, Clone, Copy)]
+enum TrayMediaAction {
+    TogglePlayPause,
+    Previous,
+    Next,
+}
+
+fn control_media_from_tray(app: &AppHandle, action: TrayMediaAction) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        let Some(state) = app.try_state::<MediaState>() else {
+            eprintln!("[VinylDeck tray] media state unavailable for tray control");
+            return;
+        };
+
+        match action {
+            TrayMediaAction::TogglePlayPause => {
+                media::commands::media_toggle_play_pause(&app, &state).await;
+            }
+            TrayMediaAction::Previous => {
+                media::commands::media_previous(&app, &state).await;
+            }
+            TrayMediaAction::Next => {
+                media::commands::media_next(&app, &state).await;
+            }
         }
     });
 }

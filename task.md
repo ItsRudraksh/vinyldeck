@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 has started; B4.1-B4.2 are complete and next unchecked task is B4.3.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 has started; B4.1-B4.3 are complete and next unchecked task is B4.4.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -143,3 +143,4 @@ Planned scope:
 - Final Phase 3 bug fix: bottom `ThemePicker` now commits theme and Album Art Ambient changes through backend `commitSettings()`, matching Settings modal behavior. Old direct `setTheme` / `setArtAmbient` store escape hatches were removed. This closes the final settings persistence bypass. Final verification passed: bypass scan returned no matches, `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
 - Backend Phase 4 B4.1 added a real Tauri tray module/menu with `Open VinylDeck`, `Mini Player`, `Play/Pause`, `Previous`, `Next`, and `Quit`, registered from `lib.rs`. B4.1 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.2 routes tray `Open VinylDeck` and `Mini Player` through the existing Rust window-mode service instead of duplicating show/hide/create logic. B4.2 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 4 B4.3 routes tray Play/Pause, Previous, and Next through shared backend media command helpers. Missing media state gracefully logs/no-ops. B4.3 verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.

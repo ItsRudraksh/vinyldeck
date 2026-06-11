@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 4 tray/application lifecycle in progress; B4.1-B4.2 complete
+**Current Stage:** Windows backend — Phase 4 tray/application lifecycle in progress; B4.1-B4.3 complete
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 has started. B4.1 tray module/menu and B4.2 tray-to-window-service routing are implemented and verified; next unchecked task is B4.3.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 has started. B4.1 tray module/menu, B4.2 tray-to-window-service routing, and B4.3 tray playback routing are implemented and verified; next unchecked task is B4.4.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -124,6 +124,7 @@ Current task track:
 - Final Phase 3 bug fix: bottom `ThemePicker` now commits theme and Album Art Ambient changes through backend `commitSettings()` instead of direct local store setters. User confirmed settings modal path already worked; this fixed the last persistence bypass before Phase 4. Old direct `setTheme` / `setArtAmbient` store escape hatches were removed. Final verification passed: bypass scan returned no matches, `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
 - Backend Phase 4 B4.1 implemented on 2026-06-11: `src-tauri/src/tray.rs` now builds one tray icon with menu items `Open VinylDeck`, `Mini Player`, `Play/Pause`, `Previous`, `Next`, and `Quit`; `src-tauri/src/lib.rs` registers tray setup during Tauri setup. Quit exits through `app.exit(0)`. Open/Mini/playback item behavior remains for B4.2-B4.5. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 4 B4.2 implemented on 2026-06-11: `src-tauri/src/window/mod.rs` exposes crate-local `WindowMode` and `set_window_mode`; tray `Open VinylDeck` and `Mini Player` menu events call the shared service through an async runtime task, avoiding duplicated window creation/show/hide logic. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
+- Backend Phase 4 B4.3 implemented on 2026-06-11: media command wrappers now share helper functions in `src-tauri/src/media/commands.rs`, and tray Play/Pause/Previous/Next menu events call those helpers against backend `MediaState`. Missing media state logs and no-ops instead of crashing. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
