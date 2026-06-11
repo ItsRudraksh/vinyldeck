@@ -459,24 +459,24 @@ User approval locks these recommended resolutions:
 
 ## BACKEND PHASE 7 — SMTC Commands
 
-- [ ] **B7.1** Create shared current-session command helper.
+- [x] **B7.1** Create shared current-session command helper.
   - Reacquire current session per command.
   - Return typed “no active session” error.
 
-- [ ] **B7.2** Implement play, pause, toggle, next, previous.
+- [x] **B7.2** Implement play, pause, toggle, next, previous.
   - Check returned `bool`.
   - Return graceful rejection when source refuses command.
 
-- [ ] **B7.3** Implement seek.
+- [x] **B7.3** Implement seek.
   - Validate finite, non-negative seconds.
   - Convert seconds to 100ns ticks safely.
   - Check returned `bool`.
 
-- [ ] **B7.4** Implement initial snapshot command.
+- [x] **B7.4** Implement initial snapshot command.
 
-- [ ] **B7.5** Register commands in `src-tauri/src/lib.rs`.
+- [x] **B7.5** Register commands in `src-tauri/src/lib.rs`.
 
-- [ ] **B7.6** Add command input/conversion tests where WinRT can be isolated.
+- [x] **B7.6** Add command input/conversion tests where WinRT can be isolated.
 
 ### Manual Checkpoint B7
 

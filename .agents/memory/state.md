@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 6 SMTC core/data model complete; awaiting manual checkpoint B6 approval
+**Current Stage:** Windows backend — Phase 7 SMTC commands complete; awaiting manual checkpoint B7 approval
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B6 approval before Backend Phase 7.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 is implemented and automated-checkpoint verified. Stop here for Manual Checkpoint B7 approval before Backend Phase 8.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -141,6 +141,8 @@ Current task track:
 - Backend Phase 6 B6.6 implemented on 2026-06-11: `current_media_snapshot_without_artwork()` reads SMTC title, artist, and album via `TryGetMediaPropertiesAsync()` while leaving artwork for B6.7. Missing/inconsistent metadata falls back to empty strings. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 6 B6.7 implemented on 2026-06-11: added `src-tauri/src/media/artwork.rs` with bounded thumbnail conversion, JPEG/PNG magic-byte MIME detection, base64 data URL output, and empty/unknown/oversized rejection. SMTC metadata read now fills `artwork_data_url` when thumbnail conversion succeeds. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::artwork` (3 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 6 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 15 passed, 0 failed. Stop at Manual Checkpoint B6.
+- User manually approved Backend Phase 6 on 2026-06-11: "all approved verified all fixed and working move to next go !!"
+- Backend Phase 7 B7.1-B7.6 implemented on 2026-06-11: added shared SMTC current-session command helper, real SMTC play/pause/toggle/next/previous/seek helpers that check returned bools, finite/non-negative seek validation with 100ns tick conversion, registered devtools-facing `cmd_smtc_*` commands in `lib.rs`, and added pure tests for seek conversion/rejection and false command-result handling. `cmd_smtc_snapshot` returns metadata/timeline/capabilities without artwork for now because Tauri command futures must be `Send` and WinRT thumbnail stream refs are `!Send`; artwork helper remains for the later poller/thread-bound integration. Focused verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` (3 passed), and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

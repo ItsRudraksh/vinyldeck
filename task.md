@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is implemented and awaiting Manual Checkpoint B6 approval before Backend Phase 7.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is implemented and awaiting Manual Checkpoint B7 approval before Backend Phase 8.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -160,3 +160,5 @@ Planned scope:
 - Backend Phase 6 B6.6 added SMTC media property read for track, artist, and album with empty-string fallback; artwork remains for B6.7. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.
 - Backend Phase 6 B6.7 added bounded artwork conversion helper and SMTC thumbnail-to-data-URL plumbing. Focused verification passed: `cargo test --manifest-path src-tauri/Cargo.toml media::artwork` -> 3 passed.
 - Backend Phase 6 automated checkpoint passed on 2026-06-11: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, `npm run build`, and `git diff --check` exited 0. Rust tests: 15 passed, 0 failed. Stop at Manual Checkpoint B6.
+- User manually approved Backend Phase 6 on 2026-06-11.
+- Backend Phase 7 B7.1-B7.6 added devtools-facing `cmd_smtc_*` commands for real SMTC snapshot/play/pause/toggle/next/previous/seek, bool rejection checks, no-session errors, and seek validation. Snapshot command is metadata/timeline/capability-only for now because artwork stream refs make Tauri command futures non-`Send`; artwork remains for later poller integration. Focused verification passed: `cargo test --manifest-path src-tauri/Cargo.toml media::smtc` -> 3 passed.
