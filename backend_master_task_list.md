@@ -414,7 +414,7 @@ User approval locks these recommended resolutions:
   - Keep `windows = 0.56` initially.
   - Remove unused Rust image dependency if artwork is passed through unchanged.
 
-- [ ] **B6.2** Define serializable media model.
+- [x] **B6.2** Define serializable media model.
   - Create: `src-tauri/src/media/model.rs`
   - `MediaSnapshot` must map exactly to frontend `PlaybackState`.
   - Include explicit capabilities and source/session identity.
