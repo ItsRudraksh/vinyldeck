@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
 
-const MAIN_LABEL: &str = "main";
-const MINI_LABEL: &str = "mini";
+pub(crate) const MAIN_LABEL: &str = "main";
+pub(crate) const MINI_LABEL: &str = "mini";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum WindowMode {

@@ -6,7 +6,7 @@ use tauri::{
 
 use crate::{
     media::{self, MediaState},
-    window::{self, WindowMode},
+    window::{self, WindowMode, MAIN_LABEL, MINI_LABEL},
 };
 
 pub const TRAY_ID: &str = "vinyldeck-tray";
@@ -62,6 +62,24 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
     builder.build(app)?;
 
     Ok(())
+}
+
+pub fn handle_window_close(window: &tauri::Window, event: &tauri::WindowEvent) {
+    let tauri::WindowEvent::CloseRequested { api, .. } = event else {
+        return;
+    };
+
+    if !matches!(window.label(), MAIN_LABEL | MINI_LABEL) {
+        return;
+    }
+
+    api.prevent_close();
+    if let Err(error) = window.hide() {
+        eprintln!(
+            "[VinylDeck tray] failed to hide {} on close request: {error}",
+            window.label()
+        );
+    }
 }
 
 fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {

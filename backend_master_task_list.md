@@ -360,7 +360,7 @@ User approval locks these recommended resolutions:
 - [x] **B4.3** Route tray playback items through media command service.
   - Before SMTC exists, disable or gracefully no-op controls.
 
-- [ ] **B4.4** Implement close-to-tray lifecycle.
+- [x] **B4.4** Implement close-to-tray lifecycle.
   - Main/mini close request hides window.
   - Explicit Quit exits process.
   - Avoid close-request recursion.

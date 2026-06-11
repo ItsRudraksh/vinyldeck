@@ -9,6 +9,7 @@ pub fn run() {
         .manage(media::MediaState::new())
         .manage(settings::SettingsState::new())
         .plugin(tauri_plugin_store::Builder::new().build())
+        .on_window_event(tray::handle_window_close)
         .invoke_handler(tauri::generate_handler![
             media::commands::cmd_media_snapshot,
             media::commands::cmd_media_play,
