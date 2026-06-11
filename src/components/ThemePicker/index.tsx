@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
 import { useVinylDeckStore } from "../../lib/playback/store";
+import { commitSettings } from "../../lib/settings";
 
 const THEME_ACCENT: Record<ThemeId, string> = {
   noir:   "#e8e8e8",
@@ -25,22 +26,32 @@ const THEME_BG: Record<ThemeId, string> = {
 
 export function ThemePicker() {
   const currentTheme = useVinylDeckStore((s) => s.theme);
-  const setTheme     = useVinylDeckStore((s) => s.setTheme);
   const artAmbient   = useVinylDeckStore((s) => s.artAmbient);
-  const setArtAmbient = useVinylDeckStore((s) => s.setArtAmbient);
+  const hydrateSettings = useVinylDeckStore((s) => s.hydrateSettings);
+
+  function applyCommittedSettings(settings: Awaited<ReturnType<typeof commitSettings>>) {
+    hydrateSettings(settings);
+    applyTheme(settings.theme);
+    if (settings.theme !== "noir" || !settings.artAmbient) resetAmbientColors();
+  }
 
   function handleSelect(id: ThemeId) {
-    setTheme(id);
-    applyTheme(id);
-    // Leaving Noir → always reset ambient so theme defaults restore
-    if (id !== "noir") resetAmbientColors();
+    void commitSettings({ theme: id })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Settings] Theme update failed:", error);
+      });
   }
 
   function handleAmbientToggle() {
     const next = !artAmbient;
-    setArtAmbient(next);
     // Toggling OFF → immediately reset to theme defaults
     if (!next) resetAmbientColors();
+    void commitSettings({ artAmbient: next })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Settings] Art ambient update failed:", error);
+      });
   }
 
   const isNoir = currentTheme === "noir";

@@ -41,9 +41,9 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 - Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
 - Required gate before tray is complete: Phase 3 extension B3.8-B3.14 moved playback authority to Rust backend so main, mini, tray, shortcuts, and future SMTC all read/control one source of truth.
 - User manually approved seamless main/mini playback sync on 2026-06-11.
-- Required settings authority gate before tray is implemented as B3.15-B3.21. Manual verification remains before Backend Phase 4.
+- Required settings authority gate before tray is implemented and manually approved as B3.15-B3.21. Final bottom ThemePicker persistence bypass was fixed by routing theme/art-ambient changes through backend `commitSettings()`.
 - Future dynamic state should use backend-owned command/event authority so no frontend window is a long-term state authority.
-- System tray and keyboard shortcuts follow after manual settings authority approval and explicit user approval to start Backend Phase 4.
+- System tray and keyboard shortcuts follow when user starts Backend Phase 4 at B4.1.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)
 

@@ -248,6 +248,7 @@ Still outstanding after Backend Phase 3:
 - Mini/main cross-WebView theme/settings authority fix from BUG-002 is superseded: Rust backend now owns persisted settings writes, and every WebView is a reader/controller through backend commands/events.
 - Phase 3 extension B3.8-B3.14 implemented backend-owned playback authority with a backend mock provider and a thin frontend `TauriSource` proxy. This avoids window-to-window bridges and gives tray/shortcuts/SMTC one state/command authority.
 - Phase 3 settings authority extension B3.15-B3.21 implemented backend-owned settings authority with `cmd_settings_snapshot`, `cmd_settings_update`, `cmd_settings_reset`, and `settings-changed`.
+- Final Phase 3 settings bug fixed: bottom `ThemePicker` must commit theme/art-ambient changes through backend `commitSettings()`. Do not use direct local `setTheme` / `setArtAmbient` store actions for persisted UI controls.
 - Real SMTC adapter is not implemented yet; it should replace the backend mock provider behind the same backend authority contract.
 - No tray module, close-to-tray lifecycle, focused shortcuts, or installer hardening are implemented yet.
 

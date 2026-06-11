@@ -344,6 +344,7 @@ User approval locks these recommended resolutions:
 - Switch Main -> Mini -> Main rapidly; settings do not reset or poison to defaults.
 - Quit/reopen app; persisted settings load correctly.
 - Browser development still uses in-memory defaults and approved Stage 2 visuals remain unchanged.
+- User manually approved B3 Settings Authority on 2026-06-11 after final fix: bottom ThemePicker theme/art-ambient controls now persist through backend settings authority, matching Settings modal behavior.
 
 ---
 

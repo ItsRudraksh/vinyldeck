@@ -45,17 +45,11 @@ export interface PlaybackStoreActions {
   // Client-side position (extrapolated from lastSync + elapsed)
   getPosition(): number;
 
-  // Theme
-  setTheme(theme: ThemeId): void;
-
   // Persisted settings
   hydrateSettings(settings: PersistedSettings): void;
   updateSettings(partial: Partial<PersistedSettings>): void;
   setWindowMode(mode: PersistedSettings["windowMode"]): void;
   setAlwaysOnTop(enabled: boolean): void;
-
-  // Noir ambient toggle
-  setArtAmbient(enabled: boolean): void;
 
   // Dev visual QA
   setDevForceEmpty(enabled: boolean): void;
@@ -138,16 +132,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       return Math.min(lastKnownPosition + elapsed, playback.duration);
     },
 
-    // ── Theme ─────────────────────────────────────────────────
-    setTheme(theme) {
-      const artAmbient = theme === "noir" ? get().settings.artAmbient : false;
-      set((state) => ({
-        theme,
-        artAmbient,
-        settings: { ...state.settings, theme, artAmbient },
-      }));
-    },
-
     hydrateSettings(settings) {
       set({
         settings,
@@ -183,17 +167,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       set((state) => ({
         settings: { ...state.settings, alwaysOnTop: enabled },
       }));
-    },
-
-    setArtAmbient(enabled) {
-      set((state) => {
-        const artAmbient = state.theme === "noir" ? enabled : false;
-
-        return {
-          artAmbient,
-          settings: { ...state.settings, artAmbient },
-        };
-      });
     },
 
     setDevForceEmpty(enabled) {
