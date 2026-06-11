@@ -542,9 +542,11 @@ User approval locks these recommended resolutions:
   - Repeated command failures are rate-limited to one warning per command per 5 seconds.
   - Verified with `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, command registration scan, and `git diff --check`.
 
-- [ ] **B9.4** Fix Zustand source lifecycle.
-  - Retain/call source subscription unsubscribe.
-  - Avoid duplicate subscriptions during HMR/source swaps.
+- [x] **B9.4** Fix Zustand source lifecycle.
+  - Store now owns `clearSource(source?)`, calling retained source subscription unsubscribe and `source.stop()` together.
+  - App cleanup calls `clearSource(source)` instead of directly stopping the local source.
+  - `setSource()` ignores same-source duplicate subscription attempts and clears failed starts only if that source is still current.
+  - Verified with `npm run build` and lifecycle scan.
 
 - [ ] **B9.5** Add runtime source factory.
   - Create: `src/lib/playback/sourceFactory.ts`

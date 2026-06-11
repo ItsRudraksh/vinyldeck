@@ -38,6 +38,7 @@ export interface PlaybackStoreState {
 export interface PlaybackStoreActions {
   // Initialize with a source
   setSource(source: PlaybackSource): void;
+  clearSource(source?: PlaybackSource): void;
 
   // Called by source.onStateChange
   updatePlayback(state: PlaybackState): void;
@@ -89,8 +90,9 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
 
     // ── Set source and subscribe to its state changes ─────────
     setSource(source) {
-      const existing = get().source;
-      const existingUnsubscribe = get().sourceUnsubscribe;
+      const { source: existing, sourceUnsubscribe: existingUnsubscribe } = get();
+      if (existing === source && existingUnsubscribe) return;
+
       if (existingUnsubscribe) existingUnsubscribe();
       if (existing) existing.stop();
 
@@ -111,7 +113,26 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       set({ sourceUnsubscribe: unsubscribe });
 
       // Start the source
-      source.start().catch(console.error);
+      source.start().catch((error) => {
+        console.error(error);
+        if (get().source === source) get().clearSource(source);
+      });
+    },
+
+    clearSource(source) {
+      const { source: existing, sourceUnsubscribe } = get();
+      if (source && existing !== source) return;
+
+      if (sourceUnsubscribe) sourceUnsubscribe();
+      if (existing) existing.stop();
+
+      set({
+        source: null,
+        sourceUnsubscribe: null,
+        playback: EMPTY_PLAYBACK,
+        lastKnownPosition: 0,
+        lastSyncTime: Date.now(),
+      });
     },
 
     // ── Update playback snapshot from source event ────────────

@@ -24,6 +24,7 @@ import { MiniView } from "./views/MiniView";
 
 function App() {
   const setSource = useVinylDeckStore((s) => s.setSource);
+  const clearSource = useVinylDeckStore((s) => s.clearSource);
   const [renderMode, setRenderMode] = useState<RenderWindowMode>("main");
 
   useEffect(() => {
@@ -74,9 +75,9 @@ function App() {
     return () => {
       cancelled = true;
       unsubscribeSettings();
-      source.stop();
+      clearSource(source);
     };
-    // setSource is stable (Zustand action, never changes)
+    // setSource/clearSource are stable (Zustand actions, never change)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
