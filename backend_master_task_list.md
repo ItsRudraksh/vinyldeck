@@ -507,7 +507,7 @@ User approval locks these recommended resolutions:
 
 - [x] **B8.5** Add poller state-machine tests using fake snapshots.
 
-- [ ] **B8.6** Log errors tersely with rate limiting to avoid console floods.
+- [x] **B8.6** Log errors tersely with rate limiting to avoid console floods.
 
 ### Automated Checkpoint B8
 

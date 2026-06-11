@@ -23,7 +23,7 @@ Execute the approved Windows backend plan in:
 
 `C:\Coding\vinyldeck\backend_master_task_list.md`
 
-Backend Phase 0 through Phase 7 are already complete and manually approved. Backend Phase 8 B8.1-B8.5 are implemented and verified. Current stop point is **Backend Phase 8 — Polling and Event Bridge**. Begin at **B8.6** only when the user asks to continue backend work.
+Backend Phase 0 through Phase 7 are already complete and manually approved. Backend Phase 8 B8.1-B8.6 are implemented and automated-checkpoint verified. Current stop point is **Manual Checkpoint B8**. Begin Backend Phase 9 only after the user manually approves B8.
 
 The backend plan is already approved. Do not re-plan it unless direct code/runtime evidence proves a plan assumption wrong.
 
@@ -141,7 +141,7 @@ These decisions are approved. Implement them unless direct evidence blocks them:
 - Stage 2 Visual Engine is complete and user-approved.
 - Phase 11 performance work is approved.
 - Idle centerpiece transform is approved.
-- Backend Phase 0 through Phase 7 are complete and manually approved. Backend Phase 8 B8.1-B8.5 are implemented and verified. Continue Phase 8 at B8.6 only when the user asks.
+- Backend Phase 0 through Phase 7 are complete and manually approved. Backend Phase 8 B8.1-B8.6 are implemented and automated-checkpoint verified. Stop at Manual Checkpoint B8 until the user approves.
 - Mini/main cross-WebView theme/settings persistence root fix from BUG-002 is superseded: Rust backend now owns persisted settings writes. WebViews load/cache/control settings through backend commands/events only.
 - Bottom ThemePicker UI also commits theme and Album Art Ambient changes through backend settings authority; do not reintroduce direct `setTheme` / `setArtAmbient` persistence bypasses.
 - B3.8-B3.14 direction implemented and approved: Rust backend owns playback state/commands through a backend mock provider first; Tauri main/mini use a thin `TauriSource` proxy and both subscribe to backend events. Browser keeps `MockSource`.
@@ -188,7 +188,7 @@ For each atomic task:
 
 Do **not** restart at B0/B4/B6/B7. Current stop point is Backend Phase 8.
 
-If the user asks to move ahead, continue **Backend Phase 8 — Polling and Event Bridge** at **B8.6** in `backend_master_task_list.md`.
+If the user approves Manual Checkpoint B8 and asks to move ahead, begin **Backend Phase 9 — Frontend TauriSource Integration** at **B9.1** in `backend_master_task_list.md`.
 
 Phase 8 implementation target:
 
@@ -233,7 +233,7 @@ If the user asks to change mini theme persistence, first read `.agents/memory/bu
 
 ## SUCCESS CONDITION FOR THIS FRESH SESSION
 
-Current checkpoint state is accurately loaded, backend-owned playback/settings authority remains intact, B7 remains approved, B8.1-B8.5 remain verified, and Phase 8 continues at B8.6 only after user asks to continue.
+Current checkpoint state is accurately loaded, backend-owned playback/settings authority remains intact, B7 remains approved, B8.1-B8.6 remain verified, and work stops at Manual Checkpoint B8 until user approval.
 
 Start now.
 ```

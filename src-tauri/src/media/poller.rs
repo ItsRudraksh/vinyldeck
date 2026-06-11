@@ -13,6 +13,7 @@ use super::{
 
 const SMTC_POLL_INTERVAL_MS: u64 = 500;
 const POSITION_RESYNC_INTERVAL_MS: u64 = 2_000;
+const ERROR_LOG_INTERVAL_MS: u64 = 5_000;
 static SMTC_POLLER_STARTED: AtomicBool = AtomicBool::new(false);
 
 pub fn start_smtc_poller(app: AppHandle) {
@@ -29,11 +30,16 @@ pub fn start_smtc_poller(app: AppHandle) {
         .spawn(move || {
             let poll_interval = Duration::from_millis(SMTC_POLL_INTERVAL_MS);
             let mut poller = SmtcPoller::default();
+            let mut error_log = ErrorRateLimiter::new(error_log_interval());
 
             loop {
                 thread::sleep(poll_interval);
                 if let Err(error) = tauri::async_runtime::block_on(poll_once(&app, &mut poller)) {
-                    eprintln!("[VinylDeck SMTC] poll error: {error}");
+                    if let Some(message) =
+                        error_log.message_for_error(&error.to_string(), Instant::now())
+                    {
+                        eprintln!("[VinylDeck SMTC] {message}");
+                    }
                 }
             }
         })
@@ -196,6 +202,47 @@ fn position_resync_interval() -> Duration {
     Duration::from_millis(POSITION_RESYNC_INTERVAL_MS)
 }
 
+fn error_log_interval() -> Duration {
+    Duration::from_millis(ERROR_LOG_INTERVAL_MS)
+}
+
+#[derive(Debug)]
+struct ErrorRateLimiter {
+    interval: Duration,
+    last_log_at: Option<Instant>,
+    suppressed: u32,
+}
+
+impl ErrorRateLimiter {
+    fn new(interval: Duration) -> Self {
+        Self {
+            interval,
+            last_log_at: None,
+            suppressed: 0,
+        }
+    }
+
+    fn message_for_error(&mut self, error: &str, now: Instant) -> Option<String> {
+        let should_log = self
+            .last_log_at
+            .is_none_or(|last| now.duration_since(last) >= self.interval);
+
+        if should_log {
+            self.last_log_at = Some(now);
+            let suppressed = std::mem::take(&mut self.suppressed);
+            if suppressed > 0 {
+                return Some(format!(
+                    "poll error: {error} ({suppressed} repeated errors suppressed)"
+                ));
+            }
+            return Some(format!("poll error: {error}"));
+        }
+
+        self.suppressed = self.suppressed.saturating_add(1);
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::sync::atomic::{AtomicBool, Ordering};
@@ -203,8 +250,8 @@ mod tests {
     use std::time::Duration;
 
     use super::{
-        apply_cached_media, position_resync_interval, CachedMedia, MediaSnapshot, SmtcPoller,
-        TrackCacheKey,
+        apply_cached_media, error_log_interval, position_resync_interval, CachedMedia,
+        ErrorRateLimiter, MediaSnapshot, SmtcPoller, TrackCacheKey,
     };
 
     fn claim_start(flag: &AtomicBool) -> bool {
@@ -395,6 +442,29 @@ mod tests {
         assert_eq!(
             poller.handle_polled_snapshot(None, now + Duration::from_secs(4)),
             None
+        );
+    }
+
+    #[test]
+    fn poll_errors_are_rate_limited() {
+        let mut limiter = ErrorRateLimiter::new(error_log_interval());
+        let now = std::time::Instant::now();
+
+        assert_eq!(
+            limiter.message_for_error("temporary WinRT failure", now),
+            Some("poll error: temporary WinRT failure".to_string())
+        );
+        assert_eq!(
+            limiter.message_for_error("temporary WinRT failure", now + Duration::from_millis(500)),
+            None
+        );
+        assert_eq!(
+            limiter.message_for_error("temporary WinRT failure", now + Duration::from_millis(900)),
+            None
+        );
+        assert_eq!(
+            limiter.message_for_error("temporary WinRT failure", now + error_log_interval()),
+            Some("poll error: temporary WinRT failure (2 repeated errors suppressed)".to_string())
         );
     }
 }
