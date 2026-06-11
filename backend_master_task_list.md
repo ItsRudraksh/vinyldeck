@@ -431,7 +431,7 @@ User approval locks these recommended resolutions:
   - Return `Ok(None)` when no session.
   - Never panic on missing fields.
 
-- [ ] **B6.5** Implement lightweight playback/timeline/capability read.
+- [x] **B6.5** Implement lightweight playback/timeline/capability read.
   - Do not fetch media properties/artwork in this path.
 
 - [ ] **B6.6** Implement media property read.
