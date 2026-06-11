@@ -2,6 +2,7 @@ use tauri::{AppHandle, Emitter, Manager};
 use tokio::sync::Mutex;
 use tokio::time::{interval, Duration};
 
+pub mod artwork;
 pub mod commands;
 mod mock;
 pub mod model;

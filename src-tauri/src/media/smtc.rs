@@ -42,6 +42,10 @@ pub(crate) async fn current_media_snapshot_without_artwork(
             .AlbumTitle()
             .map(|value| value.to_string())
             .unwrap_or_default();
+
+        if let Ok(thumbnail) = properties.Thumbnail() {
+            snapshot.artwork_data_url = super::artwork::thumbnail_to_data_url(thumbnail).await?;
+        }
     }
 
     Ok(Some(snapshot))

@@ -438,7 +438,7 @@ User approval locks these recommended resolutions:
   - Track, artist, album, source identity.
   - Handle empty/inconsistent metadata.
 
-- [ ] **B6.7** Implement bounded artwork stream conversion.
+- [x] **B6.7** Implement bounded artwork stream conversion.
   - Create: `src-tauri/src/media/artwork.rs`
   - Read thumbnail stream with maximum byte limit.
   - Detect JPEG/PNG MIME from bytes.
