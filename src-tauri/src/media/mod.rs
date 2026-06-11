@@ -5,6 +5,7 @@ use tokio::time::{interval, Duration};
 pub mod commands;
 mod mock;
 pub mod model;
+pub mod smtc;
 
 use mock::MockMediaAuthority;
 use model::MediaSnapshot;

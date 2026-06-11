@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 has started; B6.1-B6.3 are complete and next unchecked task is B6.4.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 has started; B6.1-B6.4 are complete and next unchecked task is B6.5.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -155,3 +155,4 @@ Planned scope:
 - Backend Phase 6 B6.1 added direct `anyhow = "1"`, removed direct unused `image = "0.25"`, confirmed `windows v0.56.0` remains pinned, and verified dependency state with `cargo check`, `rg`, and `cargo tree`.
 - Backend Phase 6 B6.2 verified existing Rust `MediaSnapshot` contract in `src-tauri/src/media/model.rs` already maps to locked frontend `PlaybackState` with camelCase serde, source identity, and capability booleans. No code rewrite needed.
 - Backend Phase 6 B6.3 added pure model tests/helpers for empty snapshot defaults, tick-to-seconds conversion, friendly source names, and semantic keys. Focused verification passed: `cargo test --manifest-path src-tauri/Cargo.toml media::model` -> 5 passed.
+- Backend Phase 6 B6.4 added minimal SMTC session acquisition in `src-tauri/src/media/smtc.rs`, returning `Ok(None)` when no current session exists and mapping source id/name safely. Verification passed: `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` and `cargo check --manifest-path src-tauri/Cargo.toml`.

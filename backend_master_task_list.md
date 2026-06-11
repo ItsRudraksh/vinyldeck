@@ -425,7 +425,7 @@ User approval locks these recommended resolutions:
   - Friendly source names.
   - Snapshot semantic-change key.
 
-- [ ] **B6.4** Implement SMTC session acquisition.
+- [x] **B6.4** Implement SMTC session acquisition.
   - Create: `src-tauri/src/media/smtc.rs`
   - Use `GetCurrentSession`.
   - Return `Ok(None)` when no session.
