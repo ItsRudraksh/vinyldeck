@@ -1,14 +1,18 @@
 use std::{
     sync::atomic::{AtomicBool, Ordering},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use tauri::AppHandle;
 
-use super::{emit_media_snapshot, model::MediaSnapshot};
+use super::{
+    emit_media_snapshot,
+    model::{MediaSemanticKey, MediaSnapshot},
+};
 
 const SMTC_POLL_INTERVAL_MS: u64 = 500;
+const POSITION_RESYNC_INTERVAL_MS: u64 = 2_000;
 static SMTC_POLLER_STARTED: AtomicBool = AtomicBool::new(false);
 
 pub fn start_smtc_poller(app: AppHandle) {
@@ -40,7 +44,7 @@ pub fn start_smtc_poller(app: AppHandle) {
 }
 
 async fn poll_once(app: &AppHandle, poller: &mut SmtcPoller) -> anyhow::Result<()> {
-    if let Some(snapshot) = poller.snapshot_for_poll().await? {
+    if let Some(snapshot) = poller.next_event_snapshot().await? {
         emit_media_snapshot(app, &snapshot);
     }
 
@@ -50,9 +54,28 @@ async fn poll_once(app: &AppHandle, poller: &mut SmtcPoller) -> anyhow::Result<(
 #[derive(Debug, Default)]
 struct SmtcPoller {
     cached_media: Option<CachedMedia>,
+    last_emitted_key: Option<MediaSemanticKey>,
+    last_emit_at: Option<Instant>,
+    had_session: bool,
 }
 
 impl SmtcPoller {
+    async fn next_event_snapshot(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
+        let Some(snapshot) = self.snapshot_for_poll().await? else {
+            return Ok(self.session_ended_snapshot());
+        };
+
+        self.had_session = true;
+        let now = Instant::now();
+        if self.should_emit_snapshot(&snapshot, now) {
+            self.last_emitted_key = Some(snapshot.semantic_key());
+            self.last_emit_at = Some(now);
+            return Ok(Some(snapshot));
+        }
+
+        Ok(None)
+    }
+
     async fn snapshot_for_poll(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
         let Some(lightweight) = super::smtc::current_lightweight_snapshot().await? else {
             self.cached_media = None;
@@ -78,6 +101,29 @@ impl SmtcPoller {
 
         self.cached_media = Some(CachedMedia::from_snapshot(&full_snapshot));
         Ok(Some(full_snapshot))
+    }
+
+    fn session_ended_snapshot(&mut self) -> Option<MediaSnapshot> {
+        self.cached_media = None;
+        self.last_emitted_key = None;
+        self.last_emit_at = None;
+
+        if self.had_session {
+            self.had_session = false;
+            return Some(MediaSnapshot::default());
+        }
+
+        None
+    }
+
+    fn should_emit_snapshot(&self, snapshot: &MediaSnapshot, now: Instant) -> bool {
+        let key = snapshot.semantic_key();
+        if self.last_emitted_key.as_ref() != Some(&key) {
+            return true;
+        }
+
+        self.last_emit_at
+            .is_none_or(|last| now.duration_since(last) >= position_resync_interval())
     }
 }
 
@@ -139,11 +185,20 @@ fn seconds_to_millis(seconds: f64) -> u64 {
     (seconds * 1000.0).round() as u64
 }
 
+fn position_resync_interval() -> Duration {
+    Duration::from_millis(POSITION_RESYNC_INTERVAL_MS)
+}
+
 #[cfg(test)]
 mod tests {
     use std::sync::atomic::{AtomicBool, Ordering};
 
-    use super::{apply_cached_media, CachedMedia, MediaSnapshot, TrackCacheKey};
+    use std::time::Duration;
+
+    use super::{
+        apply_cached_media, position_resync_interval, CachedMedia, MediaSnapshot, SmtcPoller,
+        TrackCacheKey,
+    };
 
     fn claim_start(flag: &AtomicBool) -> bool {
         flag.compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
@@ -223,5 +278,51 @@ mod tests {
         );
         assert_eq!(merged.position, 9.0);
         assert!(merged.is_playing);
+    }
+
+    #[test]
+    fn emission_policy_sends_first_semantic_and_periodic_resyncs() {
+        let mut poller = SmtcPoller::default();
+        let snapshot = MediaSnapshot {
+            track: "Track".to_string(),
+            source_id: "spotify".to_string(),
+            duration: 180.0,
+            position: 1.0,
+            is_playing: true,
+            ..MediaSnapshot::default()
+        };
+        let now = std::time::Instant::now();
+
+        assert!(poller.should_emit_snapshot(&snapshot, now));
+        poller.last_emitted_key = Some(snapshot.semantic_key());
+        poller.last_emit_at = Some(now);
+
+        let mut drifted = snapshot.clone();
+        drifted.position = 1.5;
+        assert!(!poller.should_emit_snapshot(&drifted, now + Duration::from_millis(500)));
+        assert!(poller.should_emit_snapshot(&drifted, now + position_resync_interval()));
+
+        let mut paused = drifted;
+        paused.is_playing = false;
+        assert!(poller.should_emit_snapshot(&paused, now + Duration::from_millis(600)));
+    }
+
+    #[test]
+    fn session_end_emits_one_empty_snapshot() {
+        let mut poller = SmtcPoller {
+            had_session: true,
+            cached_media: Some(CachedMedia::from_snapshot(&MediaSnapshot {
+                track: "Track".to_string(),
+                source_id: "spotify".to_string(),
+                duration: 180.0,
+                ..MediaSnapshot::default()
+            })),
+            last_emitted_key: None,
+            last_emit_at: None,
+        };
+
+        let ended = poller.session_ended_snapshot();
+        assert_eq!(ended, Some(MediaSnapshot::default()));
+        assert_eq!(poller.session_ended_snapshot(), None);
     }
 }

@@ -498,7 +498,7 @@ User approval locks these recommended resolutions:
   - Playback/timeline stays lightweight.
   - Artwork reloads only on semantic track/session change.
 
-- [ ] **B8.3** Define event emission policy.
+- [x] **B8.3** Define event emission policy.
   - Immediate: session, track, play state, capabilities, duration changes.
   - Periodic: position resync.
   - Ended: emit empty/session-ended once.
