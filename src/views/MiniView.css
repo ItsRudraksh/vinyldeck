@@ -27,7 +27,7 @@
 .mini-view__track {
   position: absolute;
   left: 50%;
-  top: calc(46% + 86px);
+  top: calc(46% + 100px);
   z-index: 3;
   width: min(230px, calc(100vw - 26px));
   transform: translateX(-50%) scale(0.72);

@@ -36,12 +36,13 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 ### [ ] Stage 3 — Tauri Shell & Window Management
 
 - User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
-- Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, and Phase 3 window modes are verified; paused at Manual Checkpoint B3.
+- Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, Phase 3 window modes, and Phase 3 backend-owned playback authority extension are verified.
 - Settings persistence is implemented through Zustand-owned settings plus Tauri Store. Mini/main cross-WebView theme persistence fix: main is the only persisted-settings writer; mini reads/hydrates settings only. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
 - Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
-- Required gate before tray: Phase 3 extension B3.8-B3.12/B3.14 has moved playback authority to Rust backend so main, mini, tray, shortcuts, and future SMTC all read/control one source of truth. B3.13 manual verification remains.
-- If B3.13 proves clean, settings and future dynamic state should also migrate toward backend-owned command/event authority so no frontend window is a long-term state authority.
-- System tray and keyboard shortcuts follow after this Phase 3 extension.
+- Required gate before tray is complete: Phase 3 extension B3.8-B3.14 moved playback authority to Rust backend so main, mini, tray, shortcuts, and future SMTC all read/control one source of truth.
+- User manually approved seamless main/mini playback sync on 2026-06-11.
+- Settings and future dynamic state should also migrate toward backend-owned command/event authority so no frontend window is a long-term state authority.
+- System tray and keyboard shortcuts follow after explicit user approval to start Backend Phase 4.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)
 

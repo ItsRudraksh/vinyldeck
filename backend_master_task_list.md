@@ -255,11 +255,12 @@ User approval locks these recommended resolutions:
   - Main and mini can mount independently and still receive the same backend state.
   - Preserve main-only settings write authority from BUG-002.
 
-- [ ] **B3.13** Verify seamless main/mini playback sync.
+- [x] **B3.13** Verify seamless main/mini playback sync.
   - Main and mini show the same track, play/pause state, artwork, source, and position.
   - Controls from either window update the same backend state and reflect in all open windows.
   - Rapid main ↔ mini switching does not reset track, position, or play/pause.
   - No duplicate frontend mock timers or duplicate playback authorities exist in Tauri.
+  - User manually approved seamless playback sync on 2026-06-11. Note: Neon Requiem/Warm Static have no album artwork in the backend mock because the old frontend mock generated those two covers with canvas; this is expected mock-data behavior, not a sync failure.
 
 - [x] **B3.14** Record backend authority migration rule for future settings/dynamic state.
   - Update memory docs: backend-owned state is preferred for multi-window dynamic state.
