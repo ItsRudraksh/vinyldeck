@@ -1,7 +1,7 @@
 # VinylDeck Stage 2 Visual Engine Task State
 
 Mode: caveman full
-Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 frontend TauriSource integration is active at B9.7.
+Session focus: Stage 2 visual polish is complete; Backend Phase 8 is manually approved; Backend Phase 9 automated checkpoint passed; stop at Manual Checkpoint B9.
 Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Context Loaded
@@ -78,7 +78,7 @@ Backend phases ignored for now: Master Task List Phase 12 and Phase 13.
 
 ## Current Task
 
-Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.6 are implemented and verified; next task is B9.7.
+Backend Phase 3 window modes verified. Phase 3 backend-owned playback authority extension B3.8-B3.14 is implemented and manually approved. Phase 3 backend-owned settings authority B3.15-B3.21 is implemented and manually approved. Backend Phase 4 B4.1-B4.6 is manually approved. Backend Phase 5 B5.1-B5.4 is manually approved. Backend Phase 6 B6.1-B6.7 is manually approved. Backend Phase 7 B7.1-B7.6 is manually approved. Backend Phase 8 B8.1-B8.6 plus sync fix are manually approved. Backend Phase 9 B9.1-B9.7 are implemented and automated-checkpoint verified. Stop at Manual Checkpoint B9.
 
 Fresh-session startup prompt: `backend_fresh_session_prompt.md`.
 
@@ -176,3 +176,5 @@ Planned scope:
 - Backend Phase 9 B9.4 moved source teardown ownership into the Zustand store via `clearSource(source?)`: unsubscribe, source stop, current-source guard, empty playback reset, and same-source duplicate subscription prevention. App cleanup now calls `clearSource(source)`. Verification passed: `npm run build` and lifecycle scan.
 - Backend Phase 9 B9.5 added runtime source factory at `src/lib/playback/sourceFactory.ts`: browser creates MockSource; Tauri creates TauriSource unless `VITE_FORCE_MOCK_SOURCE=true`. App wiring remains B9.6. Verification passed: `npm run build`.
 - Backend Phase 9 B9.6 wired `src/App.tsx` to `createPlaybackSource()`, removing duplicated `isTauri()` / force-mock source-selection logic from App. Verification passed: `npm run build` and source-selection scan.
+- Backend Phase 9 B9.7 added Vitest frontend tests: TauriSource adapter mapping/validation plus Zustand source lifecycle subscription/teardown/swap/stale-cleanup coverage. Verification passed: `npm run test:frontend` -> 8 passed, and `npm run build`.
+- Backend Phase 9 automated checkpoint passed on 2026-06-11: `npm run build`; `npm run test:frontend` -> 8 passed; `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`; `cargo check --manifest-path src-tauri/Cargo.toml`; `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`; `cargo test --manifest-path src-tauri/Cargo.toml` -> 27 passed; `git diff --check`. Stop at Manual Checkpoint B9.

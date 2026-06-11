@@ -558,13 +558,18 @@ User approval locks these recommended resolutions:
   - `App.tsx` now calls `createPlaybackSource()` instead of duplicating `isTauri()` / force-mock logic.
   - Verified with `npm run build` and source-selection scan.
 
-- [ ] **B9.7** Add adapter mapping/lifecycle tests.
+- [x] **B9.7** Add adapter mapping/lifecycle tests.
+  - Added Vitest frontend test runner via `npm run test:frontend`.
+  - Added `src/lib/playback/tauriSource.test.ts` for Rust snapshot contract validation and empty snapshot mapping.
+  - Added `src/lib/playback/store.test.ts` for source subscription, event routing, teardown, stale cleanup guard, and source swap lifecycle.
+  - Verified with `npm run test:frontend` (8 passed) and `npm run build`.
 
 ### Automated Checkpoint B9
 
 - `npm run build` passes strict TypeScript.
 - Adapter tests pass.
 - Rust checks pass.
+- Status: passed on 2026-06-11: `npm run build`; `npm run test:frontend` (8 passed); `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`; `cargo check --manifest-path src-tauri/Cargo.toml`; `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`; `cargo test --manifest-path src-tauri/Cargo.toml` (27 passed); `git diff --check`.
 
 ### Manual Checkpoint B9
 

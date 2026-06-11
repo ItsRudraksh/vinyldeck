@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 9 frontend TauriSource integration active; B9.1-B9.6 complete, next B9.7
+**Current Stage:** Windows backend — Phase 9 frontend TauriSource integration automated checkpoint passed; stop at Manual Checkpoint B9
 
 ## Active Work
-Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 is active; B9.1-B9.6 are implemented and verified. Next task is B9.7 adapter mapping/lifecycle tests.
+Backend Phase 3 window modes, backend-owned playback authority, and backend-owned settings authority are verified and user-approved. Backend Phase 4 B4.1-B4.6 was manually approved by user on 2026-06-11. Backend Phase 5 B5.1-B5.4 was manually approved by user on 2026-06-11 with one benign WebView2 shutdown log noted. Backend Phase 6 B6.1-B6.7 was manually approved by user on 2026-06-11. Backend Phase 7 B7.1-B7.6 was manually approved by user on 2026-06-11 after devtools testing against Spotify. Backend Phase 8 B8.1-B8.6 plus sync fix are implemented, verified, and manually approved. Backend Phase 9 B9.1-B9.7 are implemented and automated-checkpoint verified. Stop at Manual Checkpoint B9 for user approval before Backend Phase 10.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -157,6 +157,8 @@ Current task track:
 - Backend Phase 9 B9.4 implemented on 2026-06-11: Zustand playback store now owns source teardown through `clearSource(source?)`, which calls the retained source subscription unsubscribe and `source.stop()` together, resets playback to `EMPTY_PLAYBACK`, ignores stale cleanup requests for non-current sources, and prevents same-source duplicate subscriptions. `App.tsx` cleanup now calls `clearSource(source)` instead of directly stopping the source. Verification passed: `npm run build` and lifecycle scan.
 - Backend Phase 9 B9.5 implemented on 2026-06-11: added `src/lib/playback/sourceFactory.ts` with `createPlaybackSource()` and `isForceMockSourceEnabled()`. Browser resolves to `MockSource`; Tauri resolves to `TauriSource` unless `VITE_FORCE_MOCK_SOURCE=true`. App wiring remains for B9.6. Verification passed: `npm run build`.
 - Backend Phase 9 B9.6 implemented on 2026-06-11: `src/App.tsx` now calls `createPlaybackSource()` from `src/lib/playback/sourceFactory.ts` instead of duplicating `isTauri()` and `VITE_FORCE_MOCK_SOURCE` source-selection logic. Verification passed: `npm run build` and source-selection scan.
+- Backend Phase 9 B9.7 implemented on 2026-06-11: added Vitest frontend test runner (`npm run test:frontend`) plus adapter/lifecycle tests. `src/lib/playback/tauriSource.test.ts` covers valid Rust `MediaSnapshot` camelCase payloads, null/undefined to `EMPTY_PLAYBACK`, and malformed payload rejection. `src/lib/playback/store.test.ts` covers one subscription per source, source event routing into Zustand playback state, teardown unsubscribe/stop/reset, stale cleanup guards, and source swaps. Verification passed: `npm run test:frontend` (8 passed) and `npm run build`.
+- Backend Phase 9 automated checkpoint passed on 2026-06-11: `npm run build`; `npm run test:frontend` (8 passed); `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`; `cargo check --manifest-path src-tauri/Cargo.toml`; `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`; `cargo test --manifest-path src-tauri/Cargo.toml` (27 passed); and `git diff --check`. Stop at Manual Checkpoint B9.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**
