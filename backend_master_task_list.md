@@ -616,12 +616,17 @@ User approval locks these recommended resolutions:
   - Real repeated main/mini restore remains in Manual Checkpoint B10 because it requires live WebView windows.
   - Verified with `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo test --manifest-path src-tauri/Cargo.toml app_lifecycle`, `cargo test --manifest-path src-tauri/Cargo.toml tray`, `cargo test --manifest-path src-tauri/Cargo.toml settings`, and `cargo check --manifest-path src-tauri/Cargo.toml`.
 
-- [ ] **B10.5** Run complete verification suite.
+- [x] **B10.5** Run complete verification suite.
   - `npm run build`
+  - `npm run test:frontend`
   - `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
   - `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`
   - `cargo test --manifest-path src-tauri/Cargo.toml`
   - `npm run tauri build -- --debug`
+  - Status: passed on 2026-06-11. Frontend tests: 13 passed. Rust tests: 35 passed. Debug bundles produced:
+    - `src-tauri/target/debug/bundle/msi/VinylDeck_0.1.0_x64_en-US.msi`
+    - `src-tauri/target/debug/bundle/nsis/VinylDeck_0.1.0_x64-setup.exe`
+  - Note for Phase 11: Tauri warned that bundle identifier `com.vinyldeck.app` ends with `.app`; this is non-blocking for Windows debug build but should be considered during distribution cleanup.
 
 ### Manual Checkpoint B10
 
