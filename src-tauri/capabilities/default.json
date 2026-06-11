@@ -21,7 +21,6 @@
     "core:window:allow-set-resizable",
     "core:window:allow-set-title",
     "core:event:allow-listen",
-    "core:event:allow-emit",
-    "store:default"
+    "core:event:allow-emit"
   ]
 }

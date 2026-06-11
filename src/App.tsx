@@ -8,10 +8,9 @@ import { createMockSource } from "./lib/playback/mockSource";
 import { createTauriSource } from "./lib/playback/tauriSource";
 import { useVinylDeckStore } from "./lib/playback/store";
 import {
-  flushSettingsPersistence,
   loadSettings,
   sanitizeSettingsForTheme,
-  subscribeToSettingsPersistence,
+  subscribeToSettingsChanges,
 } from "./lib/settings";
 import { applyTheme, resetAmbientColors } from "./lib/themes/applier";
 import {
@@ -32,36 +31,38 @@ function App() {
     let source = isTauri() && !forceMockSource ? createTauriSource() : createMockSource();
     let unsubscribeSettings = () => {};
     let cancelled = false;
-    // Only the main WebView is allowed to write persisted settings.
-    // Mini reads settings on boot (so it matches the current theme) but
-    // NEVER subscribes as a writer and NEVER flushes on cleanup.
-    // This prevents the mini window from poisoning the Tauri Store with
-    // DEFAULT_SETTINGS ("noir") if it is destroyed before hydration finishes,
-    // or from racing main as a second concurrent writer.
-    let isSettingsAuthority = false;
+
+    function applySettings(settings: Awaited<ReturnType<typeof loadSettings>>) {
+      const safeSettings = sanitizeSettingsForTheme(settings);
+      useVinylDeckStore.getState().hydrateSettings(safeSettings);
+      applyTheme(safeSettings.theme);
+      if (safeSettings.theme !== "noir" || !safeSettings.artAmbient)
+        resetAmbientColors();
+      return safeSettings;
+    }
 
     async function start() {
-      const settings = sanitizeSettingsForTheme(await loadSettings());
+      const settings = applySettings(await loadSettings());
       if (cancelled) return;
 
-      useVinylDeckStore.getState().hydrateSettings(settings);
-      applyTheme(settings.theme);
-      if (settings.theme !== "noir" || !settings.artAmbient)
-        resetAmbientColors();
+      unsubscribeSettings = await subscribeToSettingsChanges((nextSettings) => {
+        applySettings(nextSettings);
+      });
+      if (cancelled) {
+        unsubscribeSettings();
+        return;
+      }
 
       const currentRenderMode = await getCurrentRenderWindowMode();
       if (cancelled) return;
       setRenderMode(currentRenderMode);
 
-      // Only main window manages native window state and settings persistence.
+      // Only main window applies persisted native window state at startup.
       if (currentRenderMode === "main") {
-        isSettingsAuthority = true;
         await setNativeWindowMode(
           settings.windowMode === "mini" ? "main" : settings.windowMode,
         );
         await setNativeAlwaysOnTop(settings.alwaysOnTop);
-        unsubscribeSettings = subscribeToSettingsPersistence();
-        window.addEventListener("beforeunload", handleBeforeUnload);
       }
 
       setSource(source);
@@ -69,18 +70,9 @@ function App() {
 
     void start();
 
-    function handleBeforeUnload() {
-      void flushSettingsPersistence();
-    }
-
     // Cleanup on unmount (hot reload safe)
     return () => {
       cancelled = true;
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      // Guard: only flush if this WebView owns settings. Mini must never write.
-      if (isSettingsAuthority) {
-        void flushSettingsPersistence();
-      }
       unsubscribeSettings();
       source.stop();
     };

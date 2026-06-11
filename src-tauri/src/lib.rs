@@ -1,4 +1,5 @@
 mod media;
+mod settings;
 mod tray;
 mod window;
 
@@ -6,6 +7,7 @@ mod window;
 pub fn run() {
     tauri::Builder::default()
         .manage(media::MediaState::new())
+        .manage(settings::SettingsState::new())
         .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             media::commands::cmd_media_snapshot,
@@ -15,10 +17,15 @@ pub fn run() {
             media::commands::cmd_media_next,
             media::commands::cmd_media_previous,
             media::commands::cmd_media_seek,
+            settings::cmd_settings_snapshot,
+            settings::cmd_settings_update,
+            settings::cmd_settings_reset,
             window::cmd_set_always_on_top,
             window::cmd_set_window_mode,
         ])
         .setup(|app| {
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::block_on(settings::initialize_settings(app_handle))?;
             media::start_mock_media_loop(app.handle().clone());
             Ok(())
         })

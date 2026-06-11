@@ -1,10 +1,10 @@
 # VinylDeck: Current State
 
 **Current Phase:** Phase 1 (Windows Desktop MVP)
-**Current Stage:** Windows backend — Phase 3 backend-owned playback authority extension manually approved; ready for Backend Phase 4 on user approval
+**Current Stage:** Windows backend — Phase 3 backend-owned settings authority extension implemented; Manual Checkpoint B3 Settings Authority pending user verification
 
 ## Active Work
-Backend Phase 3 window modes verified. Phase 3 extension B3.8-B3.14 is implemented and manually approved. Stop before Backend Phase 4 until the user explicitly says to proceed.
+Backend Phase 3 window modes and backend-owned playback authority are verified. Phase 3 settings authority extension B3.15-B3.21 is implemented. Stop before Backend Phase 4 until user manually verifies B3 Settings Authority and explicitly says to proceed.
 
 Current task track:
 - Phase 9.1 Settings shell is complete and user-approved.
@@ -119,6 +119,8 @@ Current task track:
 - B3 Extension automated verification on 2026-06-11: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check` exited 0. Rust test count is now 4: backend mock media authority plus window-mode parser coverage.
 - Backend mock artwork caveat: `Neon Requiem` and `Warm Static` intentionally have `artworkDataUrl: null` in the Rust backend mock because the old frontend `MockSource` generated their art with browser canvas. This is expected mock-data behavior, not a backend sync bug. Real SMTC artwork should arrive from the future SMTC provider behind the same authority contract.
 - MiniView polish on 2026-06-11: track details were nudged downward to add more vertical gap below the vinyl. Verification passed after this polish: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check`.
+- Phase 3 settings authority extension B3.15-B3.21 implemented: Rust backend now owns persisted settings through `src-tauri/src/settings/mod.rs`, validates/migrates settings, writes existing `settings.json` / `settings` key via Rust `tauri-plugin-store`, and emits `settings-changed` to all windows. Frontend settings module is now a backend command/event proxy; WebViews no longer use `@tauri-apps/plugin-store`, `flushSettingsPersistence`, or settings persistence subscriptions. Manual verification remains before Phase 4.
+- B3 Settings Authority automated verification on 2026-06-11: `npm run build`, `cargo check --manifest-path src-tauri/Cargo.toml`, `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`, `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`, `cargo test --manifest-path src-tauri/Cargo.toml`, and `git diff --check` exited 0. Rust test count is now 7, including settings validation/clamp/mini-not-persisted coverage.
 
 ## Incident Note
 - During Stage 1 scaffold, `npx create-tauri-app . --force` was used. The `--force` flag wiped `raw/`, `.agents/memory/`, `stitch-ui-designs/`, and all other pre-existing project files. User restored from backup. **Do NOT use `--force` or any destructive flag in this directory ever again.**

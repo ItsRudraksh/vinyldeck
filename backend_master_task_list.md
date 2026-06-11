@@ -30,8 +30,8 @@ User approval locks these recommended resolutions:
 6. **Close behavior:** window close hides to tray. Explicit tray Quit exits process.
 7. **Settings:** persisted settings become Zustand-owned. Browser uses defaults/in-memory behavior; Tauri uses `tauri-plugin-store`.
 
-> Note: mini/main cross-WebView theme/settings authority is resolved by making the main WebView the only persisted-settings writer. Mini loads/hydrates settings for visuals but must remain read-only for persistence. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
-> Forward decision: if the Phase 3 backend-owned authority extension proves clean, migrate settings and future dynamic state to backend-owned command/event authority later. Frontend windows should become readers/controllers, not persistence/state authorities.
+> Note: mini/main cross-WebView theme/settings authority is now resolved by backend-owned settings authority. BUG-002's temporary main-only writer fix is superseded: WebViews are readers/controllers only, and Rust validates/persists/emits settings snapshots.
+> Forward decision: future dynamic state should use backend-owned command/event authority. Frontend windows should remain readers/controllers, not persistence/state authorities.
 
 ## Known PRD Corrections
 
@@ -284,6 +284,66 @@ User approval locks these recommended resolutions:
 - Mini controls update main.
 - Rapid switching cannot create duplicate playback authorities or reset state.
 - Browser development still uses `MockSource` and approved Stage 2 visuals remain unchanged.
+
+---
+
+## BACKEND PHASE 3 EXTENSION 2 — Backend-Owned Settings Authority
+
+> Final gate before tray/lifecycle. Playback authority proved the backend command/event pattern. Persisted settings must now use the same backend-owned authority so no WebView writes durable state.
+
+- [x] **B3.15** Define Rust settings authority contract.
+  - Rust model mirrors frontend `PersistedSettings` with camelCase serde payloads.
+  - Contract includes theme, art ambient, vinyl wobble, film grain, lean-back mode, cursor hide, idle timeout, always-on-top, window mode, and version.
+  - Runtime QA state such as `devForceEmpty` remains frontend-only.
+
+- [x] **B3.16** Implement Rust settings validation and migration.
+  - Invalid theme/window mode fall back safely.
+  - Idle timeout clamps to 1-5 seconds.
+  - Non-Noir themes force Album Art Ambient off.
+  - Version is normalized to `1`.
+
+- [x] **B3.17** Move settings persistence writes to Rust backend.
+  - Backend uses `tauri-plugin-store` Rust API with existing `settings.json` / `settings` key.
+  - Backend sanitizes existing saved settings on startup and rewrites the safe shape.
+  - WebViews no longer load or save Store directly.
+
+- [x] **B3.18** Add backend settings commands/events.
+  - Commands: `cmd_settings_snapshot`, `cmd_settings_update`, `cmd_settings_reset`.
+  - Event: `settings-changed`.
+  - Any number of windows can subscribe and receive the same backend-approved settings snapshot.
+
+- [x] **B3.19** Convert frontend settings module to backend proxy/cache.
+  - Browser development keeps default/in-memory settings behavior.
+  - Tauri uses commands/events only.
+  - Frontend validation remains as defensive payload guard, not persistence authority.
+
+- [x] **B3.20** Remove frontend settings write authority.
+  - Removed WebView Store dependency usage and Store capability permission.
+  - Removed `flushSettingsPersistence()` / `subscribeToSettingsPersistence()` path.
+  - `App.tsx` hydrates from backend and subscribes to backend `settings-changed` events in all windows.
+
+- [x] **B3.21** Route Settings UI mutations through backend authority.
+  - Theme/toggle/slider/window mode changes call `cmd_settings_update`.
+  - Settings UI applies returned backend-approved settings locally.
+  - Native window actions still call existing window commands after settings update.
+
+### Automated Checkpoint B3 Settings Authority
+
+- `npm run build` passes.
+- `cargo check --manifest-path src-tauri/Cargo.toml` passes.
+- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passes.
+- `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings` passes.
+- `cargo test --manifest-path src-tauri/Cargo.toml` passes.
+- Rust tests cover settings validation, non-Noir art ambient clamp, timeout clamp, and mini not being persisted as last window mode.
+
+### Manual Checkpoint B3 Settings Authority
+
+- Change theme in main; mini updates to same theme without reload.
+- Change Film Grain/Vinyl Wobble/Lean-Back/Cursor Hide/Idle Timeout in main; mini reflects same settings.
+- Change a setting from mini if reachable; main reflects same backend-approved setting.
+- Switch Main -> Mini -> Main rapidly; settings do not reset or poison to defaults.
+- Quit/reopen app; persisted settings load correctly.
+- Browser development still uses in-memory defaults and approved Stage 2 visuals remain unchanged.
 
 ---
 

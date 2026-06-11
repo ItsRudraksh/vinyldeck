@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
-import { flushSettingsPersistence } from "../../lib/settings";
+import { commitSettings } from "../../lib/settings";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
 import type { WindowMode } from "../../lib/window/types";
 import "./Settings.css";
@@ -29,31 +29,41 @@ export function Settings({ open, onClose }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("THEMES");
   const settings = useVinylDeckStore(selectSettings);
   const currentTheme = useVinylDeckStore((s) => s.theme);
-  const setTheme = useVinylDeckStore((s) => s.setTheme);
   const artAmbient = useVinylDeckStore((s) => s.artAmbient);
-  const setArtAmbient = useVinylDeckStore((s) => s.setArtAmbient);
-  const updateSettings = useVinylDeckStore((s) => s.updateSettings);
-  const setWindowMode = useVinylDeckStore((s) => s.setWindowMode);
-  const setAlwaysOnTop = useVinylDeckStore((s) => s.setAlwaysOnTop);
+  const hydrateSettings = useVinylDeckStore((s) => s.hydrateSettings);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const setDevForceEmpty = useVinylDeckStore((s) => s.setDevForceEmpty);
 
+  function applyCommittedSettings(nextSettings: typeof settings) {
+    hydrateSettings(nextSettings);
+    applyTheme(nextSettings.theme);
+    if (nextSettings.theme !== "noir" || !nextSettings.artAmbient) resetAmbientColors();
+  }
+
+  function updateBackendSettings(patch: Parameters<typeof commitSettings>[0]) {
+    void commitSettings(patch)
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Settings] Update failed:", error);
+      });
+  }
+
   function handleThemeSelect(theme: ThemeId) {
-    setTheme(theme);
-    applyTheme(theme);
-    if (theme !== "noir") resetAmbientColors();
+    updateBackendSettings({ theme });
   }
 
   function handleArtAmbientToggle() {
     const next = !artAmbient;
-    setArtAmbient(next);
     if (!next) resetAmbientColors();
+    updateBackendSettings({ artAmbient: next });
   }
 
   function handleWindowModeSelect(mode: WindowMode) {
-    setWindowMode(mode);
-    void flushSettingsPersistence()
-      .then(() => setNativeWindowMode(mode))
+    void commitSettings({ windowMode: mode })
+      .then((nextSettings) => {
+        applyCommittedSettings(nextSettings);
+        return setNativeWindowMode(mode);
+      })
       .catch((error) => {
         console.warn("[Window] Mode change failed:", error);
       });
@@ -61,10 +71,14 @@ export function Settings({ open, onClose }: SettingsProps) {
 
   function handleAlwaysOnTopToggle() {
     const next = !settings.alwaysOnTop;
-    setAlwaysOnTop(next);
-    void setNativeAlwaysOnTop(next).catch((error) => {
-      console.warn("[Window] Always-on-top change failed:", error);
-    });
+    void commitSettings({ alwaysOnTop: next })
+      .then((nextSettings) => {
+        applyCommittedSettings(nextSettings);
+        return setNativeAlwaysOnTop(next);
+      })
+      .catch((error) => {
+        console.warn("[Window] Always-on-top change failed:", error);
+      });
   }
 
   return (
@@ -157,7 +171,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                     label="Vinyl Wobble"
                     description="Subtle platter imperfection while playback is active."
                     checked={settings.vinylWobble}
-                    onToggle={() => updateSettings({ vinylWobble: !settings.vinylWobble })}
+                    onToggle={() => updateBackendSettings({ vinylWobble: !settings.vinylWobble })}
                   />
                   {currentTheme === "noir" && (
                     <SettingsToggle
@@ -171,7 +185,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                     label="Film Grain"
                     description="Analog texture over the visual engine."
                     checked={settings.filmGrain}
-                    onToggle={() => updateSettings({ filmGrain: !settings.filmGrain })}
+                    onToggle={() => updateBackendSettings({ filmGrain: !settings.filmGrain })}
                   />
                 </div>
               ) : activeTab === "DISPLAY" ? (
@@ -218,13 +232,13 @@ export function Settings({ open, onClose }: SettingsProps) {
                       label="Lean-Back Mode"
                       description="Let controls disappear while the record becomes the room."
                       checked={settings.leanBackMode}
-                      onToggle={() => updateSettings({ leanBackMode: !settings.leanBackMode })}
+                      onToggle={() => updateBackendSettings({ leanBackMode: !settings.leanBackMode })}
                     />
                     <SettingsToggle
                       label="Cursor Hide"
                       description="Hide the pointer when playback settles into idle."
                       checked={settings.cursorHide}
-                      onToggle={() => updateSettings({ cursorHide: !settings.cursorHide })}
+                      onToggle={() => updateBackendSettings({ cursorHide: !settings.cursorHide })}
                     />
                   </div>
                   <div className="settings-slider-row">
@@ -243,7 +257,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                       step="1"
                       value={settings.idleTimeoutSeconds}
                       aria-label="Idle timeout"
-                      onChange={(event) => updateSettings({ idleTimeoutSeconds: Number(event.currentTarget.value) })}
+                      onChange={(event) => updateBackendSettings({ idleTimeoutSeconds: Number(event.currentTarget.value) })}
                     />
                     <div className="settings-slider-row__ticks" aria-hidden="true">
                       <span>1s</span>

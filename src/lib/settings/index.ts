@@ -1,19 +1,17 @@
-import { isTauri } from "@tauri-apps/api/core";
-import { load } from "@tauri-apps/plugin-store";
+import { invoke, isTauri } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useVinylDeckStore } from "../playback/store";
 import { resetAmbientColors } from "../themes/applier";
 import { DEFAULT_SETTINGS, WINDOW_MODES } from "./types";
 import type { PersistedSettings } from "./types";
 import type { ThemeId } from "../themes/applier";
 
-const STORE_FILE = "settings.json";
-const STORE_KEY = "settings";
+export const SETTINGS_CHANGED_EVENT = "settings-changed";
+
 const LEGACY_SETTINGS_HANDOFF_KEY = "vinyldeck:settings-handoff";
-const STORE_DEFAULTS = { [STORE_KEY]: DEFAULT_SETTINGS };
-const SAVE_DELAY_MS = 400;
 const THEME_IDS: ThemeId[] = ["noir", "glass", "aurora", "vapor", "paper"];
 
-let saveTimer: ReturnType<typeof setTimeout> | null = null;
+export type SettingsPatch = Partial<Omit<PersistedSettings, "version">>;
 
 export function validateSettings(value: unknown): PersistedSettings {
   if (!value || typeof value !== "object") return DEFAULT_SETTINGS;
@@ -41,53 +39,48 @@ export async function loadSettings(): Promise<PersistedSettings> {
   clearLegacySettingsHandoff();
 
   try {
-    const store = await load(STORE_FILE, { defaults: STORE_DEFAULTS, autoSave: false });
-    return validateSettings(await store.get(STORE_KEY));
+    return validateSettings(await invoke<PersistedSettings>("cmd_settings_snapshot"));
   } catch (error) {
-    console.warn("[Settings] Load failed:", error);
+    console.warn("[Settings] Snapshot failed:", error);
     return DEFAULT_SETTINGS;
   }
 }
 
-export function subscribeToSettingsPersistence(): () => void {
+export async function commitSettings(patch: SettingsPatch): Promise<PersistedSettings> {
+  if (!isTauri()) {
+    const current = useVinylDeckStore.getState().settings;
+    const settings = validateSettings({ ...current, ...patch });
+    useVinylDeckStore.getState().hydrateSettings(settings);
+    return settings;
+  }
+
+  return validateSettings(await invoke<PersistedSettings>("cmd_settings_update", { patch }));
+}
+
+export async function resetSettings(): Promise<PersistedSettings> {
+  if (!isTauri()) {
+    useVinylDeckStore.getState().hydrateSettings(DEFAULT_SETTINGS);
+    return DEFAULT_SETTINGS;
+  }
+
+  return validateSettings(await invoke<PersistedSettings>("cmd_settings_reset"));
+}
+
+export async function subscribeToSettingsChanges(
+  callback: (settings: PersistedSettings) => void,
+): Promise<() => void> {
   if (!isTauri()) return () => {};
 
-  return useVinylDeckStore.subscribe(
-    (state) => state.settings,
-    (settings) => {
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(() => {
-        void saveSettings(settings);
-      }, SAVE_DELAY_MS);
-    },
-  );
-}
-
-export async function flushSettingsPersistence(): Promise<void> {
-  if (!isTauri()) return;
-  if (saveTimer) {
-    clearTimeout(saveTimer);
-    saveTimer = null;
-  }
-
-  await saveSettings(useVinylDeckStore.getState().settings);
-}
-
-async function saveSettings(settings: PersistedSettings): Promise<void> {
-  try {
-    const store = await load(STORE_FILE, { defaults: STORE_DEFAULTS, autoSave: false });
-    await store.set(STORE_KEY, settings);
-    await store.save();
-  } catch (error) {
-    console.warn("[Settings] Save failed:", error);
-  }
+  return listen<PersistedSettings>(SETTINGS_CHANGED_EVENT, ({ payload }) => {
+    callback(validateSettings(payload));
+  });
 }
 
 function clearLegacySettingsHandoff(): void {
   try {
     window.localStorage.removeItem(LEGACY_SETTINGS_HANDOFF_KEY);
   } catch {
-    // Ignore unavailable storage; desktop settings come from Tauri Store.
+    // Ignore unavailable storage; desktop settings come from backend Store.
   }
 }
 

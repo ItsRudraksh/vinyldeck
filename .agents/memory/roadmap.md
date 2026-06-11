@@ -37,12 +37,13 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 
 - User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
 - Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, Phase 3 window modes, and Phase 3 backend-owned playback authority extension are verified.
-- Settings persistence is implemented through Zustand-owned settings plus Tauri Store. Mini/main cross-WebView theme persistence fix: main is the only persisted-settings writer; mini reads/hydrates settings only. See `.agents/memory/bugs/BUG-002-mini-theme-persistence.md`.
+- Settings persistence has moved to Rust backend authority. WebViews are readers/controllers only; backend validates, persists, and emits `settings-changed`. The old BUG-002 main-only writer fix is superseded by backend ownership.
 - Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
 - Required gate before tray is complete: Phase 3 extension B3.8-B3.14 moved playback authority to Rust backend so main, mini, tray, shortcuts, and future SMTC all read/control one source of truth.
 - User manually approved seamless main/mini playback sync on 2026-06-11.
-- Settings and future dynamic state should also migrate toward backend-owned command/event authority so no frontend window is a long-term state authority.
-- System tray and keyboard shortcuts follow after explicit user approval to start Backend Phase 4.
+- Required settings authority gate before tray is implemented as B3.15-B3.21. Manual verification remains before Backend Phase 4.
+- Future dynamic state should use backend-owned command/event authority so no frontend window is a long-term state authority.
+- System tray and keyboard shortcuts follow after manual settings authority approval and explicit user approval to start Backend Phase 4.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)
 
