@@ -223,13 +223,16 @@ Capabilities differ per source. Spotify, browsers, and VLC may expose different 
 Poll every 500ms, but split expensive and lightweight work:
 
 - Every poll: current session, playback status, timeline, capability changes.
-- Only on session/track semantic change: media properties and artwork stream.
+- Every poll must also refresh cheap media-property text identity (`Title`, `Artist`, `AlbumTitle`) before deciding whether cached metadata/artwork is still valid. Do not identify a track by `source_id + duration` alone; Spotify can serve different tracks with the same/similar duration, causing stale previous-song artwork/title. Use a semantic cache key such as `source_id + title + artist + album + duration`.
+- Only on session/track semantic identity change: read/decode artwork stream.
 - Emit immediate semantic changes.
 - Emit periodic position resyncs.
 - Emit one session-ended/empty transition.
 - Rate-limit repeated errors.
 
 Do not read and base64-encode artwork every 500ms.
+
+Use `GlobalSystemMediaTransportControlsSessionTimelineProperties.LastUpdatedTime()` with `Position()` to project current position at emit time when media is playing. This avoids emitting stale timeline positions and reduces apparent frontend progress drift/backward jumps.
 
 ### Snapshot/Command Robustness
 

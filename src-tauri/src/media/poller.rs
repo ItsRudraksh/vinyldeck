@@ -90,30 +90,36 @@ impl SmtcPoller {
     }
 
     async fn snapshot_for_poll(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
-        let Some(lightweight) = super::smtc::current_lightweight_snapshot().await? else {
+        let Some(metadata_snapshot) = super::smtc::current_media_snapshot_with_metadata().await?
+        else {
             self.cached_media = None;
             return Ok(None);
         };
 
-        let cache_key = TrackCacheKey::from_snapshot(&lightweight);
+        let cache_key = TrackCacheKey::from_snapshot(&metadata_snapshot);
         if self
             .cached_media
             .as_ref()
             .is_some_and(|cached| cached.key == cache_key)
         {
             return Ok(Some(apply_cached_media(
-                lightweight,
+                metadata_snapshot,
                 self.cached_media.as_ref(),
             )));
         }
 
         let Some(full_snapshot) = super::smtc::current_media_snapshot_with_artwork().await? else {
             self.cached_media = None;
-            return Ok(Some(lightweight));
+            return Ok(Some(metadata_snapshot));
         };
 
-        self.cached_media = Some(CachedMedia::from_snapshot(&full_snapshot));
-        Ok(Some(full_snapshot))
+        if TrackCacheKey::from_snapshot(&full_snapshot) == cache_key {
+            self.cached_media = Some(CachedMedia::from_snapshot(&full_snapshot));
+            return Ok(Some(full_snapshot));
+        }
+
+        self.cached_media = None;
+        Ok(Some(metadata_snapshot))
     }
 
     fn session_ended_snapshot(&mut self) -> Option<MediaSnapshot> {
@@ -143,6 +149,9 @@ impl SmtcPoller {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct TrackCacheKey {
     source_id: String,
+    track: String,
+    artist: String,
+    album: String,
     duration_millis: u64,
 }
 
@@ -150,6 +159,9 @@ impl TrackCacheKey {
     fn from_snapshot(snapshot: &MediaSnapshot) -> Self {
         Self {
             source_id: snapshot.source_id.clone(),
+            track: snapshot.track.clone(),
+            artist: snapshot.artist.clone(),
+            album: snapshot.album.clone(),
             duration_millis: seconds_to_millis(snapshot.duration),
         }
     }
@@ -268,9 +280,12 @@ mod tests {
     }
 
     #[test]
-    fn track_cache_key_uses_source_and_duration() {
+    fn track_cache_key_uses_source_metadata_and_duration() {
         let base = MediaSnapshot {
             source_id: "spotify".to_string(),
+            track: "Goth Bitch".to_string(),
+            artist: "1nonly".to_string(),
+            album: "Goth Bitch".to_string(),
             duration: 120.25,
             ..MediaSnapshot::default()
         };
@@ -286,6 +301,12 @@ mod tests {
             source_id: "chrome".to_string(),
             ..base.clone()
         };
+        let same_duration_next_track = MediaSnapshot {
+            track: "CANT HAVE IT".to_string(),
+            artist: "JKER".to_string(),
+            album: "CANT HAVE IT".to_string(),
+            ..base.clone()
+        };
 
         assert_eq!(
             TrackCacheKey::from_snapshot(&base),
@@ -298,6 +319,10 @@ mod tests {
         assert_ne!(
             TrackCacheKey::from_snapshot(&base),
             TrackCacheKey::from_snapshot(&different_source)
+        );
+        assert_ne!(
+            TrackCacheKey::from_snapshot(&base),
+            TrackCacheKey::from_snapshot(&same_duration_next_track)
         );
     }
 
