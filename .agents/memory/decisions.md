@@ -46,6 +46,7 @@
 | 2026-06-11 | Settings Authority | **Rust backend owns persisted settings writes** | Playback authority proved the backend command/event pattern. WebViews are now readers/controllers only; Rust validates, persists, and emits settings snapshots to all windows. Supersedes the temporary main-only writer fix from BUG-002. |
 | 2026-06-11 | Multi-Window Dynamic State | **Backend owns playback authority before tray/SMTC** | Main/mini/tray/shortcuts must not rely on window-to-window playback bridges. Rust backend will own playback state/commands; any number of windows subscribe to backend events and invoke backend commands. If this pattern works cleanly, settings and future dynamic state should migrate backend-owned too. |
 | 2026-06-11 | V1 Baseline | **Freeze current build as V1 docs baseline; defer Phase 11 distribution** | Backend Phase 10 automated hardening passed and live Spotify sync was approved. Phase 11 installer/distribution validation, bundle identifier cleanup, player matrix, and tray playback SMTC unification are intentionally held for a later pass. |
+| 2026-06-13 | Vinyl Pressing Engine | **Deterministic Album-to-Pressing Engine** | Quantizes art to 3 colors (primary/secondary/accent) and maps them to solid/marble/splatter/translucent/smoke/split/audiophile-black. Prevents achromatic covers from collapsing to solid black, applies SVG noise/warp filters for organic physical texture, and controls visually rendering through dynamic CSS properties on HTML root to preserve 60fps without React re-renders. |
 
 ---
 
@@ -64,4 +65,4 @@
 
 **NEVER use `--force`, `--yes` combined with destructive scaffold tools, or any flag that overwrites/clears an existing non-empty directory in `c:\Coding\vinyldeck\`.** On 2026-06-08, `npx create-tauri-app . --force` destroyed all pre-existing files. User restored from backup. Always scaffold into a clean temp directory and copy only what is needed.
 
-**Last Updated:** 2026-06-11
+**Last Updated:** 2026-06-13

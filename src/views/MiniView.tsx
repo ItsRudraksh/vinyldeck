@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
-import { currentMonitor, getCurrentWindow, PhysicalPosition } from "@tauri-apps/api/window";
+import {
+  currentMonitor,
+  getCurrentWindow,
+  PhysicalPosition,
+} from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
 import { AmbientLayer } from "../components/AmbientLayer";
 import { Controls } from "../components/Controls";
@@ -10,7 +14,14 @@ import { VaporGrid } from "../components/VaporGrid";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { setNativeWindowMode } from "../lib/window";
-import { EMPTY_PLAYBACK, selectArtwork, selectIsPlaying, selectPlayback, selectTheme, useVinylDeckStore } from "../lib/playback/store";
+import {
+  EMPTY_PLAYBACK,
+  selectArtwork,
+  selectIsPlaying,
+  selectPlayback,
+  selectTheme,
+  useVinylDeckStore,
+} from "../lib/playback/store";
 import "./MiniView.css";
 
 const MINI_CONTROLS_HIDE_MS = 1400;
@@ -39,7 +50,10 @@ export function MiniView() {
   function revealControls() {
     setControlsVisible(true);
     if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-    controlsTimerRef.current = setTimeout(() => setControlsVisible(false), MINI_CONTROLS_HIDE_MS);
+    controlsTimerRef.current = setTimeout(
+      () => setControlsVisible(false),
+      MINI_CONTROLS_HIDE_MS,
+    );
   }
 
   function handleMouseDown(event: MouseEvent<HTMLElement>) {
@@ -48,11 +62,14 @@ export function MiniView() {
 
     const target = event.target;
     if (!(target instanceof Element)) return;
-    if (target.closest("button, .mini-view__controls, .mini-view__return")) return;
+    if (target.closest("button, .mini-view__controls, .mini-view__return"))
+      return;
 
-    void getCurrentWindow().startDragging().catch((error) => {
-      console.warn("[Window] Mini drag failed:", error);
-    });
+    void getCurrentWindow()
+      .startDragging()
+      .catch((error) => {
+        console.warn("[Window] Mini drag failed:", error);
+      });
   }
 
   useEffect(() => {
@@ -61,7 +78,10 @@ export function MiniView() {
     };
   }, []);
 
-  useColorExtraction(theme === "noir" && artAmbient ? artworkDataUrl : null);
+  useColorExtraction(artworkDataUrl, {
+    ambientEnabled: theme === "noir" && artAmbient,
+    seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
+  });
   useMiniCornerSnap();
 
   return (
@@ -92,7 +112,9 @@ export function MiniView() {
         />
       </div>
 
-      <div className={`mini-view__controls${controlsVisible ? " mini-view__controls--visible" : ""}`}>
+      <div
+        className={`mini-view__controls${controlsVisible ? " mini-view__controls--visible" : ""}`}
+      >
         <Controls
           isPlaying={isPlaying}
           canControl={effectivePlayback.canControl}
@@ -114,7 +136,13 @@ export function MiniView() {
           void setNativeWindowMode("main");
         }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
             d="M8 4H4v4M4 4l6.5 6.5M16 20h4v-4M20 20l-6.5-6.5M20 8V4h-4M20 4l-6.5 6.5M4 16v4h4M4 20l6.5-6.5"
             stroke="currentColor"
@@ -159,18 +187,22 @@ function useMiniCornerSnap() {
       const area = monitor.workArea;
       const left = area.position.x + MINI_SNAP_MARGIN_PX;
       const top = area.position.y + MINI_SNAP_MARGIN_PX;
-      const right = area.position.x + area.size.width - size.width - MINI_SNAP_MARGIN_PX;
-      const bottom = area.position.y + area.size.height - size.height - MINI_SNAP_MARGIN_PX;
-      const snapX = Math.abs(position.x - left) <= MINI_SNAP_THRESHOLD_PX
-        ? left
-        : Math.abs(position.x - right) <= MINI_SNAP_THRESHOLD_PX
-          ? right
-          : null;
-      const snapY = Math.abs(position.y - top) <= MINI_SNAP_THRESHOLD_PX
-        ? top
-        : Math.abs(position.y - bottom) <= MINI_SNAP_THRESHOLD_PX
-          ? bottom
-          : null;
+      const right =
+        area.position.x + area.size.width - size.width - MINI_SNAP_MARGIN_PX;
+      const bottom =
+        area.position.y + area.size.height - size.height - MINI_SNAP_MARGIN_PX;
+      const snapX =
+        Math.abs(position.x - left) <= MINI_SNAP_THRESHOLD_PX
+          ? left
+          : Math.abs(position.x - right) <= MINI_SNAP_THRESHOLD_PX
+            ? right
+            : null;
+      const snapY =
+        Math.abs(position.y - top) <= MINI_SNAP_THRESHOLD_PX
+          ? top
+          : Math.abs(position.y - bottom) <= MINI_SNAP_THRESHOLD_PX
+            ? bottom
+            : null;
 
       if (snapX === null || snapY === null) return;
 

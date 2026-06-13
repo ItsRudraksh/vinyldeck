@@ -1,15 +1,62 @@
 /* ============================================================
    VinylRecord Component CSS
-   Ground truth from stitch vinyldeck_noir_high_fidelity_motion
-   Phase 2: vinylWobble, counter-rotating reflection layers,
-            mouse specular opacity tuned to 0.28, playing states.
+   Album-derived physical vinyl object: colored wax base,
+   collectible pressing texture, responsive grooves, specular
+   highlights, softened printed label integration.
    ============================================================ */
 
-/* ── @property for animated conic-gradient rotation ───────── */
 @property --vinyl-rotation {
-  syntax: '<angle>';
+  syntax: "<angle>";
   inherits: false;
   initial-value: 0deg;
+}
+
+@property --pressing-primary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #101010;
+}
+
+@property --pressing-secondary {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #d8d8d8;
+}
+
+@property --pressing-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #93000a;
+}
+
+@property --pressing-deep {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #050505;
+}
+
+@property --pressing-highlight {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #404040;
+}
+
+@property --pressing-groove {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #171717;
+}
+
+@property --pressing-groove-bright {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #343434;
+}
+
+@property --pressing-ghost-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
 
 /* ── Wrapper ───────────────────────────────────────────────── */
@@ -21,42 +68,53 @@
   width: var(--vinyl-size, 420px);
   height: var(--vinyl-size, 420px);
   flex-shrink: 0;
-  /* Phase 2.1: Wobble applied at wrapper level, separate from disc rotation */
+  isolation: isolate;
 }
 
-/* Phase 2.1: Wobble ON when playing — wrapper drifts ±0.8px */
-/* Applied to wrapper so it doesn't interfere with the RAF rotation on disc */
 .vinyl-wrapper--playing {
   animation: vinylWobble 1.8s linear infinite;
   will-change: transform;
 }
 
+.vinyl-filter-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 /* ── Glow bloom — behind disc ──────────────────────────────── */
 .vinyl-glow {
   position: absolute;
-  inset: -20%;
+  inset: -22%;
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    var(--glow-color) 0%,
-    transparent 70%
+    color-mix(
+        in oklch,
+        var(--pressing-primary, var(--glow-color)) 42%,
+        var(--glow-color, rgba(255, 255, 255, 0.2))
+      )
+      0%,
+    color-mix(in srgb, var(--pressing-accent, transparent) 22%, transparent) 38%,
+    transparent 72%
   );
   filter: blur(var(--glow-radius, 80px));
   opacity: var(--glow-opacity, 0.5);
   pointer-events: none;
   will-change: opacity;
-  transition: opacity 800ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  transition:
+    opacity 800ms cubic-bezier(0.25, 0.1, 0.25, 1),
+    background 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1));
 }
 
 .vinyl-glow.playing {
-  opacity: calc(var(--glow-opacity, 0.5) * 1.6);
+  opacity: calc(var(--glow-opacity, 0.5) * 1.7);
 }
 
-/* ── Counter-rotating reflection layers — OUTSIDE disc ──────── */
-/* Phase 2.2/2.3: These overlays are siblings of vinyl-disc,    */
-/* NOT children. So they do NOT rotate with the disc. They sit  */
-/* at fixed angles — like a real overhead light source.         */
-/* Layer A: slow clockwise 6s, Layer B: counter 8s             */
+/* ── Fixed-light reflection layers — outside disc ──────────── */
 .vinyl-counter-a,
 .vinyl-counter-b {
   position: absolute;
@@ -64,134 +122,420 @@
   border-radius: 50%;
   pointer-events: none;
   will-change: transform;
+  z-index: 3;
 }
 
 .vinyl-counter-a {
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    rgba(255, 255, 255, 0.04) 30deg,
-    transparent 90deg,
-    transparent 180deg,
-    rgba(255, 255, 255, 0.03) 240deg,
-    transparent 300deg,
+    color-mix(in srgb, var(--pressing-highlight, #ffffff) 20%, transparent)
+      30deg,
+    transparent 86deg,
+    transparent 178deg,
+    color-mix(in srgb, var(--pressing-secondary, #ffffff) 12%, transparent)
+      238deg,
+    transparent 304deg,
     transparent 360deg
   );
   mix-blend-mode: screen;
-  opacity: 0.4;
+  opacity: calc(0.36 * var(--pressing-reflection-strength, 1));
   animation: counterRotateA 6s linear infinite;
-  transition: opacity 800ms ease;
+  transition:
+    opacity 800ms ease,
+    background 760ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .vinyl-counter-b {
   background: conic-gradient(
     from 180deg,
     transparent 0deg,
-    rgba(255, 255, 255, 0.03) 20deg,
-    transparent 60deg,
-    transparent 200deg,
-    rgba(255, 255, 255, 0.025) 250deg,
-    transparent 300deg,
+    color-mix(in srgb, var(--pressing-pearl, #ffffff) 15%, transparent) 22deg,
+    transparent 64deg,
+    transparent 198deg,
+    color-mix(in srgb, var(--pressing-highlight, #ffffff) 11%, transparent)
+      252deg,
+    transparent 306deg,
     transparent 360deg
   );
   mix-blend-mode: overlay;
-  opacity: 0.3;
+  opacity: calc(0.28 * var(--pressing-reflection-strength, 1));
   animation: counterRotateB 8s linear infinite;
-  transition: opacity 800ms ease;
+  transition:
+    opacity 800ms ease,
+    background 760ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Phase 2.3: Reflections lift opacity when playing — */
-/* environmental light catches the spinning grooves more vividly */
-.vinyl-wrapper--playing .vinyl-counter-a { opacity: 0.75; }
-.vinyl-wrapper--playing .vinyl-counter-b { opacity: 0.65; }
+.vinyl-wrapper--playing .vinyl-counter-a {
+  opacity: calc(0.72 * var(--pressing-reflection-strength, 1));
+}
+.vinyl-wrapper--playing .vinyl-counter-b {
+  opacity: calc(0.58 * var(--pressing-reflection-strength, 1));
+}
 
 /* ── Main disc ─────────────────────────────────────────────── */
-/* RAF rotation applied to this element via useVinylRotation.   */
 .vinyl-disc {
   position: relative;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: var(--vinyl-color, #0a0a0a);
-  /* Shadow stack: outer ambient + subtle edge ring */
+  overflow: hidden;
+  background: var(--pressing-deep, var(--vinyl-color, #0a0a0a));
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 30px 60px rgba(0, 0, 0, 0.9),
-    0 8px 40px rgba(0, 0, 0, 0.7),
-    0 0 100px rgba(0, 0, 0, 0.5);
+    0 0 0 1px
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 14%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #ffffff 5%, transparent),
+    inset 0 0 28px
+      color-mix(in srgb, var(--pressing-edge, #000000) 58%, transparent),
+    0 32px 62px rgba(0, 0, 0, 0.78),
+    0 9px 42px rgba(0, 0, 0, 0.58),
+    0 0 110px
+      color-mix(
+        in srgb,
+        var(--pressing-primary, #000000) 18%,
+        rgba(0, 0, 0, 0.55)
+      );
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
-  overflow: hidden;
+  transition:
+    background 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1));
 }
 
-/* ── Groove texture — exact from reference HTML ────────────── */
-/* repeating-radial-gradient(#111 0px, #222 2px, #111 4px)     */
-.vinyl-grooves {
+.vinyl-disc::before {
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  /* Outer groove band — coarser pattern */
-  background: repeating-radial-gradient(
-    circle at center,
-    #0f0f0f 0px,
-    #191919 1.5px,
-    #0f0f0f 3px
-  );
-  box-shadow:
-    inset 0 0 40px rgba(255, 255, 255, 0.05),
-    inset 0 0 100px rgba(0, 0, 0, 0.8);
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 37%,
+      rgba(0, 0, 0, 0.08) 38%,
+      transparent 39%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 77%,
+      rgba(255, 255, 255, 0.05) 78%,
+      rgba(0, 0, 0, 0.34) 100%
+    );
+  pointer-events: none;
+  z-index: 10;
 }
 
-/* Inner groove zone — slightly tighter, lighter */
-.vinyl-grooves::after {
-  content: '';
+.vinyl-translucent-ghost,
+.vinyl-pressing-base,
+.vinyl-pressing-texture,
+.vinyl-pressing-depth,
+.vinyl-grooves,
+.vinyl-sheen,
+.vinyl-reflection,
+.vinyl-label-ring {
   position: absolute;
-  inset: 8%;
+  inset: 0;
   border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ── Hidden sleeve ghost for true clear/smoke vinyl ─────────── */
+.vinyl-translucent-ghost {
+  z-index: 0;
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  transform: scale(1.13);
+  filter: blur(7px) saturate(1.15) contrast(1.08);
+  mix-blend-mode: screen;
+  transition:
+    opacity 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Album-derived wax material base ───────────────────────── */
+.vinyl-pressing-base {
+  z-index: 1;
+  background:
+    radial-gradient(
+      circle at 38% 28%,
+      color-mix(in oklch, var(--pressing-highlight, #4a4a4a) 82%, #ffffff 12%)
+        0%,
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 64% 72%,
+      color-mix(in srgb, var(--pressing-secondary, #222222) 36%, transparent) 0%,
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at center,
+      var(--pressing-primary, var(--vinyl-color, #111111)) 0%,
+      var(--pressing-deep, #050505) 73%,
+      var(--pressing-edge, #020202) 100%
+    );
+  filter: var(--pressing-theme-filter, none);
+  transition:
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1)),
+    opacity 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Default texture: pressed wax clouding + faint manufacturing flow. */
+.vinyl-pressing-texture {
+  z-index: 2;
+  background:
+    conic-gradient(
+      from var(--pressing-seed-angle, 25deg),
+      color-mix(in srgb, var(--pressing-soft, #333333) 28%, transparent) 0deg,
+      transparent 38deg,
+      color-mix(in srgb, var(--pressing-secondary, #777777) 18%, transparent)
+        86deg,
+      transparent 142deg,
+      color-mix(in srgb, var(--pressing-accent, #999999) 16%, transparent)
+        214deg,
+      transparent 286deg,
+      color-mix(in srgb, var(--pressing-soft, #333333) 20%, transparent) 360deg
+    ),
+    radial-gradient(
+      circle at 30% 24%,
+      color-mix(in srgb, var(--pressing-pearl, #ffffff) 12%, transparent),
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 72% 66%,
+      color-mix(in srgb, var(--pressing-shadow, #000000) 18%, transparent),
+      transparent 44%
+    );
+  background-size:
+    100% 100%,
+    142% 142%,
+    128% 128%;
+  background-position:
+    center,
+    calc(50% + var(--pressing-hash-a, 0px)) center,
+    center calc(50% + var(--pressing-hash-b, 0px));
+  mix-blend-mode: var(--pressing-texture-blend, overlay);
+  opacity: calc(
+    var(--pressing-texture-opacity, 0.26) * var(--pressing-material-opacity, 1)
+  );
+  transition:
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    mix-blend-mode
+      var(--theme-transition, 600ms cubic-bezier(0.25, 0.1, 0.25, 1));
+}
+
+/* Physical depth: thick rim, inner dish, edge darkening. */
+.vinyl-pressing-depth {
+  z-index: 3;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 31%,
+      rgba(0, 0, 0, 0.13) 35%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 0 70%,
+      color-mix(in srgb, var(--pressing-edge, #000000) 40%, transparent) 88%,
+      rgba(0, 0, 0, 0.58) 100%
+    ),
+    radial-gradient(
+      ellipse at 30% 20%,
+      color-mix(in srgb, #ffffff 8%, transparent) 0%,
+      transparent 42%
+    );
+  box-shadow:
+    inset 0 0 22px color-mix(in srgb, #ffffff 6%, transparent),
+    inset 0 0 72px
+      color-mix(in srgb, var(--pressing-shadow, #000000) 38%, transparent),
+    inset 0 0 120px color-mix(in srgb, #000000 42%, transparent);
+  opacity: 0.96;
+  transition:
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Responsive groove texture ─────────────────────────────── */
+.vinyl-grooves {
+  z-index: 4;
+  background:
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0px,
+      transparent 1.15px,
+      color-mix(
+          in srgb,
+          var(--pressing-groove-bright, #444444)
+            calc(12% * var(--pressing-groove-visibility, 1)),
+          transparent
+        )
+        1.62px,
+      color-mix(
+          in srgb,
+          var(--pressing-groove, #161616)
+            calc(22% * var(--pressing-groove-visibility, 1)),
+          transparent
+        )
+        2.1px,
+      transparent 3.45px
+    ),
+    repeating-radial-gradient(
+      circle at center,
+      transparent 0px,
+      transparent 7.5px,
+      color-mix(in srgb, var(--pressing-shadow, #000000) 17%, transparent) 8px,
+      transparent 9.7px,
+      transparent 13.6px
+    );
+  background-blend-mode: screen, multiply;
+  opacity: calc(0.7 * var(--pressing-groove-opacity, 1));
+  box-shadow:
+    inset 0 0 34px
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 8%, transparent),
+    inset 0 0 110px color-mix(in srgb, #000000 52%, transparent);
+  mix-blend-mode: var(--pressing-groove-blend, luminosity);
+  transition:
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vinyl-grooves::before,
+.vinyl-grooves::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Variable-width groove bands: breaks the computer-perfect ring problem. */
+.vinyl-grooves::before {
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 22%,
+      color-mix(in srgb, var(--pressing-groove-bright, #ffffff) 9%, transparent)
+        22.35%,
+      transparent 22.9%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 0 45%,
+      color-mix(in srgb, var(--pressing-groove, #000000) 16%, transparent) 45.3%,
+      transparent 46.2%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 0 59%,
+      color-mix(in srgb, var(--pressing-groove-bright, #ffffff) 8%, transparent)
+        59.25%,
+      transparent 60.1%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 0 67%,
+      color-mix(in srgb, var(--pressing-shadow, #000000) 18%, transparent)
+        67.25%,
+      transparent 68.4%
+    );
+  opacity: calc(0.86 * var(--pressing-groove-visibility, 1));
+}
+
+/* Inner groove zone: tighter ridges near the label. */
+.vinyl-grooves::after {
+  inset: 9%;
   background: repeating-radial-gradient(
     circle at center,
-    #111111 0px,
-    #1e1e1e 1.2px,
-    #111111 2.4px
+    transparent 0px,
+    color-mix(in srgb, var(--pressing-groove-bright, #404040) 10%, transparent)
+      0.9px,
+    color-mix(in srgb, var(--pressing-groove, #111111) 22%, transparent) 1.35px,
+    transparent 2.65px
   );
-  opacity: 0.9;
+  opacity: calc(0.72 * var(--pressing-groove-visibility, 1));
 }
 
 /* ── Specular reflection — mouse-driven conic gradient ─────── */
-/* Phase 2.4: Tuned opacity to 0.28 (was 0.07 — too faint).   */
-/* Uses CSS @property --vinyl-rotation for smooth transitions.  */
 .vinyl-sheen {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
+  z-index: 6;
   background: conic-gradient(
     from var(--vinyl-rotation, 0deg) at 50% 50%,
-    rgba(255, 255, 255, 0.01) 0deg,
-    rgba(255, 255, 255, 0.28) 45deg,
-    transparent 90deg,
-    transparent 180deg,
-    rgba(255, 255, 255, 0.22) 225deg,
+    color-mix(in srgb, #ffffff 2%, transparent) 0deg,
+    color-mix(
+        in srgb,
+        var(--pressing-pearl, #ffffff)
+          calc(28% * var(--pressing-sheen-strength, 1)),
+        transparent
+      )
+      43deg,
+    transparent 91deg,
+    transparent 179deg,
+    color-mix(
+        in srgb,
+        var(--pressing-highlight, #ffffff)
+          calc(22% * var(--pressing-sheen-strength, 1)),
+        transparent
+      )
+      225deg,
     transparent 270deg,
-    rgba(255, 255, 255, 0.01) 360deg
+    color-mix(in srgb, #ffffff 2%, transparent) 360deg
   );
-  transition: --vinyl-rotation 0.08s ease-out;
+  transition:
+    --vinyl-rotation 0.08s ease-out,
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1);
   mix-blend-mode: screen;
-  pointer-events: none;
+  opacity: 1;
 }
 
-/* ── Static reflection — inner disc subtle highlight ────────── */
-/* This layer stays INSIDE the disc for the inner-glow on grooves */
+/* ── Static studio-light reflection ────────────────────────── */
 .vinyl-reflection {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at 30% 25%,
-    rgba(255, 255, 255, 0.04) 0%,
-    transparent 55%
-  );
-  pointer-events: none;
+  z-index: 7;
+  background:
+    radial-gradient(
+      ellipse at 29% 23%,
+      color-mix(
+          in srgb,
+          #ffffff calc(7% * var(--pressing-sheen-strength, 1)),
+          transparent
+        )
+        0%,
+      transparent 48%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, #ffffff 4%, transparent) 0%,
+      transparent 35%,
+      color-mix(in srgb, var(--pressing-shadow, #000000) 10%, transparent) 100%
+    );
+  mix-blend-mode: screen;
+  opacity: 0.95;
+  transition: background 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Soft label boundary ring ──────────────────────────────── */
+.vinyl-label-ring {
+  z-index: 8;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 36.6%,
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 20%, transparent)
+        37%,
+      transparent 37.7%
+    ),
+    radial-gradient(
+      circle at center,
+      transparent 0 39.2%,
+      color-mix(in srgb, var(--pressing-shadow, #000000) 24%, transparent) 39.9%,
+      transparent 41.4%
+    );
+  mix-blend-mode: overlay;
+  opacity: 0.88;
 }
 
 /* ── Center label ──────────────────────────────────────────── */
@@ -199,18 +543,58 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 33%;
-  height: 33%;
-  /* counter-rotate to show artwork upright while disc spins */
+  width: 38%;
+  height: 38%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   overflow: hidden;
-  background: var(--vinyl-label-bg, #141414);
-  /* Physical edge: inset + outer shadow */
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      color-mix(in srgb, #ffffff 10%, transparent),
+      transparent 42%
+    ),
+    color-mix(
+      in oklch,
+      var(--pressing-label-bg, var(--vinyl-label-bg, #141414)) 82%,
+      var(--vinyl-label-bg, #141414)
+    );
   box-shadow:
-    inset 0 0 20px rgba(0, 0, 0, 0.8),
-    0 0 30px rgba(0, 0, 0, 0.5),
-    0 0 0 2px rgba(20, 20, 20, 0.9);
+    inset 0 0 16px color-mix(in srgb, #000000 48%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #ffffff 13%, transparent),
+    0 0 0 1px
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 18%, transparent),
+    0 0 0 4px
+      color-mix(in srgb, var(--pressing-shadow, #000000) 18%, transparent),
+    0 10px 28px color-mix(in srgb, #000000 28%, transparent);
+  z-index: 9;
+  transition:
+    width 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 780ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 780ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.vinyl-label::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 64%,
+      color-mix(in srgb, var(--pressing-primary, #000000) 18%, transparent) 72%,
+      transparent 100%
+    ),
+    conic-gradient(
+      from var(--pressing-seed-angle-alt, 120deg),
+      transparent,
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 11%, transparent),
+      transparent 34%
+    );
+  mix-blend-mode: overlay;
+  pointer-events: none;
   z-index: 2;
 }
 
@@ -220,9 +604,12 @@
   object-fit: cover;
   display: block;
   border-radius: 50%;
+  transform: scale(1.015);
+  filter: saturate(var(--pressing-label-saturation, 1.02))
+    contrast(var(--pressing-label-contrast, 1.02));
 }
 
-/* ── Fallback label (no artwork) ────────────────────────────── */
+/* ── Fallback label (no artwork) ───────────────────────────── */
 .vinyl-label-fallback {
   width: 100%;
   height: 100%;
@@ -231,20 +618,26 @@
   justify-content: center;
   background: radial-gradient(
     circle at 35% 35%,
-    rgba(255, 255, 255, 0.10),
-    var(--vinyl-label-bg, #141414)
+    color-mix(in srgb, #ffffff 12%, transparent),
+    color-mix(
+      in oklch,
+      var(--pressing-label-bg, var(--vinyl-label-bg, #141414)) 82%,
+      #000000
+    )
   );
   border-radius: 50%;
 }
 
 .vinyl-label-fallback span {
-  font-family: var(--font-display, 'Sora'), sans-serif;
+  font-family: var(--font-display, "Sora"), sans-serif;
   font-size: clamp(20px, 8%, 40px);
   font-weight: 700;
   color: var(--ui-accent, #e8e8e8);
   letter-spacing: -0.02em;
-  opacity: 0.85;
+  opacity: 0.86;
   line-height: 1;
+  text-shadow: 0 0 14px
+    color-mix(in srgb, var(--pressing-primary, #ffffff) 25%, transparent);
 }
 
 .vinyl-label-fallback--empty span {
@@ -253,36 +646,42 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.72;
-  text-shadow: 0 0 14px color-mix(in srgb, var(--ui-accent) 28%, transparent);
 }
 
-/* ── Spindle hole ───────────────────────────────────────────── */
+/* ── Spindle hole ──────────────────────────────────────────── */
 .vinyl-hole {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 3%;
-  height: 3%;
+  width: 3.4%;
+  height: 3.4%;
   min-width: 8px;
   min-height: 8px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
-  background: #000;
-  z-index: 10;
+  background:
+    radial-gradient(
+      circle at 35% 28%,
+      rgba(255, 255, 255, 0.16),
+      transparent 34%
+    ),
+    radial-gradient(circle at center, #030303 0%, #000000 72%, #111111 100%);
+  z-index: 12;
   box-shadow:
-    inset 0 4px 8px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.06);
+    inset 0 4px 8px rgba(0, 0, 0, 0.92),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 3px
+      color-mix(in srgb, var(--pressing-highlight, #ffffff) 9%, transparent);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   PHASE 6.6 — Theme-Specific Vinyl Label Customization
-   ═══════════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════
+   Theme-specific label personality kept here because it belongs
+   to the component surface, while pressing-material controls live
+   in themes.css as variables.
+   ══════════════════════════════════════════════════════════════ */
 
-/* ── NOIR — Iridescent conic shimmer overlay ─────────────────── */
-/* Dark label (#141414) with a rotating conic shimmer that feels */
-/* like the iridescent inner label on a premium pressing.        */
 [data-theme="noir"] .vinyl-label::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
@@ -291,7 +690,7 @@
     transparent 0deg,
     rgba(0, 200, 180, 0.12) 40deg,
     transparent 80deg,
-    rgba(100, 80, 220, 0.10) 160deg,
+    rgba(100, 80, 220, 0.1) 160deg,
     transparent 200deg,
     rgba(0, 200, 180, 0.08) 300deg,
     transparent 360deg
@@ -299,60 +698,73 @@
   mix-blend-mode: screen;
   animation: counterRotateA 8s linear infinite;
   pointer-events: none;
+  z-index: 3;
 }
 
-/* ── AURORA — Cyan concentric ring border ────────────────────── */
-/* Single 1px cyan border ring + glow — sci-fi label indicator.  */
 [data-theme="aurora"] .vinyl-label {
   box-shadow:
-    inset 0 0 20px rgba(0, 0, 0, 0.7),
-    0 0 0 1px var(--ui-accent, #00d4be),
-    0 0 8px var(--ui-accent, #00d4be),
-    0 0 20px rgba(0, 212, 190, 0.25);
+    inset 0 0 18px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--ui-accent, #00d4be) 84%, transparent),
+    0 0 10px color-mix(in srgb, var(--ui-accent, #00d4be) 55%, transparent),
+    0 0 24px rgba(0, 212, 190, 0.24);
 }
 
-/* Inner concentric ring — smaller circle */
 [data-theme="aurora"] .vinyl-label::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 15%;
   border-radius: 50%;
   border: 1px solid rgba(0, 212, 190, 0.25);
   box-shadow: 0 0 4px rgba(0, 212, 190, 0.2);
   pointer-events: none;
+  z-index: 3;
 }
 
-/* ── VAPOR — Magenta tinted label ────────────────────────────── */
-/* Label gets a translucent magenta accent bleed — neon.         */
 [data-theme="vapor"] .vinyl-label {
-  background: color-mix(in srgb, var(--ui-accent, #c855ff) 22%, #141414);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.12),
+      transparent 40%
+    ),
+    color-mix(
+      in srgb,
+      var(--pressing-label-bg, var(--ui-accent, #c855ff)) 54%,
+      #130018
+    );
   box-shadow:
-    inset 0 0 20px rgba(200, 85, 255, 0.3),
-    0 0 16px rgba(200, 85, 255, 0.2),
-    0 0 0 1px rgba(200, 85, 255, 0.15);
+    inset 0 0 20px rgba(200, 85, 255, 0.28),
+    0 0 16px rgba(200, 85, 255, 0.22),
+    0 0 0 1px rgba(200, 85, 255, 0.18),
+    0 0 0 4px
+      color-mix(in srgb, var(--pressing-accent, #c855ff) 18%, transparent);
 }
 
-/* ── PAPER — Stamped text ring ───────────────────────────────── */
-/* White label like a real vinyl — stamped "33⅓ RPM • STEREO"  */
-/* CSS-only using ::before for the outer ring text effect.       */
 [data-theme="paper"] .vinyl-label {
-  background: #f5f0e4; /* aged paper white */
+  background:
+    radial-gradient(
+      circle at 32% 24%,
+      rgba(255, 255, 255, 0.36),
+      transparent 45%
+    ),
+    color-mix(in oklch, var(--pressing-label-bg, #f5f0e4) 34%, #f5f0e4 66%);
   box-shadow:
     inset 0 0 12px rgba(0, 0, 0, 0.08),
     0 0 0 1px rgba(160, 130, 80, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.15);
+    0 0 0 4px rgba(110, 80, 40, 0.1),
+    0 2px 10px rgba(0, 0, 0, 0.14);
 }
 
-/* Stamped ring text — uses letter-spacing trick */
 [data-theme="paper"] .vinyl-label::after {
-  content: '· 33⅓ RPM · STEREO ·';
+  content: "· 33⅓ RPM · STEREO ·";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 80%;
   text-align: center;
-  font-family: 'Space Mono', monospace;
+  font-family: "Space Mono", monospace;
   font-size: 5.5px;
   font-weight: 400;
   letter-spacing: 0.08em;
@@ -360,19 +772,65 @@
   color: rgba(100, 75, 30, 0.55);
   white-space: nowrap;
   pointer-events: none;
-  /* Position near the outer ring of the label */
   margin-top: 28%;
+  z-index: 3;
 }
 
-/* ── GLASS — Frosted translucent circle ─────────────────────── */
-/* Dark translucent with backdrop-filter — frosted glass look.  */
 [data-theme="glass"] .vinyl-label {
-  background: rgba(0, 0, 0, 0.22);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
+  background:
+    radial-gradient(
+      circle at 35% 25%,
+      rgba(255, 255, 255, 0.28),
+      transparent 42%
+    ),
+    color-mix(
+      in srgb,
+      var(--pressing-label-bg, rgba(255, 255, 255, 0.2)) 46%,
+      rgba(255, 255, 255, 0.12)
+    );
+  -webkit-backdrop-filter: blur(6px) saturate(1.18);
+  backdrop-filter: blur(6px) saturate(1.18);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
     inset 0 0 20px rgba(0, 80, 200, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    0 4px 16px rgba(0, 0, 0, 0.2);
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 0 4px
+      color-mix(in srgb, var(--pressing-primary, #0058bc) 10%, transparent),
+    0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+@keyframes counterRotateA {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes counterRotateB {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes vinylWobble {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  25% {
+    transform: translate3d(0.45px, -0.35px, 0) scale(1.0008);
+  }
+  50% {
+    transform: translate3d(0, 0.45px, 0) scale(0.9996);
+  }
+  75% {
+    transform: translate3d(-0.45px, 0.25px, 0) scale(1.0005);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }

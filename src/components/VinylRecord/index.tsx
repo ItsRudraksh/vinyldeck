@@ -1,24 +1,25 @@
 // src/components/VinylRecord/index.tsx
 // Layer stack (bottom → top):
 //   0: vinyl-glow (bloom behind disc)
-//   1: vinyl-counter-a (counter-clockwise conic, OUTSIDE disc — fixed light)
-//   2: vinyl-counter-b (clockwise conic, OUTSIDE disc — fixed light)
-//   3: vinyl-disc (base plate — rotates via RAF)
-//       3a: vinyl-grooves (repeating-radial-gradient texture)
-//       3b: vinyl-sheen (conic specular, mouse-driven)
-//       3c: vinyl-reflection (static inner-glow highlight)
-//       3d: vinyl-label (center artwork or fallback)
-//       3e: vinyl-hole (spindle)
-//
-// Phase 2 changes:
-//   - vinyl-wrapper gets --playing class → vinylWobble animation
-//   - vinyl-counter-a/b moved OUTSIDE vinyl-disc so they don't rotate
-//   - specular sheen opacity lifted to 0.28 (was 0.07 — invisible)
-//   - vinyl-reflection simplified to radial inner highlight
+//   1: vinyl-counter-a (fixed-light conic reflection — outside disc)
+//   2: vinyl-counter-b (fixed-light conic reflection — outside disc)
+//   3: vinyl-disc (rotates via RAF)
+//       3a: vinyl-translucent-ghost blurred artwork visible through clear/smoke pressings
+//       3b: vinyl-pressing-base     album-derived colored wax material
+//       3c: vinyl-pressing-texture  marble / splatter / translucent / split personality
+//       3d: vinyl-pressing-depth    edge thickness + inner physical depth
+//       3e: vinyl-grooves           responsive record groove ridges
+//       3f: vinyl-sheen             mouse-driven specular highlight
+//       3g: vinyl-reflection        static studio-light reflection
+//       3h: vinyl-label-ring        softened print boundary
+//       3i: vinyl-label             album art or fallback
+//       3j: vinyl-hole              spindle hole
 
-import { useRef, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import { useVinylRotation } from "../../hooks/useVinylRotation";
 import "./VinylRecord.css";
+import "./pressings.css";
 
 interface VinylRecordProps {
   isPlaying: boolean;
@@ -37,20 +38,22 @@ export function VinylRecord({
 }: VinylRecordProps) {
   const sheenRef = useRef<HTMLDivElement>(null);
 
-  // RAF rotation with inertia — pure DOM mutation, no re-renders
+  // RAF rotation with inertia — pure DOM mutation, no re-renders.
   useVinylRotation({ isPlaying });
 
-  // Phase 2.4: Mouse-tracking specular highlight
-  // Direct DOM mutation — zero React re-renders on mousemove
+  // Mouse-tracking specular highlight.
+  // Direct DOM mutation — zero React re-renders on mousemove.
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!sheenRef.current) return;
     const disc = document.getElementById("vinyl-disc");
     if (!disc) return;
+
     const rect = disc.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
-    // Direct style mutation — bypasses React render cycle entirely
+    const angle =
+      Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
+
     sheenRef.current.style.setProperty("--vinyl-rotation", `${angle + 90}deg`);
   }, []);
 
@@ -60,21 +63,73 @@ export function VinylRecord({
   }, [handleMouseMove]);
 
   // Empty app state uses a brand wordmark; artwork-missing tracks use first letter.
-  const fallbackLabel = trackTitle ? trackTitle.charAt(0).toUpperCase() : "VINYLDECK";
+  const ghostArtworkStyle = artworkDataUrl
+    ? ({ backgroundImage: `url(${artworkDataUrl})` } as CSSProperties)
+    : undefined;
+  const fallbackLabel = trackTitle
+    ? trackTitle.charAt(0).toUpperCase()
+    : "VINYLDECK";
   const isEmptyLabel = !trackTitle;
 
   return (
     <div
       className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}`}
-      style={{ "--vinyl-size": `${size}px` } as React.CSSProperties}
+      style={{ "--vinyl-size": `${size}px` } as CSSProperties}
     >
+      {/* SVG turbulence is static; CSS chooses when to use it for organic marble/wax texture. */}
+      <svg className="vinyl-filter-defs" aria-hidden="true" focusable="false">
+        <filter
+          id="vinyl-marble-turbulence"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.014 0.038"
+            numOctaves="5"
+            seed="7"
+            stitchTiles="stitch"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="24"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+        <filter
+          id="vinyl-splatter-warp"
+          x="-12%"
+          y="-12%"
+          width="124%"
+          height="124%"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.055 0.09"
+            numOctaves="3"
+            seed="11"
+            stitchTiles="stitch"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="10"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
+
       {/* Layer 0: Glow bloom — behind everything */}
       <div className={`vinyl-glow${isPlaying ? " playing" : ""}`} />
 
-      {/* Layers 1–2: Counter-rotating reflection overlays (OUTSIDE disc)  */}
-      {/* These are fixed-light-source layers — they do NOT rotate with     */
-      /* the disc. They simulate a real overhead studio lamp catching the   */
-      /* groove ridges from a fixed angle while the record turns beneath.  */}
+      {/* Layers 1–2: Fixed light-source reflection overlays outside the rotating disc. */}
       <div className="vinyl-counter-a" />
       <div className="vinyl-counter-b" />
 
@@ -84,31 +139,29 @@ export function VinylRecord({
         id="vinyl-disc"
         aria-label={`Vinyl record${isPlaying ? " spinning" : " paused"}`}
       >
-        {/* Layer 3a: Groove texture */}
+        {artworkDataUrl && (
+          <div className="vinyl-translucent-ghost" style={ghostArtworkStyle} />
+        )}
+        <div className="vinyl-pressing-base" />
+        <div className="vinyl-pressing-texture" />
+        <div className="vinyl-pressing-depth" />
         <div className="vinyl-grooves" />
-
-        {/* Layer 3b: Specular mouse-driven sheen — opacity tuned to 0.28 */}
         <div className="vinyl-sheen" ref={sheenRef} />
-
-        {/* Layer 3c: Static inner-glow highlight (radial, not conic) */}
         <div className="vinyl-reflection" />
+        <div className="vinyl-label-ring" />
 
-        {/* Layer 3d: Center label — artwork or fallback letter */}
         <div className="vinyl-label">
           {artworkDataUrl ? (
-            <img
-              src={artworkDataUrl}
-              alt={trackTitle}
-              draggable={false}
-            />
+            <img src={artworkDataUrl} alt={trackTitle} draggable={false} />
           ) : (
-            <div className={`vinyl-label-fallback${isEmptyLabel ? " vinyl-label-fallback--empty" : ""}`}>
+            <div
+              className={`vinyl-label-fallback${isEmptyLabel ? " vinyl-label-fallback--empty" : ""}`}
+            >
               <span>{fallbackLabel}</span>
             </div>
           )}
         </div>
 
-        {/* Layer 3e: Spindle hole */}
         <div className="vinyl-hole" />
       </div>
     </div>

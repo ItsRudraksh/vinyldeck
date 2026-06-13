@@ -12,16 +12,16 @@
   --color-scheme: dark;
 
   /* === Typography === */
-  --font-display: 'Sora', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --mono-tracking: 0.1em;
 
   /* === Border Radius === */
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.5rem;    /* 8px */
-  --radius-lg: 1rem;      /* 16px */
-  --radius-xl: 1.5rem;    /* 24px */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.5rem; /* 8px */
+  --radius-lg: 1rem; /* 16px */
+  --radius-xl: 1.5rem; /* 24px */
   --radius-full: 9999px;
   --radius-base: var(--radius-md); /* default — overridden per theme */
 
@@ -79,9 +79,9 @@
   --color-scheme: dark;
 
   /* Typography — Hanken Grotesk (sharp editorial) + Geist (systematic) */
-  --font-display: 'Hanken Grotesk', system-ui, sans-serif;
-  --font-body: 'Geist', 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Hanken Grotesk", system-ui, sans-serif;
+  --font-body: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --mono-tracking: 0.1em;
 
   /* Radius — ZERO everywhere per DESIGN.md spec. Only disc stays a circle. */
@@ -112,8 +112,13 @@
   /* UI — heavy frosted dark glass */
   --ui-bg: rgba(20, 20, 20, 0.85);
   --ui-border: rgba(255, 255, 255, 0.06);
-  --ui-text-primary: rgba(229, 226, 225, 0.92);   /* from DESIGN.md on-surface */
-  --ui-text-secondary: rgba(196, 199, 200, 0.40); /* from DESIGN.md on-surface-variant muted */
+  --ui-text-primary: rgba(229, 226, 225, 0.92); /* from DESIGN.md on-surface */
+  --ui-text-secondary: rgba(
+    196,
+    199,
+    200,
+    0.4
+  ); /* from DESIGN.md on-surface-variant muted */
   --ui-accent: #e8e8e8;
   --ui-control-hover: rgba(255, 255, 255, 0.08);
   --ui-control-active: rgba(255, 255, 255, 0.14);
@@ -140,9 +145,10 @@
   --color-scheme: light;
 
   /* Typography — Manrope (geometric balance) + Inter */
-  --font-display: 'Manrope', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'Inter', system-ui, sans-serif; /* Glass uses Inter everywhere, no mono */
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono:
+    "Inter", system-ui, sans-serif; /* Glass uses Inter everywhere, no mono */
   --mono-tracking: 0.05em;
 
   /* Radius — most rounded theme */
@@ -156,7 +162,7 @@
   --vinyl-groove-inner: rgba(160, 200, 255, 0.08);
   --vinyl-groove-outer: rgba(160, 200, 255, 0.035);
   --vinyl-sheen: rgba(255, 255, 255, 0.15);
-  --vinyl-label-bg: rgba(255, 255, 255, 0.10);
+  --vinyl-label-bg: rgba(255, 255, 255, 0.1);
 
   /* Needle — ice blue silver */
   --needle-color: #d0d8e4;
@@ -167,13 +173,18 @@
   --ambient-primary: #1a4a9a;
   --ambient-secondary: #0a2060;
   --ambient-blur: 130px;
-  --ambient-opacity: 0.60;
+  --ambient-opacity: 0.6;
 
   /* UI — bright frosted glass (light mode) */
-  --ui-bg: rgba(255, 255, 255, 0.70);
+  --ui-bg: rgba(255, 255, 255, 0.7);
   --ui-border: rgba(0, 88, 188, 0.15);
-  --ui-text-primary: rgba(26, 28, 29, 0.92);   /* DESIGN.md on-surface dark text */
-  --ui-text-secondary: rgba(65, 71, 85, 0.70); /* DESIGN.md on-surface-variant */
+  --ui-text-primary: rgba(
+    26,
+    28,
+    29,
+    0.92
+  ); /* DESIGN.md on-surface dark text */
+  --ui-text-secondary: rgba(65, 71, 85, 0.7); /* DESIGN.md on-surface-variant */
   --ui-accent: #0058bc;
   --ui-control-hover: rgba(0, 88, 188, 0.08);
   --ui-control-active: rgba(0, 88, 188, 0.16);
@@ -181,12 +192,12 @@
   /* Ring */
   --ring-track: rgba(0, 88, 188, 0.12);
   --ring-fill: #0058bc;
-  --ring-glow: rgba(0, 88, 188, 0.30);
+  --ring-glow: rgba(0, 88, 188, 0.3);
 
   /* Glow — soft blue bloom */
-  --glow-color: rgba(0, 88, 188, 0.10);
+  --glow-color: rgba(0, 88, 188, 0.1);
   --glow-radius: 100px;
-  --glow-opacity: 0.40;
+  --glow-opacity: 0.4;
 }
 
 /* ─────────────────────────────────────────────────────────── */
@@ -199,9 +210,9 @@
   --color-scheme: dark;
 
   /* Typography — Sora (cinematic) + Geist (engineered) */
-  --font-display: 'Sora', system-ui, sans-serif;
-  --font-body: 'Geist', 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Geist", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --mono-tracking: 0.08em;
 
   /* Radius */
@@ -229,9 +240,9 @@
   --ambient-opacity: 0.65;
 
   /* UI — dark teal glass */
-  --ui-bg: rgba(0, 30, 40, 0.80);
+  --ui-bg: rgba(0, 30, 40, 0.8);
   --ui-border: rgba(0, 219, 231, 0.16);
-  --ui-text-primary: rgba(222, 227, 234, 0.92);   /* DESIGN.md on-surface */
+  --ui-text-primary: rgba(222, 227, 234, 0.92); /* DESIGN.md on-surface */
   --ui-text-secondary: rgba(148, 209, 209, 0.55); /* DESIGN.md secondary */
   --ui-accent: #00d4be;
   --ui-control-hover: rgba(0, 212, 190, 0.12);
@@ -240,12 +251,12 @@
   /* Ring */
   --ring-track: rgba(0, 219, 231, 0.12);
   --ring-fill: #00d4be;
-  --ring-glow: rgba(0, 212, 190, 0.40);
+  --ring-glow: rgba(0, 212, 190, 0.4);
 
   /* Glow — aurora teal bloom */
   --glow-color: rgba(0, 219, 231, 0.25);
   --glow-radius: 100px;
-  --glow-opacity: 0.60;
+  --glow-opacity: 0.6;
 }
 
 /* ─────────────────────────────────────────────────────────── */
@@ -258,9 +269,9 @@
   --color-scheme: dark;
 
   /* Typography — Anybody (expressive 80s display) + Space Grotesk + Space Mono */
-  --font-display: 'Anybody', system-ui, sans-serif;
-  --font-body: 'Space Grotesk', system-ui, sans-serif;
-  --font-mono: 'Space Mono', monospace; /* VFD display aesthetic */
+  --font-display: "Anybody", system-ui, sans-serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "Space Mono", monospace; /* VFD display aesthetic */
   --mono-tracking: 0.1em;
 
   /* Radius — precision hardware, minimal rounding */
@@ -285,13 +296,18 @@
   --ambient-primary: #6a00a8;
   --ambient-secondary: #3a006a;
   --ambient-blur: 130px;
-  --ambient-opacity: 0.70;
+  --ambient-opacity: 0.7;
 
   /* UI — neon-noir glass */
   --ui-bg: rgba(30, 0, 40, 0.82);
   --ui-border: rgba(200, 0, 255, 0.18);
-  --ui-text-primary: rgba(225, 224, 251, 0.90);   /* DESIGN.md on-surface */
-  --ui-text-secondary: rgba(217, 191, 213, 0.55); /* DESIGN.md on-surface-variant */
+  --ui-text-primary: rgba(225, 224, 251, 0.9); /* DESIGN.md on-surface */
+  --ui-text-secondary: rgba(
+    217,
+    191,
+    213,
+    0.55
+  ); /* DESIGN.md on-surface-variant */
   --ui-accent: #c855ff;
   --ui-control-hover: rgba(200, 85, 255, 0.14);
   --ui-control-active: rgba(200, 85, 255, 0.24);
@@ -302,7 +318,7 @@
   --ring-glow: rgba(200, 85, 255, 0.45);
 
   /* Glow — magenta neon bloom */
-  --glow-color: rgba(200, 85, 255, 0.30);
+  --glow-color: rgba(200, 85, 255, 0.3);
   --glow-radius: 100px;
   --glow-opacity: 0.65;
 }
@@ -318,9 +334,9 @@
   --color-scheme: light;
 
   /* Typography — Libre Caslon Text (luxury serif) + Work Sans + Space Mono */
-  --font-display: 'Libre Caslon Text', Georgia, serif;
-  --font-body: 'Work Sans', system-ui, sans-serif;
-  --font-mono: 'Space Mono', monospace; /* stamped back-panel text */
+  --font-display: "Libre Caslon Text", Georgia, serif;
+  --font-body: "Work Sans", system-ui, sans-serif;
+  --font-mono: "Space Mono", monospace; /* stamped back-panel text */
   --mono-tracking: 0.08em;
 
   /* Radius — soft but precise, like machined cardstock */
@@ -345,15 +361,25 @@
   --ambient-primary: #8a4a08;
   --ambient-secondary: #5a2a04;
   --ambient-blur: 120px;
-  --ambient-opacity: 0.60;
+  --ambient-opacity: 0.6;
 
   /* UI — warm paper surface (light mode) */
-  --ui-bg: rgba(249, 243, 229, 0.85);      /* warm paper with slight transparency */
-  --ui-border: rgba(113, 82, 48, 0.20);    /* bronze outline */
-  --ui-text-primary: rgba(29, 28, 19, 0.90);   /* DESIGN.md on-surface warm charcoal */
-  --ui-text-secondary: rgba(79, 69, 60, 0.65); /* DESIGN.md on-surface-variant */
-  --ui-accent: #715230;                    /* bronze primary */
-  --ui-control-hover: rgba(113, 82, 48, 0.10);
+  --ui-bg: rgba(249, 243, 229, 0.85); /* warm paper with slight transparency */
+  --ui-border: rgba(113, 82, 48, 0.2); /* bronze outline */
+  --ui-text-primary: rgba(
+    29,
+    28,
+    19,
+    0.9
+  ); /* DESIGN.md on-surface warm charcoal */
+  --ui-text-secondary: rgba(
+    79,
+    69,
+    60,
+    0.65
+  ); /* DESIGN.md on-surface-variant */
+  --ui-accent: #715230; /* bronze primary */
+  --ui-control-hover: rgba(113, 82, 48, 0.1);
   --ui-control-active: rgba(113, 82, 48, 0.18);
 
   /* Ring */
@@ -365,4 +391,388 @@
   --glow-color: rgba(212, 168, 64, 0.15);
   --glow-radius: 80px;
   --glow-opacity: 0.35;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ALBUM-SPECIFIC VINYL PRESSING MATERIAL SYSTEM
+   These variables do not replace the theme system. They tune the
+   album-derived pressing engine per theme personality.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --pressing-primary: var(--vinyl-color, #111111);
+  --pressing-secondary: #d8d8d8;
+  --pressing-accent: var(--ui-accent, #ffffff);
+  --pressing-deep: #050505;
+  --pressing-soft: #2c2c2c;
+  --pressing-highlight: #464646;
+  --pressing-shadow: #020202;
+  --pressing-edge: #010101;
+  --pressing-pearl: #f2f2f2;
+  --pressing-groove: #171717;
+  --pressing-groove-bright: #393939;
+  --pressing-label-bg: var(--vinyl-label-bg, #141414);
+  --pressing-seed-angle: 25deg;
+  --pressing-seed-angle-alt: 145deg;
+  --pressing-texture-opacity: 0.28;
+  --pressing-translucency: 1;
+  --pressing-splatter-scale: 1;
+  --pressing-ghost-opacity: 0;
+  --pressing-smoke-density: 0.68;
+  --pressing-organic-x: 48%;
+  --pressing-organic-y: 50%;
+  --pressing-hash-a: 0px;
+  --pressing-hash-b: 0px;
+
+  --pressing-material-opacity: 1;
+  --pressing-theme-filter: saturate(1) contrast(1);
+  --pressing-texture-blend: overlay;
+  --pressing-groove-blend: luminosity;
+  --pressing-groove-opacity: 1;
+  --pressing-groove-visibility: 1;
+  --pressing-sheen-strength: 1;
+  --pressing-reflection-strength: 1;
+  --pressing-label-saturation: 1.02;
+  --pressing-label-contrast: 1.02;
+}
+
+/* Noir: smoky translucent, dark dramatic, color bleeding through black wax. */
+[data-theme="noir"] {
+  --pressing-material-opacity: 0.92;
+  --pressing-theme-filter: saturate(0.92) contrast(1.12) brightness(0.86);
+  --pressing-texture-blend: screen;
+  --pressing-groove-blend: screen;
+  --pressing-groove-opacity: 0.92;
+  --pressing-groove-visibility: 0.95;
+  --pressing-sheen-strength: 0.92;
+  --pressing-reflection-strength: 0.86;
+  --pressing-label-saturation: 0.96;
+  --pressing-label-contrast: 1.06;
+}
+
+[data-theme="noir"][data-vinyl-pressing="solid"] .vinyl-pressing-texture,
+[data-theme="noir"][data-vinyl-pressing="marble"] .vinyl-pressing-texture,
+[data-theme="noir"][data-vinyl-pressing="translucent"] .vinyl-pressing-texture {
+  opacity: calc(var(--pressing-texture-opacity, 0.38) * 0.78);
+}
+
+/* Glass: crystal-clear acrylic, vivid color, frosted rim. */
+[data-theme="glass"] {
+  --pressing-material-opacity: 1;
+  --pressing-theme-filter: saturate(1.18) contrast(1.04) brightness(1.06);
+  --pressing-texture-blend: screen;
+  --pressing-groove-blend: soft-light;
+  --pressing-groove-opacity: 1.08;
+  --pressing-groove-visibility: 1.06;
+  --pressing-sheen-strength: 1.32;
+  --pressing-reflection-strength: 1.2;
+  --pressing-label-saturation: 1.05;
+  --pressing-label-contrast: 1.02;
+}
+
+[data-theme="glass"] .vinyl-disc {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #ffffff 30%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #ffffff 18%, transparent),
+    inset 0 0 34px color-mix(in srgb, #ffffff 10%, transparent),
+    inset 0 0 120px
+      color-mix(in srgb, var(--pressing-primary, #0058bc) 16%, transparent),
+    0 28px 60px rgba(40, 58, 95, 0.28),
+    0 8px 32px rgba(40, 58, 95, 0.22);
+}
+
+[data-theme="glass"] .vinyl-pressing-depth {
+  opacity: 0.72;
+  box-shadow:
+    inset 0 0 24px rgba(255, 255, 255, 0.16),
+    inset 0 0 76px
+      color-mix(in srgb, var(--pressing-primary, #0058bc) 20%, transparent),
+    inset 0 0 120px rgba(255, 255, 255, 0.06);
+}
+
+/* Aurora: holographic/iridescent surface that shifts across the wax. */
+[data-theme="aurora"] {
+  --pressing-material-opacity: 1;
+  --pressing-theme-filter: saturate(1.22) contrast(1.08);
+  --pressing-texture-blend: screen;
+  --pressing-groove-blend: screen;
+  --pressing-groove-opacity: 1.05;
+  --pressing-groove-visibility: 1.12;
+  --pressing-sheen-strength: 1.18;
+  --pressing-reflection-strength: 1.14;
+  --pressing-label-saturation: 1.08;
+  --pressing-label-contrast: 1.04;
+}
+
+[data-theme="aurora"] .vinyl-pressing-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--pressing-seed-angle-alt, 145deg),
+    transparent 0deg,
+    rgba(0, 212, 190, 0.2) 42deg,
+    transparent 96deg,
+    rgba(132, 92, 255, 0.18) 156deg,
+    transparent 218deg,
+    rgba(0, 219, 231, 0.18) 302deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+[data-theme="aurora"] .vinyl-disc {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--ui-accent, #00d4be) 36%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #ffffff 6%, transparent),
+    inset 0 0 44px
+      color-mix(in srgb, var(--ui-accent, #00d4be) 13%, transparent),
+    inset 0 0 110px rgba(0, 0, 0, 0.58),
+    0 32px 64px rgba(0, 20, 28, 0.68),
+    0 0 80px
+      color-mix(in srgb, var(--pressing-primary, #00d4be) 16%, transparent);
+}
+
+/* Vapor: neon saturated, electric, almost synthetic collector pressing. */
+[data-theme="vapor"] {
+  --pressing-material-opacity: 1.08;
+  --pressing-theme-filter: saturate(1.55) contrast(1.14) brightness(1.05);
+  --pressing-texture-blend: screen;
+  --pressing-groove-blend: screen;
+  --pressing-groove-opacity: 1.12;
+  --pressing-groove-visibility: 1.08;
+  --pressing-sheen-strength: 1.22;
+  --pressing-reflection-strength: 1.16;
+  --pressing-label-saturation: 1.18;
+  --pressing-label-contrast: 1.08;
+}
+
+[data-theme="vapor"] .vinyl-pressing-depth {
+  box-shadow:
+    inset 0 0 28px
+      color-mix(in srgb, var(--pressing-accent, #c855ff) 16%, transparent),
+    inset 0 0 86px color-mix(in srgb, #000000 44%, transparent),
+    inset 0 0 128px
+      color-mix(in srgb, var(--pressing-primary, #c855ff) 22%, transparent);
+}
+
+[data-theme="vapor"] .vinyl-disc {
+  box-shadow:
+    0 0 0 1px
+      color-mix(in srgb, var(--pressing-accent, #c855ff) 28%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, #ffffff 5%, transparent),
+    inset 0 0 34px
+      color-mix(in srgb, var(--pressing-accent, #c855ff) 16%, transparent),
+    0 34px 66px rgba(24, 0, 42, 0.72),
+    0 0 76px
+      color-mix(in srgb, var(--pressing-primary, #c855ff) 24%, transparent);
+}
+
+/* Paper: raw wax, vintage, muted and warm like a 70s color pressing. */
+[data-theme="paper"] {
+  --pressing-material-opacity: 0.9;
+  --pressing-theme-filter: saturate(0.72) contrast(0.96) sepia(0.12)
+    brightness(1.05);
+  --pressing-texture-blend: multiply;
+  --pressing-groove-blend: multiply;
+  --pressing-groove-opacity: 0.92;
+  --pressing-groove-visibility: 0.96;
+  --pressing-sheen-strength: 0.72;
+  --pressing-reflection-strength: 0.7;
+  --pressing-label-saturation: 0.86;
+  --pressing-label-contrast: 0.96;
+}
+
+[data-theme="paper"] .vinyl-pressing-base {
+  background:
+    radial-gradient(
+      circle at 34% 22%,
+      color-mix(in srgb, #fff6dd 22%, transparent) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 68% 72%,
+      color-mix(in srgb, #7b5f32 10%, transparent) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at center,
+      color-mix(in oklch, var(--pressing-primary, #6f4f2a) 78%, #d8b77b 22%) 0%,
+      color-mix(in oklch, var(--pressing-deep, #2c1c10) 82%, #7a5a2a 18%) 74%,
+      color-mix(in srgb, var(--pressing-edge, #1a1007) 86%, #4c3219) 100%
+    );
+}
+
+[data-theme="paper"] .vinyl-pressing-texture::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wax'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wax)' opacity='0.45'/%3E%3C/svg%3E");
+  background-size: 190px 190px;
+  mix-blend-mode: multiply;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+[data-theme="paper"] .vinyl-disc {
+  box-shadow:
+    0 0 0 1px rgba(113, 82, 48, 0.2),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 0 34px rgba(113, 82, 48, 0.18),
+    inset 0 0 110px rgba(38, 22, 10, 0.36),
+    0 30px 52px rgba(70, 45, 20, 0.25),
+    0 8px 32px rgba(70, 45, 20, 0.18);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SECOND-PASS THEME DIFFERENTIATION FOR THE RECORD ITSELF
+   These are intentionally visible on the same track so theme changes
+   alter the pressing personality, not only the room/background.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Glass: black/neutral records become frosted clear-smoke instead of plain black. */
+[data-theme="glass"][data-vinyl-pressing="audiophile-black"] .vinyl-disc,
+[data-theme="glass"][data-vinyl-pressing="smoke"] .vinyl-disc {
+  background: color-mix(in srgb, #eaf5ff 18%, transparent);
+  -webkit-backdrop-filter: blur(7px) saturate(1.18);
+  backdrop-filter: blur(7px) saturate(1.18);
+}
+
+[data-theme="glass"][data-vinyl-pressing="audiophile-black"]
+  .vinyl-pressing-base,
+[data-theme="glass"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
+  background:
+    radial-gradient(
+      circle at 28% 22%,
+      rgba(255, 255, 255, 0.22) 0%,
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 72% 74%,
+      color-mix(in srgb, var(--ui-accent, #0058bc) 12%, transparent) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at center,
+      rgba(12, 18, 24, 0.72) 0%,
+      rgba(7, 12, 18, 0.78) 76%,
+      rgba(0, 0, 0, 0.72) 100%
+    );
+  opacity: 0.82;
+}
+
+/* Aurora: holographic wash visible even on dark records. */
+[data-theme="aurora"] .vinyl-pressing-depth::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from calc(var(--pressing-seed-angle-alt, 145deg) + 34deg),
+    transparent 0deg,
+    rgba(0, 255, 222, 0.16) 46deg,
+    transparent 94deg,
+    rgba(120, 72, 255, 0.14) 162deg,
+    transparent 224deg,
+    rgba(0, 219, 231, 0.13) 304deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+[data-theme="aurora"][data-vinyl-pressing="audiophile-black"]
+  .vinyl-pressing-base,
+[data-theme="aurora"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      rgba(0, 212, 190, 0.14) 0%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 70% 74%,
+      rgba(132, 92, 255, 0.14) 0%,
+      transparent 44%
+    ),
+    radial-gradient(circle at center, #101818 0%, #050b0d 75%, #000000 100%);
+}
+
+/* Vapor: intentionally electric; dark records receive neon oil-slick edges. */
+[data-theme="vapor"] .vinyl-pressing-depth::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at center,
+      transparent 0 70%,
+      rgba(200, 85, 255, 0.2) 78%,
+      transparent 88%
+    ),
+    conic-gradient(
+      from var(--pressing-seed-angle),
+      transparent 0deg,
+      rgba(255, 80, 220, 0.14) 55deg,
+      transparent 100deg,
+      rgba(0, 230, 255, 0.12) 210deg,
+      transparent 300deg
+    );
+  mix-blend-mode: screen;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+[data-theme="vapor"][data-vinyl-pressing="audiophile-black"]
+  .vinyl-pressing-base,
+[data-theme="vapor"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
+  background:
+    radial-gradient(
+      circle at 30% 22%,
+      rgba(200, 85, 255, 0.18) 0%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 72% 72%,
+      rgba(0, 230, 255, 0.12) 0%,
+      transparent 42%
+    ),
+    radial-gradient(circle at center, #12101c 0%, #07040f 76%, #000000 100%);
+}
+
+/* Paper: same pressing becomes warmer, chalkier, less glossy. */
+[data-theme="paper"][data-vinyl-pressing="audiophile-black"]
+  .vinyl-pressing-base,
+[data-theme="paper"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
+  background:
+    radial-gradient(
+      circle at 34% 24%,
+      rgba(255, 240, 200, 0.1) 0%,
+      transparent 30%
+    ),
+    radial-gradient(circle at center, #17130d 0%, #0b0906 76%, #020100 100%);
+}
+
+[data-theme="paper"] .vinyl-pressing-depth::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='dryWax'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23dryWax)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: multiply;
+  opacity: 0.11;
+  pointer-events: none;
+}
+
+/* Noir: preserve mood, but let smoke/translucent be visibly smoke, not default black. */
+[data-theme="noir"][data-vinyl-pressing="smoke"] .vinyl-pressing-base,
+[data-theme="noir"][data-vinyl-pressing="translucent"] .vinyl-pressing-base {
+  opacity: 0.74;
 }

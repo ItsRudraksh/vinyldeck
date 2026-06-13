@@ -14,7 +14,15 @@
 // Phase 8: ProgressRing receives onSeek for scrub-to-seek
 
 import { useEffect, useState } from "react";
-import { EMPTY_PLAYBACK, useVinylDeckStore, selectPlayback, selectIsPlaying, selectArtwork, selectTheme, selectSettings } from "../lib/playback/store";
+import {
+  EMPTY_PLAYBACK,
+  useVinylDeckStore,
+  selectPlayback,
+  selectIsPlaying,
+  selectArtwork,
+  selectTheme,
+  selectSettings,
+} from "../lib/playback/store";
 import { canUseSeekControl } from "../lib/playback/capabilities";
 
 import { AmbientLayer } from "../components/AmbientLayer";
@@ -35,9 +43,11 @@ const VINYL_SIZE = 420;
 const RING_SIZE = VINYL_SIZE + 28;
 
 // Shared transition for idle fade in/out
-const IDLE_TRANSITION = "opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), pointer-events 0ms";
+const IDLE_TRANSITION =
+  "opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), pointer-events 0ms";
 const IDLE_RETURN_TRANSITION = "opacity 400ms cubic-bezier(0.16, 1, 0.3, 1)";
-const IDLE_CENTERPIECE_TRANSITION = "transform 900ms cubic-bezier(0.16, 1, 0.3, 1)";
+const IDLE_CENTERPIECE_TRANSITION =
+  "transform 900ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 export function MainView() {
   const playback = useVinylDeckStore(selectPlayback);
@@ -64,7 +74,11 @@ export function MainView() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      setPosition(useVinylDeckStore.getState().devForceEmpty ? 0 : useVinylDeckStore.getState().getPosition());
+      setPosition(
+        useVinylDeckStore.getState().devForceEmpty
+          ? 0
+          : useVinylDeckStore.getState().getPosition(),
+      );
     }, 500);
     return () => clearInterval(id);
   }, []);
@@ -73,8 +87,12 @@ export function MainView() {
     if (devForceEmpty) setPosition(0);
   }, [devForceEmpty]);
 
-  // Color extraction: Noir ONLY, and only when artAmbient toggle is ON.
-  useColorExtraction(theme === "noir" && artAmbient ? artworkDataUrl : null);
+  // Album art extraction now drives the vinyl pressing on every theme.
+  // Ambient tinting remains Noir-only and gated by the existing user toggle.
+  useColorExtraction(artworkDataUrl, {
+    ambientEnabled: theme === "noir" && artAmbient,
+    seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
+  });
 
   // Phase 7: Idle detection — only when playing
   const isIdle = useIdleMode(isPlaying, {
@@ -95,10 +113,18 @@ export function MainView() {
   }, [isSettingsOpen]);
 
   // Controls handlers — delegate to source
-  function handlePlay() { source?.play(); }
-  function handlePause() { source?.pause(); }
-  function handleNext() { source?.next(); }
-  function handlePrevious() { source?.previous(); }
+  function handlePlay() {
+    source?.play();
+  }
+  function handlePause() {
+    source?.pause();
+  }
+  function handleNext() {
+    source?.next();
+  }
+  function handlePrevious() {
+    source?.previous();
+  }
 
   // Phase 8: Seek handler — delegates to source
   function handleSeek(positionSeconds: number) {
@@ -108,7 +134,7 @@ export function MainView() {
   // Idle UI style — shared across Controls / TrackInfo / ThemePicker
   const idleHideStyle = {
     opacity: isIdle ? 0 : 1,
-    pointerEvents: isIdle ? "none" as const : "auto" as const,
+    pointerEvents: isIdle ? ("none" as const) : ("auto" as const),
     transition: isIdle ? IDLE_TRANSITION : IDLE_RETURN_TRANSITION,
   };
 
@@ -118,7 +144,7 @@ export function MainView() {
       : "translate3d(0, 0, 0) scale(1)",
     transformOrigin: "center center",
     transition: IDLE_CENTERPIECE_TRANSITION,
-    willChange: isPlaying ? "transform" as const : undefined,
+    willChange: isPlaying ? ("transform" as const) : undefined,
   };
 
   return (
@@ -165,7 +191,9 @@ export function MainView() {
               position={position}
               isPlaying={isPlaying}
               size={RING_SIZE}
-              onSeek={canUseSeekControl(effectivePlayback) ? handleSeek : undefined}
+              onSeek={
+                canUseSeekControl(effectivePlayback) ? handleSeek : undefined
+              }
             />
           </div>
 
@@ -233,8 +261,10 @@ export function MainView() {
           border: "1px solid var(--ui-border)",
           WebkitBackdropFilter: "blur(20px) saturate(1.4)",
           backdropFilter: "blur(20px) saturate(1.4)",
-          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 28px rgba(0,0,0,0.28)",
-          transition: "transform 180ms var(--spring-curve), background var(--theme-transition), border-color var(--theme-transition)",
+          boxShadow:
+            "inset 0 1px 0 rgba(255,255,255,0.10), 0 10px 28px rgba(0,0,0,0.28)",
+          transition:
+            "transform 180ms var(--spring-curve), background var(--theme-transition), border-color var(--theme-transition)",
         }}
       >
         <svg
@@ -305,7 +335,10 @@ export function MainView() {
       </button>
 
       {/* z:40 — Settings overlay */}
-      <Settings open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      <Settings
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </>
   );
 }
