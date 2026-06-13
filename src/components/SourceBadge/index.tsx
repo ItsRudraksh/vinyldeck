@@ -30,15 +30,15 @@ export function SourceBadge({ sourceName }: SourceBadgeProps) {
           gap: "6px",
           padding: "5px 10px",
           borderRadius: "20px",
-          background: "var(--ui-bg)",
-          border: "1px solid var(--ui-border)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
+          background: "var(--surface-bg)",
+          border: "1px solid var(--surface-border)",
+          backdropFilter: "var(--surface-backdrop)",
+          WebkitBackdropFilter: "var(--surface-backdrop)",
+          boxShadow: "var(--surface-shadow)",
           pointerEvents: "none",
         }}
         aria-label={`Now playing from ${sourceName}`}
       >
-        {/* Live indicator dot */}
         <div
           style={{
             width: "6px",
@@ -50,7 +50,7 @@ export function SourceBadge({ sourceName }: SourceBadgeProps) {
         />
         <span
           style={{
-            fontFamily: "'JetBrains Mono', monospace",
+            fontFamily: "var(--font-mono)",
             fontSize: "11px",
             letterSpacing: "0.08em",
             color: "var(--ui-text-secondary)",

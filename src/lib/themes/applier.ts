@@ -1,26 +1,50 @@
 // src/lib/themes/applier.ts
-// Runtime theme switching via CSS custom property on <html>.
-// Never triggers React re-renders — purely CSS.
+// Runtime shell + ambient mode switching and visual token application.
+// The vinyl renderer remains independent; this file only writes <html>
+// attributes/CSS variables and emits vinyl material events.
 
-import type { VinylPressingType } from "../vinyl/pressingEngine";
+import type { VinylPressing, VinylPressingType } from "../vinyl/pressingEngine";
 
-export type ThemeId = "noir" | "glass" | "aurora" | "vapor" | "paper";
+export type ThemeId = "noir" | "glass";
+export type LegacyThemeId = ThemeId | "aurora" | "vapor" | "paper";
 
-export const THEME_IDS: ThemeId[] = [
+export type AmbientModeId = "off" | "beam" | "caustic" | "aurora";
+
+export const THEME_IDS: ThemeId[] = ["noir", "glass"];
+
+export const THEME_LABELS: Record<ThemeId, string> = {
+  noir: "Noir",
+  glass: "Glass",
+};
+
+export const AMBIENT_MODE_IDS: AmbientModeId[] = [
+  "off",
+  "beam",
+  "caustic",
+  "aurora",
+];
+
+export const AMBIENT_MODE_LABELS: Record<AmbientModeId, string> = {
+  off: "Off",
+  beam: "Studio Beam",
+  caustic: "Liquid Caustic",
+  aurora: "Aurora Mist",
+};
+
+export const AMBIENT_MODE_NOTES: Record<AmbientModeId, string> = {
+  off: "Pure shell lighting",
+  beam: "Velvet projector light",
+  caustic: "Refractive liquid glass",
+  aurora: "Soft prism atmosphere",
+};
+
+const LEGACY_THEME_IDS: LegacyThemeId[] = [
   "noir",
   "glass",
   "aurora",
   "vapor",
   "paper",
 ];
-
-export const THEME_LABELS: Record<ThemeId, string> = {
-  noir: "Noir",
-  glass: "Glass",
-  aurora: "Aurora",
-  vapor: "Vapor",
-  paper: "Paper",
-};
 
 const VINYL_PRESSING_CSS_VARS = [
   "--pressing-primary",
@@ -46,60 +70,121 @@ const VINYL_PRESSING_CSS_VARS = [
   "--pressing-organic-y",
   "--pressing-hash-a",
   "--pressing-hash-b",
+  "--pressing-renderer-recipe",
+  "--pressing-shader-alpha",
+  "--pressing-rim-absorption",
+  "--pressing-reflection-strength",
 ] as const;
 
-/**
- * Apply a theme by setting data-theme on <html>.
- * CSS custom properties in themes.css respond instantly.
- */
+export type VinylPressingEvent = CustomEvent<VinylPressing | null>;
+
+export function isThemeId(value: unknown): value is ThemeId {
+  return typeof value === "string" && THEME_IDS.includes(value as ThemeId);
+}
+
+export function isLegacyThemeId(value: unknown): value is LegacyThemeId {
+  return (
+    typeof value === "string" &&
+    LEGACY_THEME_IDS.includes(value as LegacyThemeId)
+  );
+}
+
+export function isAmbientModeId(value: unknown): value is AmbientModeId {
+  return (
+    typeof value === "string" &&
+    AMBIENT_MODE_IDS.includes(value as AmbientModeId)
+  );
+}
+
+export function legacyThemeToShell(theme: LegacyThemeId): ThemeId {
+  if (theme === "glass" || theme === "paper") return "glass";
+  return "noir";
+}
+
+export function legacyThemeToAmbientMode(
+  theme: LegacyThemeId,
+  artAmbient = false,
+): AmbientModeId {
+  switch (theme) {
+    case "aurora":
+    case "vapor":
+      return "aurora";
+    case "glass":
+      return "caustic";
+    case "paper":
+      return "off";
+    case "noir":
+    default:
+      return artAmbient ? "beam" : "off";
+  }
+}
+
 export function applyTheme(themeId: ThemeId): void {
   document.documentElement.setAttribute("data-theme", themeId);
 }
 
-/**
- * Override ambient colors from artwork color extraction.
- * Called by useColorExtraction hook after fast-average-color analysis.
- */
+export function applyAmbientMode(mode: AmbientModeId): void {
+  document.documentElement.setAttribute("data-ambient-mode", mode);
+  if (mode === "off") resetAmbientColors();
+}
+
+export function applyVisualMode(
+  themeId: ThemeId,
+  ambientMode: AmbientModeId,
+): void {
+  applyTheme(themeId);
+  applyAmbientMode(ambientMode);
+}
+
 export function applyAmbientColors(primary: string, secondary: string): void {
   const root = document.documentElement;
   root.style.setProperty("--ambient-primary", primary);
   root.style.setProperty("--ambient-secondary", secondary);
 }
 
-/**
- * Reset ambient colors back to theme defaults.
- * Called when no artwork is available or album-art ambient is disabled.
- */
 export function resetAmbientColors(): void {
   const root = document.documentElement;
   root.style.removeProperty("--ambient-primary");
   root.style.removeProperty("--ambient-secondary");
 }
 
-/**
- * Apply deterministic collectible pressing parameters to CSS.
- * This keeps the React tree stable and lets the vinyl repaint through CSS only.
- */
 export function applyVinylPressing(
   type: VinylPressingType,
   vars: Record<string, string>,
+  pressing?: VinylPressing,
 ): void {
   const root = document.documentElement;
   root.setAttribute("data-vinyl-pressing", type);
 
+  if (pressing) {
+    root.setAttribute("data-vinyl-recipe", pressing.recipe);
+    root.setAttribute("data-vinyl-pressing-name", pressing.pressingName);
+  }
+
   for (const [name, value] of Object.entries(vars)) {
     root.style.setProperty(name, value);
   }
+
+  window.dispatchEvent(
+    new CustomEvent<VinylPressing | null>("vinyldeck:vinyl-pressing", {
+      detail: pressing ?? null,
+    }),
+  );
 }
 
-/**
- * Remove album-specific pressing overrides so theme defaults take over.
- */
 export function resetVinylPressing(): void {
   const root = document.documentElement;
   root.removeAttribute("data-vinyl-pressing");
+  root.removeAttribute("data-vinyl-recipe");
+  root.removeAttribute("data-vinyl-pressing-name");
 
   for (const property of VINYL_PRESSING_CSS_VARS) {
     root.style.removeProperty(property);
   }
+
+  window.dispatchEvent(
+    new CustomEvent<VinylPressing | null>("vinyldeck:vinyl-pressing", {
+      detail: null,
+    }),
+  );
 }

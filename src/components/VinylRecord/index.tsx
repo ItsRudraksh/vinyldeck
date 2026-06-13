@@ -1,23 +1,14 @@
 // src/components/VinylRecord/index.tsx
-// Layer stack (bottom → top):
-//   0: vinyl-glow (bloom behind disc)
-//   1: vinyl-counter-a (fixed-light conic reflection — outside disc)
-//   2: vinyl-counter-b (fixed-light conic reflection — outside disc)
-//   3: vinyl-disc (rotates via RAF)
-//       3a: vinyl-translucent-ghost blurred artwork visible through clear/smoke pressings
-//       3b: vinyl-pressing-base     album-derived colored wax material
-//       3c: vinyl-pressing-texture  marble / splatter / translucent / split personality
-//       3d: vinyl-pressing-depth    edge thickness + inner physical depth
-//       3e: vinyl-grooves           responsive record groove ridges
-//       3f: vinyl-sheen             mouse-driven specular highlight
-//       3g: vinyl-reflection        static studio-light reflection
-//       3h: vinyl-label-ring        softened print boundary
-//       3i: vinyl-label             album art or fallback
-//       3j: vinyl-hole              spindle hole
+// Hybrid Pressing Studio renderer:
+//   - Canvas-baked wax maps + raw WebGL shader for physical disc material
+//   - Existing CSS stack remains as a graceful fallback
+//   - CSS label/hole/outer stage stay DOM for simplicity and accessibility
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useVinylRotation } from "../../hooks/useVinylRotation";
+import { VinylShaderCanvas } from "./VinylShaderCanvas.tsx";
+import type { VinylShaderHandle } from "./VinylShaderCanvas.tsx";
 import "./VinylRecord.css";
 import "./pressings.css";
 
@@ -37,14 +28,21 @@ export function VinylRecord({
   size = 420,
 }: VinylRecordProps) {
   const sheenRef = useRef<HTMLDivElement>(null);
+  const shaderRef = useRef<VinylShaderHandle>(null);
+  const [shaderReady, setShaderReady] = useState(false);
 
-  // RAF rotation with inertia — pure DOM mutation, no re-renders.
-  useVinylRotation({ isPlaying });
+  // Single RAF loop: rotates the DOM disc for label/fallback and feeds the
+  // same rotation/velocity to the shader for light-reactive grooves.
+  useVinylRotation({
+    isPlaying,
+    onFrame: ({ rotation, velocity }) => {
+      shaderRef.current?.setRotation(rotation, velocity);
+    },
+  });
 
-  // Mouse-tracking specular highlight.
-  // Direct DOM mutation — zero React re-renders on mousemove.
+  // Mouse-tracking specular highlight. CSS fallback gets the angle variable;
+  // WebGL gets normalized mouse coordinates relative to the disc.
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!sheenRef.current) return;
     const disc = document.getElementById("vinyl-disc");
     if (!disc) return;
 
@@ -54,7 +52,11 @@ export function VinylRecord({
     const angle =
       Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI);
 
-    sheenRef.current.style.setProperty("--vinyl-rotation", `${angle + 90}deg`);
+    sheenRef.current?.style.setProperty("--vinyl-rotation", `${angle + 90}deg`);
+
+    const x = (e.clientX - rect.left) / Math.max(rect.width, 1);
+    const y = (e.clientY - rect.top) / Math.max(rect.height, 1);
+    shaderRef.current?.setMouse(x, y);
   }, []);
 
   useEffect(() => {
@@ -62,7 +64,6 @@ export function VinylRecord({
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [handleMouseMove]);
 
-  // Empty app state uses a brand wordmark; artwork-missing tracks use first letter.
   const ghostArtworkStyle = artworkDataUrl
     ? ({ backgroundImage: `url(${artworkDataUrl})` } as CSSProperties)
     : undefined;
@@ -73,10 +74,11 @@ export function VinylRecord({
 
   return (
     <div
-      className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}`}
+      className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}${shaderReady ? " vinyl-wrapper--shader-ready" : " vinyl-wrapper--css-renderer"}`}
       style={{ "--vinyl-size": `${size}px` } as CSSProperties}
+      data-renderer={shaderReady ? "webgl" : "css"}
     >
-      {/* SVG turbulence is static; CSS chooses when to use it for organic marble/wax texture. */}
+      {/* SVG turbulence remains for the CSS fallback renderer. */}
       <svg className="vinyl-filter-defs" aria-hidden="true" focusable="false">
         <filter
           id="vinyl-marble-turbulence"
@@ -126,14 +128,10 @@ export function VinylRecord({
         </filter>
       </svg>
 
-      {/* Layer 0: Glow bloom — behind everything */}
       <div className={`vinyl-glow${isPlaying ? " playing" : ""}`} />
-
-      {/* Layers 1–2: Fixed light-source reflection overlays outside the rotating disc. */}
       <div className="vinyl-counter-a" />
       <div className="vinyl-counter-b" />
 
-      {/* Layer 3: The disc — rotation applied via RAF on id="vinyl-disc" */}
       <div
         className="vinyl-disc"
         id="vinyl-disc"
@@ -142,6 +140,15 @@ export function VinylRecord({
         {artworkDataUrl && (
           <div className="vinyl-translucent-ghost" style={ghostArtworkStyle} />
         )}
+
+        <VinylShaderCanvas
+          ref={shaderRef}
+          artworkDataUrl={artworkDataUrl}
+          size={size}
+          onReadyChange={setShaderReady}
+        />
+
+        {/* CSS fallback layers. Hidden once the shader renderer is live. */}
         <div className="vinyl-pressing-base" />
         <div className="vinyl-pressing-texture" />
         <div className="vinyl-pressing-depth" />

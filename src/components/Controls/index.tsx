@@ -23,27 +23,57 @@ interface ControlsProps {
 
 // ── SVG icons — stroke-based, currentColor ────────────────────
 const IconPrev = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polygon points="19 20 9 12 19 4 19 20" />
     <line x1="5" y1="19" x2="5" y2="5" />
   </svg>
 );
 
 const IconNext = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <polygon points="5 4 15 12 5 20 5 4" />
     <line x1="19" y1="5" x2="19" y2="19" />
   </svg>
 );
 
 const IconPlay = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+  >
     <polygon points="5 3 19 12 5 21 5 3" />
   </svg>
 );
 
 const IconPause = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+  >
     <rect x="6" y="4" width="4" height="16" rx="1" />
     <rect x="14" y="4" width="4" height="16" rx="1" />
   </svg>
@@ -76,7 +106,6 @@ export function Controls({
 
   return (
     <div className="controls-pill" role="group" aria-label="Playback controls">
-
       {/* ── Previous ── */}
       <motion.button
         className="controls-btn-secondary"
@@ -84,7 +113,7 @@ export function Controls({
         onClick={onPrevious}
         aria-label="Previous track"
         style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
-        whileHover={canUseSkip ? { scale: 1.10 } : {}}
+        whileHover={canUseSkip ? { scale: 1.1 } : {}}
         whileTap={canUseSkip ? { scale: 0.86 } : {}}
         transition={{ type: "spring", stiffness: 350, damping: 22 }}
       >
@@ -111,7 +140,11 @@ export function Controls({
               initial="exit"
               animate="enter"
               exit="exit"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <IconPause />
             </motion.span>
@@ -123,7 +156,11 @@ export function Controls({
               initial="exit"
               animate="enter"
               exit="exit"
-              style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <IconPlay />
             </motion.span>
@@ -138,13 +175,12 @@ export function Controls({
         onClick={onNext}
         aria-label="Next track"
         style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
-        whileHover={canUseSkip ? { scale: 1.10 } : {}}
+        whileHover={canUseSkip ? { scale: 1.1 } : {}}
         whileTap={canUseSkip ? { scale: 0.86 } : {}}
         transition={{ type: "spring", stiffness: 350, damping: 22 }}
       >
         <IconNext />
       </motion.button>
-
     </div>
   );
 }

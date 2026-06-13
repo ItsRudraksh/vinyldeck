@@ -1,15 +1,22 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useVinylDeckStore } from "../playback/store";
-import { resetAmbientColors } from "../themes/applier";
+import {
+  applyVisualMode,
+  isAmbientModeId,
+  isLegacyThemeId,
+  isThemeId,
+  legacyThemeToAmbientMode,
+  legacyThemeToShell,
+  resetAmbientColors,
+} from "../themes/applier";
 import { DEFAULT_SETTINGS, WINDOW_MODES } from "./types";
 import type { PersistedSettings } from "./types";
-import type { ThemeId } from "../themes/applier";
+import type { AmbientModeId, LegacyThemeId, ThemeId } from "../themes/applier";
 
 export const SETTINGS_CHANGED_EVENT = "settings-changed";
 
 const LEGACY_SETTINGS_HANDOFF_KEY = "vinyldeck:settings-handoff";
-const THEME_IDS: ThemeId[] = ["noir", "glass", "aurora", "vapor", "paper"];
 
 export type SettingsPatch = Partial<Omit<PersistedSettings, "version">>;
 
@@ -17,13 +24,26 @@ export function validateSettings(value: unknown): PersistedSettings {
   if (!value || typeof value !== "object") return DEFAULT_SETTINGS;
 
   const raw = value as Record<string, unknown>;
-  const theme = isTheme(raw.theme) ? raw.theme : DEFAULT_SETTINGS.theme;
-  const windowMode = isWindowMode(raw.windowMode) ? raw.windowMode : DEFAULT_SETTINGS.windowMode;
+  const rawTheme = isLegacyThemeId(raw.theme)
+    ? raw.theme
+    : DEFAULT_SETTINGS.theme;
+  const legacyTheme = rawTheme as LegacyThemeId;
+  const theme: ThemeId = isThemeId(rawTheme)
+    ? rawTheme
+    : legacyThemeToShell(legacyTheme);
+  const legacyArtAmbient = readBoolean(raw.artAmbient, false);
+  const ambientMode: AmbientModeId = isAmbientModeId(raw.ambientMode)
+    ? raw.ambientMode
+    : legacyThemeToAmbientMode(legacyTheme, legacyArtAmbient);
+  const windowMode = isWindowMode(raw.windowMode)
+    ? raw.windowMode
+    : DEFAULT_SETTINGS.windowMode;
 
   return {
-    version: 1,
+    version: 2,
     theme,
-    artAmbient: theme === "noir" ? readBoolean(raw.artAmbient, DEFAULT_SETTINGS.artAmbient) : false,
+    ambientMode,
+    artAmbient: ambientMode !== "off",
     vinylWobble: readBoolean(raw.vinylWobble, DEFAULT_SETTINGS.vinylWobble),
     filmGrain: readBoolean(raw.filmGrain, DEFAULT_SETTINGS.filmGrain),
     leanBackMode: readBoolean(raw.leanBackMode, DEFAULT_SETTINGS.leanBackMode),
@@ -39,31 +59,45 @@ export async function loadSettings(): Promise<PersistedSettings> {
   clearLegacySettingsHandoff();
 
   try {
-    return validateSettings(await invoke<PersistedSettings>("cmd_settings_snapshot"));
+    return validateSettings(
+      await invoke<PersistedSettings>("cmd_settings_snapshot"),
+    );
   } catch (error) {
     console.warn("[Settings] Snapshot failed:", error);
     return DEFAULT_SETTINGS;
   }
 }
 
-export async function commitSettings(patch: SettingsPatch): Promise<PersistedSettings> {
+export async function commitSettings(
+  patch: SettingsPatch,
+): Promise<PersistedSettings> {
+  const normalizedPatch = normalizePatch(patch);
+
   if (!isTauri()) {
     const current = useVinylDeckStore.getState().settings;
-    const settings = validateSettings({ ...current, ...patch });
+    const settings = validateSettings({ ...current, ...normalizedPatch });
     useVinylDeckStore.getState().hydrateSettings(settings);
+    applyVisualMode(settings.theme, settings.ambientMode);
     return settings;
   }
 
-  return validateSettings(await invoke<PersistedSettings>("cmd_settings_update", { patch }));
+  return validateSettings(
+    await invoke<PersistedSettings>("cmd_settings_update", {
+      patch: normalizedPatch,
+    }),
+  );
 }
 
 export async function resetSettings(): Promise<PersistedSettings> {
   if (!isTauri()) {
     useVinylDeckStore.getState().hydrateSettings(DEFAULT_SETTINGS);
+    applyVisualMode(DEFAULT_SETTINGS.theme, DEFAULT_SETTINGS.ambientMode);
     return DEFAULT_SETTINGS;
   }
 
-  return validateSettings(await invoke<PersistedSettings>("cmd_settings_reset"));
+  return validateSettings(
+    await invoke<PersistedSettings>("cmd_settings_reset"),
+  );
 }
 
 export async function subscribeToSettingsChanges(
@@ -76,6 +110,17 @@ export async function subscribeToSettingsChanges(
   });
 }
 
+function normalizePatch(patch: SettingsPatch): SettingsPatch {
+  const next: SettingsPatch = { ...patch };
+  if (patch.artAmbient !== undefined && patch.ambientMode === undefined) {
+    next.ambientMode = patch.artAmbient ? "beam" : "off";
+  }
+  if (patch.ambientMode !== undefined) {
+    next.artAmbient = patch.ambientMode !== "off";
+  }
+  return next;
+}
+
 function clearLegacySettingsHandoff(): void {
   try {
     window.localStorage.removeItem(LEGACY_SETTINGS_HANDOFF_KEY);
@@ -84,12 +129,13 @@ function clearLegacySettingsHandoff(): void {
   }
 }
 
-function isTheme(value: unknown): value is ThemeId {
-  return typeof value === "string" && THEME_IDS.includes(value as ThemeId);
-}
-
-function isWindowMode(value: unknown): value is PersistedSettings["windowMode"] {
-  return typeof value === "string" && WINDOW_MODES.includes(value as PersistedSettings["windowMode"]);
+function isWindowMode(
+  value: unknown,
+): value is PersistedSettings["windowMode"] {
+  return (
+    typeof value === "string" &&
+    WINDOW_MODES.includes(value as PersistedSettings["windowMode"])
+  );
 }
 
 function readBoolean(value: unknown, fallback: boolean): boolean {
@@ -97,12 +143,16 @@ function readBoolean(value: unknown, fallback: boolean): boolean {
 }
 
 function readIdleTimeout(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_SETTINGS.idleTimeoutSeconds;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_SETTINGS.idleTimeoutSeconds;
+  }
   return Math.min(5, Math.max(1, Math.round(value)));
 }
 
-export function sanitizeSettingsForTheme(settings: PersistedSettings): PersistedSettings {
-  if (settings.theme === "noir") return settings;
-  if (settings.artAmbient) resetAmbientColors();
-  return { ...settings, artAmbient: false };
+export function sanitizeSettingsForTheme(
+  settings: PersistedSettings,
+): PersistedSettings {
+  const next = validateSettings(settings);
+  if (next.ambientMode === "off") resetAmbientColors();
+  return next;
 }

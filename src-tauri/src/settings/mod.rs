@@ -8,9 +8,11 @@ pub const SETTINGS_CHANGED_EVENT: &str = "settings-changed";
 
 const STORE_FILE: &str = "settings.json";
 const STORE_KEY: &str = "settings";
-const VERSION: u8 = 1;
+const VERSION: u8 = 2;
 
-const THEMES: &[&str] = &["noir", "glass", "aurora", "vapor", "paper"];
+const SHELL_THEMES: &[&str] = &["noir", "glass"];
+const LEGACY_THEMES: &[&str] = &["noir", "glass", "aurora", "vapor", "paper"];
+const AMBIENT_MODES: &[&str] = &["off", "beam", "caustic", "aurora"];
 const WINDOW_MODES: &[&str] = &["main", "fullscreen", "mini"];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -18,6 +20,9 @@ const WINDOW_MODES: &[&str] = &["main", "fullscreen", "mini"];
 pub struct PersistedSettings {
     pub version: u8,
     pub theme: String,
+    pub ambient_mode: String,
+    /// Legacy compatibility. Derived from ambient_mode but kept in payloads so
+    /// older frontend callers/tests do not fail abruptly during migration.
     pub art_ambient: bool,
     pub vinyl_wobble: bool,
     pub film_grain: bool,
@@ -33,6 +38,7 @@ impl Default for PersistedSettings {
         Self {
             version: VERSION,
             theme: "noir".to_string(),
+            ambient_mode: "off".to_string(),
             art_ambient: false,
             vinyl_wobble: true,
             film_grain: true,
@@ -49,6 +55,7 @@ impl Default for PersistedSettings {
 #[serde(rename_all = "camelCase")]
 pub struct SettingsPatch {
     pub theme: Option<String>,
+    pub ambient_mode: Option<String>,
     pub art_ambient: Option<bool>,
     pub vinyl_wobble: Option<bool>,
     pub film_grain: Option<bool>,
@@ -145,20 +152,24 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
     };
 
     let defaults = PersistedSettings::default();
-    let theme =
-        read_string_choice(raw.get("theme"), THEMES).unwrap_or_else(|| defaults.theme.clone());
+    let legacy_theme = read_string_choice(raw.get("theme"), LEGACY_THEMES)
+        .unwrap_or_else(|| defaults.theme.clone());
+    let theme = if SHELL_THEMES.contains(&legacy_theme.as_str()) {
+        legacy_theme.clone()
+    } else {
+        shell_from_legacy_theme(&legacy_theme).to_string()
+    };
+    let art_ambient = read_bool(raw.get("artAmbient"), false);
+    let ambient_mode = read_string_choice(raw.get("ambientMode"), AMBIENT_MODES)
+        .unwrap_or_else(|| ambient_from_legacy_theme(&legacy_theme, art_ambient).to_string());
     let window_mode = read_string_choice(raw.get("windowMode"), WINDOW_MODES)
         .unwrap_or_else(|| defaults.window_mode.clone());
-    let art_ambient = if theme == "noir" {
-        read_bool(raw.get("artAmbient"), defaults.art_ambient)
-    } else {
-        false
-    };
 
     PersistedSettings {
         version: VERSION,
         theme,
-        art_ambient,
+        art_ambient: ambient_mode != "off",
+        ambient_mode,
         vinyl_wobble: read_bool(raw.get("vinylWobble"), defaults.vinyl_wobble),
         film_grain: read_bool(raw.get("filmGrain"), defaults.film_grain),
         lean_back_mode: read_bool(raw.get("leanBackMode"), defaults.lean_back_mode),
@@ -172,8 +183,16 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
 fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSettings {
     let mut next = current.clone();
 
-    if let Some(theme) = patch.theme.filter(|value| THEMES.contains(&value.as_str())) {
+    if let Some(theme) = patch.theme.filter(|value| SHELL_THEMES.contains(&value.as_str())) {
         next.theme = theme;
+    }
+    if let Some(mode) = patch
+        .ambient_mode
+        .filter(|value| AMBIENT_MODES.contains(&value.as_str()))
+    {
+        next.ambient_mode = mode;
+    } else if let Some(value) = patch.art_ambient {
+        next.ambient_mode = if value { "beam" } else { "off" }.to_string();
     }
     if let Some(value) = patch.vinyl_wobble {
         next.vinyl_wobble = value;
@@ -202,13 +221,26 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
         }
     }
 
-    next.art_ambient = if next.theme == "noir" {
-        patch.art_ambient.unwrap_or(next.art_ambient)
-    } else {
-        false
-    };
+    next.art_ambient = next.ambient_mode != "off";
     next.version = VERSION;
     next
+}
+
+fn shell_from_legacy_theme(theme: &str) -> &'static str {
+    match theme {
+        "glass" | "paper" => "glass",
+        _ => "noir",
+    }
+}
+
+fn ambient_from_legacy_theme(theme: &str, art_ambient: bool) -> &'static str {
+    match theme {
+        "glass" => "caustic",
+        "aurora" | "vapor" => "aurora",
+        "paper" => "off",
+        "noir" if art_ambient => "beam",
+        _ => "off",
+    }
 }
 
 fn read_string_choice(value: Option<&Value>, choices: &[&str]) -> Option<String> {
@@ -238,6 +270,7 @@ mod tests {
         let settings = validate_settings(Some(json!({
             "version": 999,
             "theme": "bogus",
+            "ambientMode": "laser",
             "artAmbient": "yes",
             "vinylWobble": "yes",
             "filmGrain": false,
@@ -249,23 +282,37 @@ mod tests {
         })));
 
         assert_eq!(settings.theme, "noir");
+        assert_eq!(settings.ambient_mode, "off");
         assert!(!settings.art_ambient);
         assert!(settings.vinyl_wobble);
         assert!(!settings.film_grain);
         assert_eq!(settings.idle_timeout_seconds, 5);
         assert_eq!(settings.window_mode, "main");
-        assert_eq!(settings.version, 1);
+        assert_eq!(settings.version, 2);
     }
 
     #[test]
-    fn non_noir_theme_disables_art_ambient() {
+    fn migrates_legacy_themes_to_shell_and_ambient_modes() {
+        let aurora = validate_settings(Some(json!({ "theme": "aurora" })));
+        assert_eq!(aurora.theme, "noir");
+        assert_eq!(aurora.ambient_mode, "aurora");
+        assert!(aurora.art_ambient);
+
+        let paper = validate_settings(Some(json!({ "theme": "paper" })));
+        assert_eq!(paper.theme, "glass");
+        assert_eq!(paper.ambient_mode, "off");
+    }
+
+    #[test]
+    fn legacy_art_ambient_maps_to_studio_beam() {
         let settings = validate_settings(Some(json!({
-            "theme": "paper",
+            "theme": "noir",
             "artAmbient": true
         })));
 
-        assert_eq!(settings.theme, "paper");
-        assert!(!settings.art_ambient);
+        assert_eq!(settings.theme, "noir");
+        assert_eq!(settings.ambient_mode, "beam");
+        assert!(settings.art_ambient);
     }
 
     #[test]
@@ -285,6 +332,30 @@ mod tests {
 
         assert_eq!(settings.idle_timeout_seconds, 1);
         assert_eq!(settings.window_mode, "fullscreen");
+    }
+
+    #[test]
+    fn patch_ambient_mode_and_legacy_art_ambient() {
+        let current = PersistedSettings::default();
+        let caustic = apply_patch(
+            &current,
+            SettingsPatch {
+                ambient_mode: Some("caustic".to_string()),
+                ..SettingsPatch::default()
+            },
+        );
+        let off = apply_patch(
+            &caustic,
+            SettingsPatch {
+                art_ambient: Some(false),
+                ..SettingsPatch::default()
+            },
+        );
+
+        assert_eq!(caustic.ambient_mode, "caustic");
+        assert!(caustic.art_ambient);
+        assert_eq!(off.ambient_mode, "off");
+        assert!(!off.art_ambient);
     }
 
     #[test]

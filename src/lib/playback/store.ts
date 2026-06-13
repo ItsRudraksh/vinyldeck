@@ -5,7 +5,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import type { PlaybackState, PlaybackSource } from "./types";
-import type { ThemeId } from "../themes/applier";
+import type { AmbientModeId, ThemeId } from "../themes/applier";
 import { DEFAULT_SETTINGS } from "../settings/types";
 import type { PersistedSettings } from "../settings/types";
 
@@ -21,7 +21,8 @@ export interface PlaybackStoreState {
   // Active theme
   theme: ThemeId;
 
-  // Album art ambient — Noir only toggle (default off)
+  // Album-reactive lighting mode. artAmbient remains as legacy derived flag.
+  ambientMode: AmbientModeId;
   artAmbient: boolean;
 
   // Persisted settings (runtime QA state stays separate)
@@ -82,6 +83,7 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     lastKnownPosition: 0,
     lastSyncTime: Date.now(),
     theme: "noir",
+    ambientMode: "off",
     artAmbient: false,
     settings: DEFAULT_SETTINGS,
     source: null,
@@ -90,7 +92,8 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
 
     // ── Set source and subscribe to its state changes ─────────
     setSource(source) {
-      const { source: existing, sourceUnsubscribe: existingUnsubscribe } = get();
+      const { source: existing, sourceUnsubscribe: existingUnsubscribe } =
+        get();
       if (existing === source && existingUnsubscribe) return;
 
       if (existingUnsubscribe) existingUnsubscribe();
@@ -157,20 +160,27 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       set({
         settings,
         theme: settings.theme,
-        artAmbient: settings.artAmbient,
+        ambientMode: settings.ambientMode,
+        artAmbient: settings.ambientMode !== "off",
       });
     },
 
     updateSettings(partial) {
       set((state) => {
         const nextSettings = { ...state.settings, ...partial };
-        const theme = nextSettings.theme;
-        const artAmbient = theme === "noir" ? nextSettings.artAmbient : false;
+        if (
+          partial.artAmbient !== undefined &&
+          partial.ambientMode === undefined
+        ) {
+          nextSettings.ambientMode = partial.artAmbient ? "beam" : "off";
+        }
+        nextSettings.artAmbient = nextSettings.ambientMode !== "off";
 
         return {
-          settings: { ...nextSettings, artAmbient },
-          theme,
-          artAmbient,
+          settings: nextSettings,
+          theme: nextSettings.theme,
+          ambientMode: nextSettings.ambientMode,
+          artAmbient: nextSettings.artAmbient,
         };
       });
     },
@@ -193,7 +203,7 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     setDevForceEmpty(enabled) {
       set({ devForceEmpty: enabled });
     },
-  }))
+  })),
 );
 
 // ── Convenience selectors (stable references) ─────────────────
@@ -202,6 +212,7 @@ export const selectIsPlaying = (s: VinylDeckStore) => s.playback.isPlaying;
 export const selectTrack = (s: VinylDeckStore) => s.playback.track;
 export const selectArtwork = (s: VinylDeckStore) => s.playback.artworkDataUrl;
 export const selectTheme = (s: VinylDeckStore) => s.theme;
+export const selectAmbientMode = (s: VinylDeckStore) => s.ambientMode;
 export const selectSource = (s: VinylDeckStore) => s.source;
 export const selectDevForceEmpty = (s: VinylDeckStore) => s.devForceEmpty;
 export const selectSettings = (s: VinylDeckStore) => s.settings;

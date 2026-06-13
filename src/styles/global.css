@@ -5,7 +5,7 @@
 
 /* ── Google Fonts ────────────────────────────────────────── */
 /* All 5 themes + shared system. Load all weights upfront.   */
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Hanken+Grotesk:wght@200;300;400;600;700&family=Geist:wght@300;400;500;600&family=Anybody:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@400;500;600&family=Manrope:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Hanken+Grotesk:wght@200;300;400;600;700&family=Geist:wght@300;400;500;600&family=Anybody:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@400;500;600&family=Manrope:wght@400;600;700&display=swap");
 
 /* ── Box-sizing reset ────────────────────────────────────── */
 *,
@@ -27,7 +27,7 @@ html {
 }
 
 body {
-  font-family: var(--font-body, 'Inter'), system-ui, sans-serif;
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
   background: var(--bg, #000000);
   color: var(--ui-text-primary, rgba(255, 255, 255, 0.9));
   min-height: 100vh;
@@ -38,8 +38,13 @@ body {
 }
 
 /* ── Typography base ─────────────────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display, 'Sora'), system-ui, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display, "Sora"), system-ui, sans-serif;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -47,13 +52,16 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Mono utility — timestamps, labels, metadata */
 .mono {
-  font-family: var(--font-mono, 'JetBrains Mono'), monospace;
+  font-family: var(--font-mono, "JetBrains Mono"), monospace;
   letter-spacing: var(--mono-tracking, 0.1em);
   text-transform: uppercase;
 }
 
-code, kbd, samp, pre {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+code,
+kbd,
+samp,
+pre {
+  font-family: "JetBrains Mono", "Courier New", monospace;
   font-size: 0.875em;
 }
 
@@ -131,4 +139,38 @@ img {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Shared physical surface utilities for the two-shell theme model. */
+.liquid-glass-surface,
+.velvet-surface {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-bg);
+  border: 1px solid var(--surface-border);
+  -webkit-backdrop-filter: var(--surface-backdrop);
+  backdrop-filter: var(--surface-backdrop);
+  box-shadow: var(--surface-shadow);
+}
+
+.liquid-glass-surface::before,
+.velvet-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0 34%,
+      rgba(255, 255, 255, 0.34) 44%,
+      transparent 54% 100%
+    ),
+    radial-gradient(
+      circle at 50% 0%,
+      var(--surface-inner-highlight),
+      transparent 52%
+    );
+  opacity: var(--surface-specular-opacity, 0.22);
+  mix-blend-mode: screen;
 }

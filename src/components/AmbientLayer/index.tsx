@@ -1,31 +1,73 @@
 // src/components/AmbientLayer/index.tsx
-// Fixed full-bleed background: blurred orbs + vignette + film grain.
-// Colors driven by CSS custom properties --ambient-primary/secondary.
-// Phase 1: Added floatOrb-a/b drift + center heartbeat orb (orb-center).
+// Fixed full-bleed shell lighting. The vinyl remains the hero; this layer only
+// provides the physical room: Noir velvet or Glass liquid optics.
 
+import { useEffect } from "react";
+import { applyAmbientMode } from "../../lib/themes/applier";
+import type { AmbientModeId, ThemeId } from "../../lib/themes/applier";
 import "./AmbientLayer.css";
 
 interface AmbientLayerProps {
   filmGrain?: boolean;
+  mode?: AmbientModeId;
+  theme?: ThemeId;
 }
 
-export function AmbientLayer({ filmGrain = true }: AmbientLayerProps) {
+export function AmbientLayer({
+  filmGrain = true,
+  mode = "off",
+  theme = "noir",
+}: AmbientLayerProps) {
+  useEffect(() => {
+    applyAmbientMode(mode);
+  }, [mode]);
+
   return (
-    <div className="ambient-layer" aria-hidden="true">
-      {/* Primary orb — upper-left, floats with floatOrb-a (23s) */}
-      <div className="ambient-layer__orb-primary" />
+    <div
+      className={`ambient-layer ambient-layer--${mode} ambient-layer--theme-${theme}`}
+      aria-hidden="true"
+    >
+      <svg className="ambient-layer__defs" focusable="false" aria-hidden="true">
+        <filter
+          id="liquid-caustic-displace"
+          x="-10%"
+          y="-10%"
+          width="120%"
+          height="120%"
+        >
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.012 0.05"
+            numOctaves="3"
+            seed="9"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            scale="28"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </svg>
 
-      {/* Secondary orb — lower-right, floats with floatOrb-b (19s, offset) */}
-      <div className="ambient-layer__orb-secondary" />
+      <div className="ambient-layer__base" />
+      <div className="ambient-layer__velvet" />
 
-      {/* Center heartbeat orb — sits directly behind the disc */}
-      {/* Phase 1.3: breathe-center 6s, smaller + more focused */}
-      <div className="ambient-layer__orb-center" />
+      <div className="ambient-layer__beam ambient-layer__beam--a" />
+      <div className="ambient-layer__beam ambient-layer__beam--b" />
+      <div className="ambient-layer__beam ambient-layer__beam--c" />
 
-      {/* Radial vignette — darkens edges for cinematic depth */}
+      <div className="ambient-layer__reflection" />
+      <div className="ambient-layer__caustic" />
+      <div className="ambient-layer__caustic ambient-layer__caustic--fine" />
+      <div className="ambient-layer__glass-orb" />
+
+      <div className="ambient-layer__aurora ambient-layer__aurora--a" />
+      <div className="ambient-layer__aurora ambient-layer__aurora--b" />
+
       <div className="ambient-layer__vignette" />
-
-      {/* Film grain — procedural SVG noise at 3.5% opacity, top layer */}
       {filmGrain && <div className="ambient-layer__grain" />}
     </div>
   );

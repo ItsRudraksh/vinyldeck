@@ -1,41 +1,57 @@
 // src/components/ThemePicker/index.tsx
-// 5 theme selector buttons.
-// Art Ambient toggle: Noir theme ONLY — hidden on all other themes.
+// Shell + ambient mode selector. Two rooms, multiple lighting scenes.
 
 import { motion } from "motion/react";
-import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
-import type { ThemeId } from "../../lib/themes/applier";
+import {
+  AMBIENT_MODE_IDS,
+  AMBIENT_MODE_LABELS,
+  THEME_IDS,
+  THEME_LABELS,
+  applyVisualMode,
+  resetAmbientColors,
+} from "../../lib/themes/applier";
+import type { AmbientModeId, ThemeId } from "../../lib/themes/applier";
 import { useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
 
-const THEME_ACCENT: Record<ThemeId, string> = {
-  noir:   "#e8e8e8",
-  glass:  "#a0c8ff",
-  aurora: "#00d4be",
-  vapor:  "#c855ff",
-  paper:  "#d4a840",
+const SHELL_ACCENT: Record<ThemeId, string> = {
+  noir: "#f1efea",
+  glass: "#0070d9",
 };
 
-const THEME_BG: Record<ThemeId, string> = {
-  noir:   "#0e0e0f",
-  glass:  "#1a1f2e",
-  aurora: "#050d1a",
-  vapor:  "#0b0c1f",
-  paper:  "#1a1408",
+const SHELL_BG: Record<ThemeId, string> = {
+  noir: "#050505",
+  glass: "#f5f2ea",
+};
+
+const MODE_ACCENT: Record<AmbientModeId, string> = {
+  off: "#7d7d7d",
+  beam: "#f1d8b8",
+  caustic: "#69d9ff",
+  aurora: "#9c62ff",
+};
+
+const MODE_SHORT_LABEL: Record<AmbientModeId, string> = {
+  off: "OFF",
+  beam: "BEAM",
+  caustic: "CAUS",
+  aurora: "AUR",
 };
 
 export function ThemePicker() {
   const currentTheme = useVinylDeckStore((s) => s.theme);
-  const artAmbient   = useVinylDeckStore((s) => s.artAmbient);
+  const ambientMode = useVinylDeckStore((s) => s.ambientMode);
   const hydrateSettings = useVinylDeckStore((s) => s.hydrateSettings);
 
-  function applyCommittedSettings(settings: Awaited<ReturnType<typeof commitSettings>>) {
+  function applyCommittedSettings(
+    settings: Awaited<ReturnType<typeof commitSettings>>,
+  ) {
     hydrateSettings(settings);
-    applyTheme(settings.theme);
-    if (settings.theme !== "noir" || !settings.artAmbient) resetAmbientColors();
+    applyVisualMode(settings.theme, settings.ambientMode);
+    if (settings.ambientMode === "off") resetAmbientColors();
   }
 
-  function handleSelect(id: ThemeId) {
+  function handleThemeSelect(id: ThemeId) {
     void commitSettings({ theme: id })
       .then(applyCommittedSettings)
       .catch((error) => {
@@ -43,130 +59,128 @@ export function ThemePicker() {
       });
   }
 
-  function handleAmbientToggle() {
-    const next = !artAmbient;
-    // Toggling OFF → immediately reset to theme defaults
-    if (!next) resetAmbientColors();
-    void commitSettings({ artAmbient: next })
+  function handleAmbientSelect(id: AmbientModeId) {
+    if (id === "off") resetAmbientColors();
+    void commitSettings({ ambientMode: id, artAmbient: id !== "off" })
       .then(applyCommittedSettings)
       .catch((error) => {
-        console.warn("[Settings] Art ambient update failed:", error);
+        console.warn("[Settings] Ambient mode update failed:", error);
       });
   }
 
-  const isNoir = currentTheme === "noir";
-
   return (
     <div
-      role="radiogroup"
-      aria-label="Visual theme"
+      className="theme-picker"
+      role="group"
+      aria-label="Visual shell and ambient mode"
       style={{ display: "flex", gap: "10px", alignItems: "center" }}
     >
-      {/* ── Theme swatches ─────────────────────────────────── */}
-      {THEME_IDS.map((id) => {
-        const active = id === currentTheme;
-        return (
-          <motion.button
-            key={id}
-            role="radio"
-            aria-checked={active}
-            aria-label={`${THEME_LABELS[id]} theme`}
-            onClick={() => handleSelect(id)}
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: THEME_BG[id],
-              border: `2px solid ${active ? THEME_ACCENT[id] : "rgba(255,255,255,0.12)"}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              transition: "border-color 200ms ease",
-              boxShadow: active
-                ? `0 0 12px ${THEME_ACCENT[id]}55, inset 0 0 8px ${THEME_ACCENT[id]}22`
-                : "none",
-            }}
-            whileHover={{ scale: 1.15 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <div style={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "50%",
-              background: THEME_ACCENT[id],
-              opacity: active ? 1 : 0.4,
-              transition: "opacity 200ms ease",
-            }} />
-          </motion.button>
-        );
-      })}
+      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+        {THEME_IDS.map((id) => {
+          const active = id === currentTheme;
+          return (
+            <motion.button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              aria-label={`${THEME_LABELS[id]} shell`}
+              title={`${THEME_LABELS[id]} shell`}
+              onClick={() => handleThemeSelect(id)}
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: id === "glass" ? "13px" : "50%",
+                background:
+                  id === "glass"
+                    ? "linear-gradient(135deg, rgba(255,255,255,0.78), rgba(255,255,255,0.22))"
+                    : SHELL_BG[id],
+                border: `2px solid ${active ? SHELL_ACCENT[id] : "rgba(255,255,255,0.12)"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                transition: "border-color 200ms ease, border-radius 240ms ease",
+                backdropFilter:
+                  id === "glass" ? "blur(14px) saturate(1.6)" : undefined,
+                WebkitBackdropFilter:
+                  id === "glass" ? "blur(14px) saturate(1.6)" : undefined,
+                boxShadow: active
+                  ? `0 0 14px ${SHELL_ACCENT[id]}55, inset 0 0 10px ${SHELL_ACCENT[id]}22`
+                  : "none",
+              }}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            >
+              <span
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  background: SHELL_ACCENT[id],
+                  opacity: active ? 1 : 0.44,
+                  transition: "opacity 200ms ease",
+                }}
+              />
+            </motion.button>
+          );
+        })}
+      </div>
 
-      {/* ── Art Ambient toggle — Noir ONLY ──────────────────── */}
-      {isNoir && (
-        <>
-          <div style={{
-            width: "1px",
-            height: "18px",
-            background: "rgba(255,255,255,0.10)",
-            flexShrink: 0,
-          }} />
+      <div
+        aria-hidden="true"
+        style={{
+          width: "1px",
+          height: "18px",
+          background: "color-mix(in srgb, var(--ui-border) 72%, transparent)",
+          flexShrink: 0,
+        }}
+      />
 
-          <motion.button
-            onClick={handleAmbientToggle}
-            aria-pressed={artAmbient}
-            aria-label={`Album art ambient: ${artAmbient ? "on" : "off"}`}
-            title="Album Art Ambient Color (Noir only)"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              padding: "4px 10px 4px 8px",
-              borderRadius: "9999px",
-              border: `1px solid ${artAmbient ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.10)"}`,
-              background: artAmbient ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)",
-              cursor: "pointer",
-              transition: "background 250ms ease, border-color 250ms ease",
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          >
-            <div style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: artAmbient ? "#e8e8e8" : "rgba(255,255,255,0.22)",
-              transition: "background 250ms ease",
-              flexShrink: 0,
-            }} />
-            <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "10px",
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: artAmbient ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.28)",
-              whiteSpace: "nowrap",
-              transition: "color 250ms ease",
-            }}>
-              Art Ambient
-            </span>
-          </motion.button>
-        </>
-      )}
-
-      {/* ── Current theme label ─────────────────────────────── */}
-      <span style={{
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: "11px",
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        color: "var(--ui-text-secondary)",
-        marginLeft: "2px",
-      }}>
-        {THEME_LABELS[currentTheme]}
-      </span>
+      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+        {AMBIENT_MODE_IDS.map((id) => {
+          const active = id === ambientMode;
+          return (
+            <motion.button
+              key={id}
+              type="button"
+              aria-pressed={active}
+              aria-label={`${AMBIENT_MODE_LABELS[id]} ambient mode`}
+              title={`${AMBIENT_MODE_LABELS[id]} ambient mode`}
+              onClick={() => handleAmbientSelect(id)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: id === "off" ? "34px" : "48px",
+                height: "28px",
+                padding: "0 9px",
+                borderRadius: "999px",
+                border: `1px solid ${active ? MODE_ACCENT[id] : "rgba(255,255,255,0.12)"}`,
+                background: active
+                  ? `color-mix(in srgb, ${MODE_ACCENT[id]} 16%, var(--ui-bg))`
+                  : "color-mix(in srgb, var(--ui-bg) 54%, transparent)",
+                color: active
+                  ? "var(--ui-text-primary)"
+                  : "var(--ui-text-secondary)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "10px",
+                letterSpacing: "0.08em",
+                cursor: "pointer",
+                boxShadow: active ? `0 0 14px ${MODE_ACCENT[id]}55` : "none",
+                backdropFilter: "var(--surface-backdrop)",
+                WebkitBackdropFilter: "var(--surface-backdrop)",
+              }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
+              transition={{ type: "spring", stiffness: 420, damping: 22 }}
+            >
+              {MODE_SHORT_LABEL[id]}
+            </motion.button>
+          );
+        })}
+      </div>
     </div>
   );
 }

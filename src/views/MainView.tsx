@@ -55,7 +55,6 @@ export function MainView() {
   const rawArtworkDataUrl = useVinylDeckStore(selectArtwork);
   const theme = useVinylDeckStore(selectTheme);
   const settings = useVinylDeckStore(selectSettings);
-  const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const source = useVinylDeckStore((s) => s.source);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -90,7 +89,7 @@ export function MainView() {
   // Album art extraction now drives the vinyl pressing on every theme.
   // Ambient tinting remains Noir-only and gated by the existing user toggle.
   useColorExtraction(artworkDataUrl, {
-    ambientEnabled: theme === "noir" && artAmbient,
+    ambientEnabled: settings.ambientMode !== "off",
     seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
   });
 
@@ -150,7 +149,11 @@ export function MainView() {
   return (
     <>
       {/* z:0 — Ambient background */}
-      <AmbientLayer filmGrain={settings.filmGrain} />
+      <AmbientLayer
+        filmGrain={settings.filmGrain}
+        mode={settings.ambientMode}
+        theme={theme}
+      />
 
       {/* z:0 — Vapor grid floor */}
       <VaporGrid />

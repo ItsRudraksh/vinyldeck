@@ -16,15 +16,15 @@
 
   /* Glassmorphism — theme-driven vars */
   background: var(--ui-bg, rgba(255, 255, 255, 0.07));
-  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.10));
+  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
   border-radius: 9999px; /* Always a pill — regardless of theme radius */
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   backdrop-filter: blur(20px) saturate(1.4);
 
   /* Subtle inner glow — depth effect */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 8px 32px rgba(0, 0, 0, 0.30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.3),
     0 2px 8px rgba(0, 0, 0, 0.15);
 
   /* Smooth theme transitions */
@@ -38,7 +38,7 @@
 [data-theme="paper"] .controls-pill,
 [data-theme="glass"] .controls-pill {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.60),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
     0 4px 24px rgba(0, 0, 0, 0.12),
     0 1px 4px rgba(0, 0, 0, 0.08);
 }
@@ -109,15 +109,14 @@
 
 /* Paused state — subtle glow (pre-hover) */
 .controls-btn-primary.paused {
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* Playing state — accent-colored glow bloom */
 .controls-btn-primary.playing {
   box-shadow:
     0 0 0 2px var(--ui-accent, #fff),
-    0 0 20px var(--glow-color, rgba(255,255,255,0.2)),
+    0 0 20px var(--glow-color, rgba(255, 255, 255, 0.2)),
     0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -126,7 +125,7 @@
   transform: scale(1.06);
   box-shadow:
     0 0 0 2px var(--ui-accent, #fff),
-    0 0 32px var(--ring-glow, rgba(255,255,255,0.4)),
+    0 0 32px var(--ring-glow, rgba(255, 255, 255, 0.4)),
     0 6px 24px rgba(0, 0, 0, 0.5);
 }
 
@@ -177,4 +176,52 @@
 .controls-icon--exiting {
   opacity: 0;
   transform: scale(0.6);
+}
+
+/* Theme overhaul material pass: velvet/noir + liquid/glass surfaces. */
+.controls-pill {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-bg);
+  border-color: var(--surface-border);
+  -webkit-backdrop-filter: var(--surface-backdrop);
+  backdrop-filter: var(--surface-backdrop);
+  box-shadow: var(--surface-shadow);
+}
+
+.controls-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      115deg,
+      transparent 0 34%,
+      rgba(255, 255, 255, 0.34) 44%,
+      transparent 54% 100%
+    ),
+    radial-gradient(
+      circle at 50% 0%,
+      var(--surface-inner-highlight),
+      transparent 48%
+    );
+  opacity: var(--surface-specular-opacity, 0.22);
+  mix-blend-mode: screen;
+}
+
+[data-theme="noir"] .controls-pill {
+  border-radius: 9999px;
+}
+
+[data-theme="glass"] .controls-pill {
+  border-radius: 9999px;
+  box-shadow:
+    0 18px 48px rgba(35, 55, 78, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -18px 34px rgba(90, 130, 180, 0.08);
+}
+
+[data-theme="glass"] .controls-btn-primary {
+  color: #ffffff;
 }

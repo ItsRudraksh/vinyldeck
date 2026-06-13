@@ -36,7 +36,6 @@ export function MiniView() {
   const theme = useVinylDeckStore(selectTheme);
   const source = useVinylDeckStore((s) => s.source);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
-  const artAmbient = useVinylDeckStore((s) => s.artAmbient);
   const settings = useVinylDeckStore((s) => s.settings);
 
   useKeyboardShortcuts({ renderMode: "mini" });
@@ -79,7 +78,7 @@ export function MiniView() {
   }, []);
 
   useColorExtraction(artworkDataUrl, {
-    ambientEnabled: theme === "noir" && artAmbient,
+    ambientEnabled: settings.ambientMode !== "off",
     seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
   });
   useMiniCornerSnap();
@@ -91,7 +90,11 @@ export function MiniView() {
       onMouseDown={handleMouseDown}
       onTouchStart={revealControls}
     >
-      <AmbientLayer filmGrain={settings.filmGrain} />
+      <AmbientLayer
+        filmGrain={settings.filmGrain}
+        mode={settings.ambientMode}
+        theme={theme}
+      />
       <VaporGrid />
 
       <section className="mini-view__centerpiece" aria-label="Mini player">

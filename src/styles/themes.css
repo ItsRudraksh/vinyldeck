@@ -1,778 +1,268 @@
 /* ============================================================
-   VinylDeck — Theme System
-   All 5 themes as CSS custom property blocks.
-   Apply via: document.documentElement.setAttribute("data-theme", "noir")
-   Ground-truth tokens from stitch-ui-designs DESIGN.md files.
+   VinylDeck Theme System — two physical shells + ambient modes
+   Shells: Noir OLED velvet, Glass liquid optical display case.
+   Ambient modes are applied via data-ambient-mode and rendered by AmbientLayer.
    ============================================================ */
 
-/* ── Shared base properties (defaults if no theme is set) ── */
 :root {
-  /* === Background === */
   --bg: #000000;
   --color-scheme: dark;
 
-  /* === Typography === */
   --font-display: "Sora", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --mono-tracking: 0.1em;
 
-  /* === Border Radius === */
-  --radius-sm: 0.25rem; /* 4px */
-  --radius-md: 0.5rem; /* 8px */
-  --radius-lg: 1rem; /* 16px */
-  --radius-xl: 1.5rem; /* 24px */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
   --radius-full: 9999px;
-  --radius-base: var(--radius-md); /* default — overridden per theme */
+  --radius-base: var(--radius-md);
 
-  /* === Vinyl Record === */
-  --vinyl-color: #111111;
-  --vinyl-groove-inner: rgba(255, 255, 255, 0.04);
-  --vinyl-groove-outer: rgba(255, 255, 255, 0.015);
+  --vinyl-color: #0a0a0a;
+  --vinyl-groove-inner: rgba(255, 255, 255, 0.05);
+  --vinyl-groove-outer: rgba(255, 255, 255, 0.02);
   --vinyl-sheen: rgba(255, 255, 255, 0.08);
-  --vinyl-label-bg: #1a1a1a;
+  --vinyl-label-bg: #141414;
   --vinyl-size: 420px;
 
-  /* === Needle Arm === */
-  --needle-color: #c0c0c0;
-  --needle-hinge-color: #a0a0a0;
-  --needle-shadow: rgba(0, 0, 0, 0.6);
+  --needle-color: #9a9a9a;
+  --needle-hinge-color: #686868;
+  --needle-shadow: rgba(0, 0, 0, 0.72);
 
-  /* === Ambient Background === */
-  --ambient-primary: #111111;
-  --ambient-secondary: #1a1a1a;
-  --ambient-blur: 120px;
-  --ambient-opacity: 0.6;
+  --ambient-primary: #d8d8d8;
+  --ambient-secondary: #72685f;
+  --ambient-blur: 140px;
+  --ambient-opacity: 0.52;
 
-  /* === UI / Controls === */
-  --ui-bg: rgba(255, 255, 255, 0.05);
-  --ui-border: rgba(255, 255, 255, 0.08);
-  --ui-text-primary: rgba(255, 255, 255, 0.92);
-  --ui-text-secondary: rgba(255, 255, 255, 0.45);
-  --ui-accent: #ffffff;
-  --ui-control-hover: rgba(255, 255, 255, 0.12);
-  --ui-control-active: rgba(255, 255, 255, 0.18);
+  --ui-bg: rgba(12, 12, 12, 0.76);
+  --ui-border: rgba(255, 255, 255, 0.095);
+  --ui-text-primary: rgba(245, 243, 240, 0.94);
+  --ui-text-secondary: rgba(226, 226, 226, 0.46);
+  --ui-accent: #f4f1eb;
+  --ui-control-hover: rgba(255, 255, 255, 0.09);
+  --ui-control-active: rgba(255, 255, 255, 0.14);
 
-  /* === Progress Ring === */
   --ring-track: rgba(255, 255, 255, 0.1);
   --ring-fill: var(--ui-accent);
   --ring-glow: rgba(255, 255, 255, 0.3);
 
-  /* === Glow === */
-  --glow-color: rgba(255, 255, 255, 0.2);
+  --glow-color: rgba(255, 255, 255, 0.18);
   --glow-radius: 80px;
-  --glow-opacity: 0.5;
+  --glow-opacity: 0.44;
 
-  /* === Transitions === */
+  --surface-bg: var(--ui-bg);
+  --surface-border: var(--ui-border);
+  --surface-shadow:
+    0 18px 54px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --surface-inner-highlight: rgba(255, 255, 255, 0.08);
+  --surface-backdrop: blur(24px) saturate(1.35) contrast(1.02);
+  --surface-specular-opacity: 0.22;
+  --surface-radius: var(--radius-full);
+
+  --room-center-light: rgba(255, 255, 255, 0.02);
+  --room-floor-light: rgba(255, 255, 255, 0.01);
+  --room-vignette: radial-gradient(
+    ellipse at 50% 42%,
+    transparent 30%,
+    rgba(0, 0, 0, 0.54) 72%,
+    rgba(0, 0, 0, 0.94) 100%
+  );
+  --room-grain-opacity: 0.028;
+  --room-grain-blend: overlay;
+  --room-velvet-opacity: 0.14;
+
+  --ambient-beam-opacity: 0.42;
+  --ambient-reflection-opacity: 0.22;
+  --ambient-caustic-opacity: 0.18;
+  --ambient-glass-orb-opacity: 0.06;
+  --ambient-aurora-opacity: 0.34;
+
   --theme-transition: 600ms cubic-bezier(0.25, 0.1, 0.25, 1);
   --spring-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
   --brake-curve: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* NOIR — Cinematic OLED black. Monochromatic. Studio noir.   */
-/* Source: stitch_vinyldeck_cinematic_analog_visualizer/noir  */
-/* ─────────────────────────────────────────────────────────── */
 [data-theme="noir"] {
-  /* Background */
-  --bg: #131313;
+  --bg: #000000;
   --color-scheme: dark;
 
-  /* Typography — Hanken Grotesk (sharp editorial) + Geist (systematic) */
-  --font-display: "Hanken Grotesk", system-ui, sans-serif;
+  --font-display: "Hanken Grotesk", "Sora", system-ui, sans-serif;
   --font-body: "Geist", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --mono-tracking: 0.1em;
 
-  /* Radius — ZERO everywhere per DESIGN.md spec. Only disc stays a circle. */
   --radius-base: 0;
   --radius-sm: 0;
   --radius-md: 0;
   --radius-lg: 0;
   --radius-xl: 0;
 
-  /* Vinyl */
-  --vinyl-color: #0a0a0a;
-  --vinyl-groove-inner: rgba(255, 255, 255, 0.05);
-  --vinyl-groove-outer: rgba(255, 255, 255, 0.02);
+  --vinyl-color: #080808;
+  --vinyl-groove-inner: rgba(255, 255, 255, 0.048);
+  --vinyl-groove-outer: rgba(255, 255, 255, 0.018);
   --vinyl-sheen: rgba(255, 255, 255, 0.07);
-  --vinyl-label-bg: #141414;
+  --vinyl-label-bg: #101010;
 
-  /* Needle — brushed steel */
   --needle-color: #8c8c8c;
-  --needle-hinge-color: #606060;
-  --needle-shadow: rgba(0, 0, 0, 0.7);
+  --needle-hinge-color: #5e5e5e;
+  --needle-shadow: rgba(0, 0, 0, 0.76);
 
-  /* Ambient — vivid crimson + warm umber (exact from reference HTML: #93000a / #3a2e24) */
-  --ambient-primary: #93000a;
-  --ambient-secondary: #4a2e1a;
+  --ambient-primary: #e8e2dc;
+  --ambient-secondary: #8c7665;
   --ambient-blur: 140px;
-  --ambient-opacity: 0.55;
+  --ambient-opacity: 0.46;
 
-  /* UI — heavy frosted dark glass */
-  --ui-bg: rgba(20, 20, 20, 0.85);
-  --ui-border: rgba(255, 255, 255, 0.06);
-  --ui-text-primary: rgba(229, 226, 225, 0.92); /* from DESIGN.md on-surface */
-  --ui-text-secondary: rgba(
-    196,
-    199,
-    200,
-    0.4
-  ); /* from DESIGN.md on-surface-variant muted */
-  --ui-accent: #e8e8e8;
+  --ui-bg: rgba(7, 7, 7, 0.78);
+  --ui-border: rgba(255, 255, 255, 0.075);
+  --ui-text-primary: rgba(241, 239, 235, 0.94);
+  --ui-text-secondary: rgba(226, 226, 226, 0.42);
+  --ui-accent: #f1efea;
   --ui-control-hover: rgba(255, 255, 255, 0.08);
   --ui-control-active: rgba(255, 255, 255, 0.14);
 
-  /* Ring */
-  --ring-track: rgba(255, 255, 255, 0.08);
-  --ring-fill: #e8e8e8;
-  --ring-glow: rgba(232, 232, 232, 0.25);
+  --ring-track: rgba(255, 255, 255, 0.09);
+  --ring-fill: #f1efea;
+  --ring-glow: rgba(241, 239, 234, 0.26);
 
-  /* Glow — cool white */
-  --glow-color: rgba(200, 200, 200, 0.12);
+  --glow-color: rgba(210, 210, 210, 0.13);
   --glow-radius: 90px;
-  --glow-opacity: 0.4;
+  --glow-opacity: 0.38;
+
+  --surface-bg: linear-gradient(
+    180deg,
+    rgba(20, 20, 20, 0.78),
+    rgba(5, 5, 5, 0.72)
+  );
+  --surface-border: rgba(255, 255, 255, 0.075);
+  --surface-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -24px 60px rgba(0, 0, 0, 0.32);
+  --surface-inner-highlight: rgba(255, 255, 255, 0.065);
+  --surface-backdrop: blur(22px) saturate(1.12) contrast(1.04);
+  --surface-specular-opacity: 0.16;
+
+  --room-center-light: rgba(255, 255, 255, 0.022);
+  --room-floor-light: rgba(255, 255, 255, 0.012);
+  --room-vignette: radial-gradient(
+    ellipse at 50% 42%,
+    transparent 23%,
+    rgba(0, 0, 0, 0.58) 69%,
+    rgba(0, 0, 0, 0.98) 100%
+  );
+  --room-grain-opacity: 0.032;
+  --room-grain-blend: overlay;
+  --room-velvet-opacity: 0.18;
+
+  --ambient-beam-opacity: 0.42;
+  --ambient-reflection-opacity: 0.18;
+  --ambient-caustic-opacity: 0.14;
+  --ambient-glass-orb-opacity: 0.025;
+  --ambient-aurora-opacity: 0.32;
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* GLASS — Frosted acrylic. Apple-inspired translucency.      */
-/* Source: stitch_vinyldeck_cinematic_analog_visualizer/glass */
-/* LIGHT MODE — #f9f9fb base, vibrant blue primary.           */
-/* ─────────────────────────────────────────────────────────── */
 [data-theme="glass"] {
-  /* Background — light mode */
-  --bg: #f9f9fb;
+  --bg: #f5f2ea;
   --color-scheme: light;
 
-  /* Typography — Manrope (geometric balance) + Inter */
-  --font-display: "Manrope", system-ui, sans-serif;
+  --font-display: "Manrope", "Inter", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
-  --font-mono:
-    "Inter", system-ui, sans-serif; /* Glass uses Inter everywhere, no mono */
-  --mono-tracking: 0.05em;
+  --font-mono: "Inter", system-ui, sans-serif;
+  --mono-tracking: 0.055em;
 
-  /* Radius — most rounded theme */
   --radius-base: 1rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  /* Vinyl — deep cool slate */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.875rem;
+  --radius-lg: 1.15rem;
+  --radius-xl: 1.65rem;
+
   --vinyl-color: #1a1f2e;
-  --vinyl-groove-inner: rgba(160, 200, 255, 0.08);
-  --vinyl-groove-outer: rgba(160, 200, 255, 0.035);
-  --vinyl-sheen: rgba(255, 255, 255, 0.15);
-  --vinyl-label-bg: rgba(255, 255, 255, 0.1);
+  --vinyl-groove-inner: rgba(70, 110, 150, 0.08);
+  --vinyl-groove-outer: rgba(70, 110, 150, 0.035);
+  --vinyl-sheen: rgba(255, 255, 255, 0.16);
+  --vinyl-label-bg: rgba(255, 255, 255, 0.18);
 
-  /* Needle — ice blue silver */
-  --needle-color: #d0d8e4;
-  --needle-hinge-color: #9ab0d0;
-  --needle-shadow: rgba(0, 30, 80, 0.5);
+  --needle-color: #cad7e7;
+  --needle-hinge-color: #9fb4cf;
+  --needle-shadow: rgba(28, 48, 72, 0.38);
 
-  /* Ambient — vivid royal blue + ice navy */
-  --ambient-primary: #1a4a9a;
-  --ambient-secondary: #0a2060;
-  --ambient-blur: 130px;
-  --ambient-opacity: 0.6;
+  --ambient-primary: #2b86d3;
+  --ambient-secondary: #75d7c8;
+  --ambient-blur: 110px;
+  --ambient-opacity: 0.38;
 
-  /* UI — bright frosted glass (light mode) */
-  --ui-bg: rgba(255, 255, 255, 0.7);
-  --ui-border: rgba(0, 88, 188, 0.15);
-  --ui-text-primary: rgba(
-    26,
-    28,
-    29,
-    0.92
-  ); /* DESIGN.md on-surface dark text */
-  --ui-text-secondary: rgba(65, 71, 85, 0.7); /* DESIGN.md on-surface-variant */
-  --ui-accent: #0058bc;
-  --ui-control-hover: rgba(0, 88, 188, 0.08);
-  --ui-control-active: rgba(0, 88, 188, 0.16);
+  --ui-bg: rgba(255, 255, 255, 0.48);
+  --ui-border: rgba(60, 88, 120, 0.18);
+  --ui-text-primary: rgba(22, 27, 34, 0.88);
+  --ui-text-secondary: rgba(48, 58, 69, 0.58);
+  --ui-accent: #006fd6;
+  --ui-control-hover: rgba(0, 98, 190, 0.085);
+  --ui-control-active: rgba(0, 98, 190, 0.16);
 
-  /* Ring */
-  --ring-track: rgba(0, 88, 188, 0.12);
-  --ring-fill: #0058bc;
-  --ring-glow: rgba(0, 88, 188, 0.3);
+  --ring-track: rgba(0, 88, 188, 0.14);
+  --ring-fill: #0070d9;
+  --ring-glow: rgba(0, 112, 217, 0.3);
 
-  /* Glow — soft blue bloom */
-  --glow-color: rgba(0, 88, 188, 0.1);
+  --glow-color: rgba(0, 98, 190, 0.11);
   --glow-radius: 100px;
-  --glow-opacity: 0.4;
-}
+  --glow-opacity: 0.36;
 
-/* ─────────────────────────────────────────────────────────── */
-/* AURORA — Sci-fi midnight teal. Holographic projection.     */
-/* Source: aurora_cinematic DESIGN.md (#0e1419, #00dbe7)      */
-/* ─────────────────────────────────────────────────────────── */
-[data-theme="aurora"] {
-  /* Background — deep desaturated navy (NOT pure black per spec) */
-  --bg: #0e1419;
-  --color-scheme: dark;
-
-  /* Typography — Sora (cinematic) + Geist (engineered) */
-  --font-display: "Sora", system-ui, sans-serif;
-  --font-body: "Geist", "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --mono-tracking: 0.08em;
-
-  /* Radius */
-  --radius-base: 0.25rem;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  /* Vinyl — deep oceanic */
-  --vinyl-color: #050d1a;
-  --vinyl-groove-inner: rgba(0, 219, 231, 0.07);
-  --vinyl-groove-outer: rgba(0, 219, 231, 0.025);
-  --vinyl-sheen: rgba(0, 242, 255, 0.09);
-  --vinyl-label-bg: #080f1f;
-
-  /* Needle — cyan-tinted silver */
-  --needle-color: #7ae8d4;
-  --needle-hinge-color: #4ab8b0;
-  --needle-shadow: rgba(0, 30, 40, 0.6);
-
-  /* Ambient — vivid teal + deep cyan (from DESIGN.md #00dbe7 accent) */
-  --ambient-primary: #007060;
-  --ambient-secondary: #003a48;
-  --ambient-blur: 130px;
-  --ambient-opacity: 0.65;
-
-  /* UI — dark teal glass */
-  --ui-bg: rgba(0, 30, 40, 0.8);
-  --ui-border: rgba(0, 219, 231, 0.16);
-  --ui-text-primary: rgba(222, 227, 234, 0.92); /* DESIGN.md on-surface */
-  --ui-text-secondary: rgba(148, 209, 209, 0.55); /* DESIGN.md secondary */
-  --ui-accent: #00d4be;
-  --ui-control-hover: rgba(0, 212, 190, 0.12);
-  --ui-control-active: rgba(0, 212, 190, 0.22);
-
-  /* Ring */
-  --ring-track: rgba(0, 219, 231, 0.12);
-  --ring-fill: #00d4be;
-  --ring-glow: rgba(0, 212, 190, 0.4);
-
-  /* Glow — aurora teal bloom */
-  --glow-color: rgba(0, 219, 231, 0.25);
-  --glow-radius: 100px;
-  --glow-opacity: 0.6;
-}
-
-/* ─────────────────────────────────────────────────────────── */
-/* VAPOR — Neon-noir vaporwave. Electric magenta + cyber grid.*/
-/* Source: vapor DESIGN.md (#111225, #fea9ff primary)         */
-/* ─────────────────────────────────────────────────────────── */
-[data-theme="vapor"] {
-  /* Background — violet-black (NEVER pure black per spec) */
-  --bg: #111225;
-  --color-scheme: dark;
-
-  /* Typography — Anybody (expressive 80s display) + Space Grotesk + Space Mono */
-  --font-display: "Anybody", system-ui, sans-serif;
-  --font-body: "Space Grotesk", system-ui, sans-serif;
-  --font-mono: "Space Mono", monospace; /* VFD display aesthetic */
-  --mono-tracking: 0.1em;
-
-  /* Radius — precision hardware, minimal rounding */
-  --radius-base: 0.25rem;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  /* Vinyl — ultra deep space violet */
-  --vinyl-color: #0b0c1f;
-  --vinyl-groove-inner: rgba(200, 0, 255, 0.07);
-  --vinyl-groove-outer: rgba(200, 0, 255, 0.025);
-  --vinyl-sheen: rgba(255, 100, 200, 0.08);
-  --vinyl-label-bg: #130018;
-
-  /* Needle — neon violet */
-  --needle-color: #d080ff;
-  --needle-hinge-color: #9040cc;
-  --needle-shadow: rgba(50, 0, 80, 0.6);
-
-  /* Ambient — vivid electric violet + deep magenta (from #fea9ff accent) */
-  --ambient-primary: #6a00a8;
-  --ambient-secondary: #3a006a;
-  --ambient-blur: 130px;
-  --ambient-opacity: 0.7;
-
-  /* UI — neon-noir glass */
-  --ui-bg: rgba(30, 0, 40, 0.82);
-  --ui-border: rgba(200, 0, 255, 0.18);
-  --ui-text-primary: rgba(225, 224, 251, 0.9); /* DESIGN.md on-surface */
-  --ui-text-secondary: rgba(
-    217,
-    191,
-    213,
-    0.55
-  ); /* DESIGN.md on-surface-variant */
-  --ui-accent: #c855ff;
-  --ui-control-hover: rgba(200, 85, 255, 0.14);
-  --ui-control-active: rgba(200, 85, 255, 0.24);
-
-  /* Ring */
-  --ring-track: rgba(200, 0, 255, 0.12);
-  --ring-fill: #c855ff;
-  --ring-glow: rgba(200, 85, 255, 0.45);
-
-  /* Glow — magenta neon bloom */
-  --glow-color: rgba(200, 85, 255, 0.3);
-  --glow-radius: 100px;
-  --glow-opacity: 0.65;
-}
-
-/* ─────────────────────────────────────────────────────────── */
-/* PAPER — Warm vintage analog. Bronze + cream + aged paper.  */
-/* Source: paper DESIGN.md (#fef9eb base, #715230 bronze)     */
-/* LIGHT MODE — cream canvas, warm charcoal text.             */
-/* ─────────────────────────────────────────────────────────── */
-[data-theme="paper"] {
-  /* Background — warm cream canvas (LIGHT MODE) */
-  --bg: #fef9eb;
-  --color-scheme: light;
-
-  /* Typography — Libre Caslon Text (luxury serif) + Work Sans + Space Mono */
-  --font-display: "Libre Caslon Text", Georgia, serif;
-  --font-body: "Work Sans", system-ui, sans-serif;
-  --font-mono: "Space Mono", monospace; /* stamped back-panel text */
-  --mono-tracking: 0.08em;
-
-  /* Radius — soft but precise, like machined cardstock */
-  --radius-base: 0.25rem;
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  /* Vinyl — deep aged walnut */
-  --vinyl-color: #1a1408;
-  --vinyl-groove-inner: rgba(200, 160, 80, 0.07);
-  --vinyl-groove-outer: rgba(200, 160, 80, 0.028);
-  --vinyl-sheen: rgba(220, 180, 100, 0.09);
-  --vinyl-label-bg: #221a08;
-
-  /* Needle — aged brass/gold */
-  --needle-color: #c8a84a;
-  --needle-hinge-color: #9a7a30;
-  --needle-shadow: rgba(30, 20, 5, 0.65);
-
-  /* Ambient — vivid warm amber + deep sienna (from #d4a840 / #715230 accent) */
-  --ambient-primary: #8a4a08;
-  --ambient-secondary: #5a2a04;
-  --ambient-blur: 120px;
-  --ambient-opacity: 0.6;
-
-  /* UI — warm paper surface (light mode) */
-  --ui-bg: rgba(249, 243, 229, 0.85); /* warm paper with slight transparency */
-  --ui-border: rgba(113, 82, 48, 0.2); /* bronze outline */
-  --ui-text-primary: rgba(
-    29,
-    28,
-    19,
-    0.9
-  ); /* DESIGN.md on-surface warm charcoal */
-  --ui-text-secondary: rgba(
-    79,
-    69,
-    60,
-    0.65
-  ); /* DESIGN.md on-surface-variant */
-  --ui-accent: #715230; /* bronze primary */
-  --ui-control-hover: rgba(113, 82, 48, 0.1);
-  --ui-control-active: rgba(113, 82, 48, 0.18);
-
-  /* Ring */
-  --ring-track: rgba(113, 82, 48, 0.15);
-  --ring-fill: #715230;
-  --ring-glow: rgba(113, 82, 48, 0.25);
-
-  /* Glow — warm bronze bloom */
-  --glow-color: rgba(212, 168, 64, 0.15);
-  --glow-radius: 80px;
-  --glow-opacity: 0.35;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ALBUM-SPECIFIC VINYL PRESSING MATERIAL SYSTEM
-   These variables do not replace the theme system. They tune the
-   album-derived pressing engine per theme personality.
-   ═══════════════════════════════════════════════════════════════ */
-
-:root {
-  --pressing-primary: var(--vinyl-color, #111111);
-  --pressing-secondary: #d8d8d8;
-  --pressing-accent: var(--ui-accent, #ffffff);
-  --pressing-deep: #050505;
-  --pressing-soft: #2c2c2c;
-  --pressing-highlight: #464646;
-  --pressing-shadow: #020202;
-  --pressing-edge: #010101;
-  --pressing-pearl: #f2f2f2;
-  --pressing-groove: #171717;
-  --pressing-groove-bright: #393939;
-  --pressing-label-bg: var(--vinyl-label-bg, #141414);
-  --pressing-seed-angle: 25deg;
-  --pressing-seed-angle-alt: 145deg;
-  --pressing-texture-opacity: 0.28;
-  --pressing-translucency: 1;
-  --pressing-splatter-scale: 1;
-  --pressing-ghost-opacity: 0;
-  --pressing-smoke-density: 0.68;
-  --pressing-organic-x: 48%;
-  --pressing-organic-y: 50%;
-  --pressing-hash-a: 0px;
-  --pressing-hash-b: 0px;
-
-  --pressing-material-opacity: 1;
-  --pressing-theme-filter: saturate(1) contrast(1);
-  --pressing-texture-blend: overlay;
-  --pressing-groove-blend: luminosity;
-  --pressing-groove-opacity: 1;
-  --pressing-groove-visibility: 1;
-  --pressing-sheen-strength: 1;
-  --pressing-reflection-strength: 1;
-  --pressing-label-saturation: 1.02;
-  --pressing-label-contrast: 1.02;
-}
-
-/* Noir: smoky translucent, dark dramatic, color bleeding through black wax. */
-[data-theme="noir"] {
-  --pressing-material-opacity: 0.92;
-  --pressing-theme-filter: saturate(0.92) contrast(1.12) brightness(0.86);
-  --pressing-texture-blend: screen;
-  --pressing-groove-blend: screen;
-  --pressing-groove-opacity: 0.92;
-  --pressing-groove-visibility: 0.95;
-  --pressing-sheen-strength: 0.92;
-  --pressing-reflection-strength: 0.86;
-  --pressing-label-saturation: 0.96;
-  --pressing-label-contrast: 1.06;
-}
-
-[data-theme="noir"][data-vinyl-pressing="solid"] .vinyl-pressing-texture,
-[data-theme="noir"][data-vinyl-pressing="marble"] .vinyl-pressing-texture,
-[data-theme="noir"][data-vinyl-pressing="translucent"] .vinyl-pressing-texture {
-  opacity: calc(var(--pressing-texture-opacity, 0.38) * 0.78);
-}
-
-/* Glass: crystal-clear acrylic, vivid color, frosted rim. */
-[data-theme="glass"] {
-  --pressing-material-opacity: 1;
-  --pressing-theme-filter: saturate(1.18) contrast(1.04) brightness(1.06);
-  --pressing-texture-blend: screen;
-  --pressing-groove-blend: soft-light;
-  --pressing-groove-opacity: 1.08;
-  --pressing-groove-visibility: 1.06;
-  --pressing-sheen-strength: 1.32;
-  --pressing-reflection-strength: 1.2;
-  --pressing-label-saturation: 1.05;
-  --pressing-label-contrast: 1.02;
-}
-
-[data-theme="glass"] .vinyl-disc {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, #ffffff 30%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, #ffffff 18%, transparent),
-    inset 0 0 34px color-mix(in srgb, #ffffff 10%, transparent),
-    inset 0 0 120px
-      color-mix(in srgb, var(--pressing-primary, #0058bc) 16%, transparent),
-    0 28px 60px rgba(40, 58, 95, 0.28),
-    0 8px 32px rgba(40, 58, 95, 0.22);
-}
-
-[data-theme="glass"] .vinyl-pressing-depth {
-  opacity: 0.72;
-  box-shadow:
-    inset 0 0 24px rgba(255, 255, 255, 0.16),
-    inset 0 0 76px
-      color-mix(in srgb, var(--pressing-primary, #0058bc) 20%, transparent),
-    inset 0 0 120px rgba(255, 255, 255, 0.06);
-}
-
-/* Aurora: holographic/iridescent surface that shifts across the wax. */
-[data-theme="aurora"] {
-  --pressing-material-opacity: 1;
-  --pressing-theme-filter: saturate(1.22) contrast(1.08);
-  --pressing-texture-blend: screen;
-  --pressing-groove-blend: screen;
-  --pressing-groove-opacity: 1.05;
-  --pressing-groove-visibility: 1.12;
-  --pressing-sheen-strength: 1.18;
-  --pressing-reflection-strength: 1.14;
-  --pressing-label-saturation: 1.08;
-  --pressing-label-contrast: 1.04;
-}
-
-[data-theme="aurora"] .vinyl-pressing-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from var(--pressing-seed-angle-alt, 145deg),
-    transparent 0deg,
-    rgba(0, 212, 190, 0.2) 42deg,
-    transparent 96deg,
-    rgba(132, 92, 255, 0.18) 156deg,
-    transparent 218deg,
-    rgba(0, 219, 231, 0.18) 302deg,
-    transparent 360deg
+  --surface-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.54),
+    rgba(255, 255, 255, 0.24)
   );
-  mix-blend-mode: screen;
-  opacity: 0.72;
-  pointer-events: none;
-}
+  --surface-border: rgba(255, 255, 255, 0.72);
+  --surface-shadow:
+    0 24px 70px rgba(45, 60, 78, 0.19), inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -28px 60px rgba(80, 120, 160, 0.07);
+  --surface-inner-highlight: rgba(255, 255, 255, 0.88);
+  --surface-backdrop: blur(28px) saturate(1.55) contrast(1.04);
+  --surface-specular-opacity: 0.36;
 
-[data-theme="aurora"] .vinyl-disc {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--ui-accent, #00d4be) 36%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, #ffffff 6%, transparent),
-    inset 0 0 44px
-      color-mix(in srgb, var(--ui-accent, #00d4be) 13%, transparent),
-    inset 0 0 110px rgba(0, 0, 0, 0.58),
-    0 32px 64px rgba(0, 20, 28, 0.68),
-    0 0 80px
-      color-mix(in srgb, var(--pressing-primary, #00d4be) 16%, transparent);
-}
-
-/* Vapor: neon saturated, electric, almost synthetic collector pressing. */
-[data-theme="vapor"] {
-  --pressing-material-opacity: 1.08;
-  --pressing-theme-filter: saturate(1.55) contrast(1.14) brightness(1.05);
-  --pressing-texture-blend: screen;
-  --pressing-groove-blend: screen;
-  --pressing-groove-opacity: 1.12;
-  --pressing-groove-visibility: 1.08;
-  --pressing-sheen-strength: 1.22;
-  --pressing-reflection-strength: 1.16;
-  --pressing-label-saturation: 1.18;
-  --pressing-label-contrast: 1.08;
-}
-
-[data-theme="vapor"] .vinyl-pressing-depth {
-  box-shadow:
-    inset 0 0 28px
-      color-mix(in srgb, var(--pressing-accent, #c855ff) 16%, transparent),
-    inset 0 0 86px color-mix(in srgb, #000000 44%, transparent),
-    inset 0 0 128px
-      color-mix(in srgb, var(--pressing-primary, #c855ff) 22%, transparent);
-}
-
-[data-theme="vapor"] .vinyl-disc {
-  box-shadow:
-    0 0 0 1px
-      color-mix(in srgb, var(--pressing-accent, #c855ff) 28%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, #ffffff 5%, transparent),
-    inset 0 0 34px
-      color-mix(in srgb, var(--pressing-accent, #c855ff) 16%, transparent),
-    0 34px 66px rgba(24, 0, 42, 0.72),
-    0 0 76px
-      color-mix(in srgb, var(--pressing-primary, #c855ff) 24%, transparent);
-}
-
-/* Paper: raw wax, vintage, muted and warm like a 70s color pressing. */
-[data-theme="paper"] {
-  --pressing-material-opacity: 0.9;
-  --pressing-theme-filter: saturate(0.72) contrast(0.96) sepia(0.12)
-    brightness(1.05);
-  --pressing-texture-blend: multiply;
-  --pressing-groove-blend: multiply;
-  --pressing-groove-opacity: 0.92;
-  --pressing-groove-visibility: 0.96;
-  --pressing-sheen-strength: 0.72;
-  --pressing-reflection-strength: 0.7;
-  --pressing-label-saturation: 0.86;
-  --pressing-label-contrast: 0.96;
-}
-
-[data-theme="paper"] .vinyl-pressing-base {
-  background:
-    radial-gradient(
-      circle at 34% 22%,
-      color-mix(in srgb, #fff6dd 22%, transparent) 0%,
-      transparent 30%
-    ),
-    radial-gradient(
-      circle at 68% 72%,
-      color-mix(in srgb, #7b5f32 10%, transparent) 0%,
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at center,
-      color-mix(in oklch, var(--pressing-primary, #6f4f2a) 78%, #d8b77b 22%) 0%,
-      color-mix(in oklch, var(--pressing-deep, #2c1c10) 82%, #7a5a2a 18%) 74%,
-      color-mix(in srgb, var(--pressing-edge, #1a1007) 86%, #4c3219) 100%
-    );
-}
-
-[data-theme="paper"] .vinyl-pressing-texture::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='wax'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23wax)' opacity='0.45'/%3E%3C/svg%3E");
-  background-size: 190px 190px;
-  mix-blend-mode: multiply;
-  opacity: 0.12;
-  pointer-events: none;
-}
-
-[data-theme="paper"] .vinyl-disc {
-  box-shadow:
-    0 0 0 1px rgba(113, 82, 48, 0.2),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
-    inset 0 0 34px rgba(113, 82, 48, 0.18),
-    inset 0 0 110px rgba(38, 22, 10, 0.36),
-    0 30px 52px rgba(70, 45, 20, 0.25),
-    0 8px 32px rgba(70, 45, 20, 0.18);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SECOND-PASS THEME DIFFERENTIATION FOR THE RECORD ITSELF
-   These are intentionally visible on the same track so theme changes
-   alter the pressing personality, not only the room/background.
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Glass: black/neutral records become frosted clear-smoke instead of plain black. */
-[data-theme="glass"][data-vinyl-pressing="audiophile-black"] .vinyl-disc,
-[data-theme="glass"][data-vinyl-pressing="smoke"] .vinyl-disc {
-  background: color-mix(in srgb, #eaf5ff 18%, transparent);
-  -webkit-backdrop-filter: blur(7px) saturate(1.18);
-  backdrop-filter: blur(7px) saturate(1.18);
-}
-
-[data-theme="glass"][data-vinyl-pressing="audiophile-black"]
-  .vinyl-pressing-base,
-[data-theme="glass"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
-  background:
-    radial-gradient(
-      circle at 28% 22%,
-      rgba(255, 255, 255, 0.22) 0%,
-      transparent 34%
-    ),
-    radial-gradient(
-      circle at 72% 74%,
-      color-mix(in srgb, var(--ui-accent, #0058bc) 12%, transparent) 0%,
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at center,
-      rgba(12, 18, 24, 0.72) 0%,
-      rgba(7, 12, 18, 0.78) 76%,
-      rgba(0, 0, 0, 0.72) 100%
-    );
-  opacity: 0.82;
-}
-
-/* Aurora: holographic wash visible even on dark records. */
-[data-theme="aurora"] .vinyl-pressing-depth::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from calc(var(--pressing-seed-angle-alt, 145deg) + 34deg),
-    transparent 0deg,
-    rgba(0, 255, 222, 0.16) 46deg,
-    transparent 94deg,
-    rgba(120, 72, 255, 0.14) 162deg,
-    transparent 224deg,
-    rgba(0, 219, 231, 0.13) 304deg,
-    transparent 360deg
+  --room-center-light: rgba(255, 255, 255, 0.58);
+  --room-floor-light: rgba(120, 150, 180, 0.16);
+  --room-vignette: radial-gradient(
+    ellipse at 50% 42%,
+    transparent 30%,
+    rgba(72, 86, 110, 0.08) 70%,
+    rgba(30, 38, 50, 0.16) 100%
   );
-  mix-blend-mode: screen;
-  opacity: 0.86;
-  pointer-events: none;
+  --room-grain-opacity: 0.012;
+  --room-grain-blend: multiply;
+  --room-velvet-opacity: 0;
+
+  --ambient-beam-opacity: 0.24;
+  --ambient-reflection-opacity: 0.34;
+  --ambient-caustic-opacity: 0.32;
+  --ambient-glass-orb-opacity: 0.2;
+  --ambient-aurora-opacity: 0.24;
 }
 
-[data-theme="aurora"][data-vinyl-pressing="audiophile-black"]
-  .vinyl-pressing-base,
-[data-theme="aurora"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
-  background:
-    radial-gradient(
-      circle at 30% 22%,
-      rgba(0, 212, 190, 0.14) 0%,
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 70% 74%,
-      rgba(132, 92, 255, 0.14) 0%,
-      transparent 44%
-    ),
-    radial-gradient(circle at center, #101818 0%, #050b0d 75%, #000000 100%);
+/* Ambient-mode root tuning. AmbientLayer also uses mode-specific classes. */
+[data-ambient-mode="off"] {
+  --ambient-opacity: 0;
 }
 
-/* Vapor: intentionally electric; dark records receive neon oil-slick edges. */
-[data-theme="vapor"] .vinyl-pressing-depth::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at center,
-      transparent 0 70%,
-      rgba(200, 85, 255, 0.2) 78%,
-      transparent 88%
-    ),
-    conic-gradient(
-      from var(--pressing-seed-angle),
-      transparent 0deg,
-      rgba(255, 80, 220, 0.14) 55deg,
-      transparent 100deg,
-      rgba(0, 230, 255, 0.12) 210deg,
-      transparent 300deg
-    );
-  mix-blend-mode: screen;
-  opacity: 0.9;
-  pointer-events: none;
+[data-ambient-mode="beam"] {
+  --ambient-opacity: 0.46;
 }
 
-[data-theme="vapor"][data-vinyl-pressing="audiophile-black"]
-  .vinyl-pressing-base,
-[data-theme="vapor"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
-  background:
-    radial-gradient(
-      circle at 30% 22%,
-      rgba(200, 85, 255, 0.18) 0%,
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 72% 72%,
-      rgba(0, 230, 255, 0.12) 0%,
-      transparent 42%
-    ),
-    radial-gradient(circle at center, #12101c 0%, #07040f 76%, #000000 100%);
+[data-ambient-mode="caustic"] {
+  --ambient-opacity: 0.38;
 }
 
-/* Paper: same pressing becomes warmer, chalkier, less glossy. */
-[data-theme="paper"][data-vinyl-pressing="audiophile-black"]
-  .vinyl-pressing-base,
-[data-theme="paper"][data-vinyl-pressing="smoke"] .vinyl-pressing-base {
-  background:
-    radial-gradient(
-      circle at 34% 24%,
-      rgba(255, 240, 200, 0.1) 0%,
-      transparent 30%
-    ),
-    radial-gradient(circle at center, #17130d 0%, #0b0906 76%, #020100 100%);
+[data-ambient-mode="aurora"] {
+  --ambient-opacity: 0.54;
 }
 
-[data-theme="paper"] .vinyl-pressing-depth::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='dryWax'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23dryWax)' opacity='0.5'/%3E%3C/svg%3E");
-  background-size: 220px 220px;
-  mix-blend-mode: multiply;
-  opacity: 0.11;
-  pointer-events: none;
+[data-theme="noir"][data-ambient-mode="aurora"] {
+  --ambient-primary: #734dff;
+  --ambient-secondary: #00cdb8;
 }
 
-/* Noir: preserve mood, but let smoke/translucent be visibly smoke, not default black. */
-[data-theme="noir"][data-vinyl-pressing="smoke"] .vinyl-pressing-base,
-[data-theme="noir"][data-vinyl-pressing="translucent"] .vinyl-pressing-base {
-  opacity: 0.74;
+[data-theme="glass"][data-ambient-mode="aurora"] {
+  --ambient-primary: #8a7dff;
+  --ambient-secondary: #31c7ce;
 }

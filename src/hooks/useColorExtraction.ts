@@ -461,7 +461,11 @@ export function useColorExtraction(
             createFallbackPalette(),
             seed,
           );
-          applyVinylPressing(fallbackPressing.type, fallbackPressing.cssVars);
+          applyVinylPressing(
+            fallbackPressing.type,
+            fallbackPressing.cssVars,
+            fallbackPressing,
+          );
         }
         return;
       }
@@ -473,7 +477,11 @@ export function useColorExtraction(
       }
 
       if (vinylEnabled) {
-        applyVinylPressing(result.pressing.type, result.pressing.cssVars);
+        applyVinylPressing(
+          result.pressing.type,
+          result.pressing.cssVars,
+          result.pressing,
+        );
       }
 
       console.debug(

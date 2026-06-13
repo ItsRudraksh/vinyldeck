@@ -2,14 +2,13 @@
 // SVG progress ring wrapping the vinyl.
 // Phase 8:
 //   - Scrub interaction: onPointerDown/Move/Up + setPointerCapture
-//   - Aurora decorative outer ring (breathe pulse)
-//   - Vapor: progress arc glow-pulse animation
+//   - Aurora ambient decorative outer ring (breathe pulse)
 //   - Scrub timestamp tooltip follows cursor angle
 //   - RULES OF HOOKS: ALL hooks declared before any early return
 
 import { useRef, useState, useCallback } from "react";
 import { motion } from "motion/react";
-import { useVinylDeckStore, selectTheme } from "../../lib/playback/store";
+import { useVinylDeckStore, selectAmbientMode } from "../../lib/playback/store";
 
 interface ProgressRingProps {
   duration: number;
@@ -34,7 +33,7 @@ export function ProgressRing({
   onSeek,
 }: ProgressRingProps) {
   // ── ALL hooks first — no early returns before this block ──────
-  const theme = useVinylDeckStore(selectTheme);
+  const ambientMode = useVinylDeckStore(selectAmbientMode);
   const svgRef = useRef<SVGSVGElement>(null);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [scrubPosition, setScrubPosition] = useState(0);
@@ -51,7 +50,7 @@ export function ProgressRing({
       if (deg < 0) deg += 360;
       return deg;
     },
-    [size]
+    [size],
   );
 
   const handlePointerDown = useCallback(
@@ -64,7 +63,7 @@ export function ProgressRing({
       setScrubPosition(pos);
       setScrubAngle(deg);
     },
-    [onSeek, duration, angleFromPointer]
+    [onSeek, duration, angleFromPointer],
   );
 
   const handlePointerMove = useCallback(
@@ -75,7 +74,7 @@ export function ProgressRing({
       setScrubPosition(pos);
       setScrubAngle(deg);
     },
-    [isScrubbing, onSeek, duration, angleFromPointer]
+    [isScrubbing, onSeek, duration, angleFromPointer],
   );
 
   const handlePointerUp = useCallback(
@@ -87,7 +86,7 @@ export function ProgressRing({
       setIsScrubbing(false);
       onSeek(pos);
     },
-    [isScrubbing, onSeek, duration, angleFromPointer]
+    [isScrubbing, onSeek, duration, angleFromPointer],
   );
   // ── End of hooks block ────────────────────────────────────────
 
@@ -127,7 +126,7 @@ export function ProgressRing({
         left: 0,
         zIndex: 5,
         pointerEvents: onSeek ? "all" : "none",
-        cursor: isScrubbing ? "grabbing" : (onSeek ? "pointer" : "default"),
+        cursor: isScrubbing ? "grabbing" : onSeek ? "pointer" : "default",
         overflow: "visible",
       }}
       aria-label={`Track progress: ${formatTime(displayPosition)} / ${formatTime(duration)}`}
@@ -136,8 +135,8 @@ export function ProgressRing({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      {/* 8.3 AURORA — Decorative outer breathing ring */}
-      {theme === "aurora" && (
+      {/* Aurora Mist — decorative outer breathing ring */}
+      {ambientMode === "aurora" && (
         <motion.circle
           cx={center}
           cy={center}
@@ -163,7 +162,6 @@ export function ProgressRing({
       />
 
       {/* Progress fill arc */}
-      {/* 8.4 VAPOR: glow-pulse animation on arc filter */}
       <motion.circle
         cx={center}
         cy={center}
@@ -176,9 +174,10 @@ export function ProgressRing({
         transform={`rotate(-90, ${center}, ${center})`}
         style={{
           filter: `drop-shadow(0 0 ${isScrubbing ? "8px" : "4px"} var(--ring-glow))`,
-          animation: theme === "vapor"
-            ? "glow-pulse 3s ease-in-out infinite alternate"
-            : "none",
+          animation:
+            ambientMode === "aurora"
+              ? "glow-pulse 3.6s ease-in-out infinite alternate"
+              : "none",
         }}
         animate={{ strokeDashoffset: dashOffset }}
         transition={{ duration: isScrubbing ? 0 : 0.3, ease: "linear" }}

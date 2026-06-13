@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { THEME_IDS, THEME_LABELS, applyTheme, resetAmbientColors } from "../../lib/themes/applier";
-import type { ThemeId } from "../../lib/themes/applier";
+import {
+  AMBIENT_MODE_IDS,
+  AMBIENT_MODE_LABELS,
+  AMBIENT_MODE_NOTES,
+  THEME_IDS,
+  THEME_LABELS,
+  applyVisualMode,
+  resetAmbientColors,
+} from "../../lib/themes/applier";
+import type { AmbientModeId, ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
@@ -14,30 +22,62 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-const SETTINGS_TABS = ["THEMES", "VINYL", "DISPLAY", "ABOUT"] as const;
+const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "ABOUT"] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number];
 
-const THEME_CARD_META: Record<ThemeId, { bg: string; accent: string; note: string }> = {
-  noir: { bg: "#131313", accent: "#e8e8e8", note: "OLED precision" },
-  glass: { bg: "#f9f9fb", accent: "#0058bc", note: "Frosted light" },
-  aurora: { bg: "#0e1419", accent: "#00d4be", note: "Cyan horizon" },
-  vapor: { bg: "#111225", accent: "#c855ff", note: "Neon grid" },
-  paper: { bg: "#fef9eb", accent: "#715230", note: "Bronze warmth" },
+const SHELL_CARD_META: Record<
+  ThemeId,
+  { bg: string; accent: string; note: string; material: string }
+> = {
+  noir: {
+    bg: "#000000",
+    accent: "#f1efea",
+    note: "OLED velvet room",
+    material: "Matte black silk",
+  },
+  glass: {
+    bg: "#f5f2ea",
+    accent: "#0070d9",
+    note: "Liquid display case",
+    material: "Refractive glass",
+  },
+};
+
+const AMBIENT_CARD_META: Record<
+  AmbientModeId,
+  { accent: string; gradient: string }
+> = {
+  off: {
+    accent: "#8a8a8a",
+    gradient: "linear-gradient(135deg, #080808, #1a1a1a)",
+  },
+  beam: {
+    accent: "#f1d8b8",
+    gradient: "linear-gradient(135deg, #130f0a, #c99b63)",
+  },
+  caustic: {
+    accent: "#65dcff",
+    gradient: "linear-gradient(135deg, #eaf7ff, #4cbfea)",
+  },
+  aurora: {
+    accent: "#9c62ff",
+    gradient: "linear-gradient(135deg, #18102e, #00cdb8)",
+  },
 };
 
 export function Settings({ open, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("THEMES");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("LOOK");
   const settings = useVinylDeckStore(selectSettings);
   const currentTheme = useVinylDeckStore((s) => s.theme);
-  const artAmbient = useVinylDeckStore((s) => s.artAmbient);
+  const ambientMode = useVinylDeckStore((s) => s.ambientMode);
   const hydrateSettings = useVinylDeckStore((s) => s.hydrateSettings);
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const setDevForceEmpty = useVinylDeckStore((s) => s.setDevForceEmpty);
 
   function applyCommittedSettings(nextSettings: typeof settings) {
     hydrateSettings(nextSettings);
-    applyTheme(nextSettings.theme);
-    if (nextSettings.theme !== "noir" || !nextSettings.artAmbient) resetAmbientColors();
+    applyVisualMode(nextSettings.theme, nextSettings.ambientMode);
+    if (nextSettings.ambientMode === "off") resetAmbientColors();
   }
 
   function updateBackendSettings(patch: Parameters<typeof commitSettings>[0]) {
@@ -52,10 +92,9 @@ export function Settings({ open, onClose }: SettingsProps) {
     updateBackendSettings({ theme });
   }
 
-  function handleArtAmbientToggle() {
-    const next = !artAmbient;
-    if (!next) resetAmbientColors();
-    updateBackendSettings({ artAmbient: next });
+  function handleAmbientModeSelect(mode: AmbientModeId) {
+    if (mode === "off") resetAmbientColors();
+    updateBackendSettings({ ambientMode: mode, artAmbient: mode !== "off" });
   }
 
   function handleWindowModeSelect(mode: WindowMode) {
@@ -133,37 +172,106 @@ export function Settings({ open, onClose }: SettingsProps) {
             </div>
             <div className="settings-panel__content">
               <p className="settings-panel__section-label">{activeTab}</p>
-              {activeTab === "THEMES" ? (
-                <div className="settings-theme-grid" role="radiogroup" aria-label="Settings theme">
-                  {THEME_IDS.map((theme) => {
-                    const active = theme === currentTheme;
-                    const meta = THEME_CARD_META[theme];
+              {activeTab === "LOOK" ? (
+                <div className="settings-look">
+                  <div className="settings-look__section">
+                    <div className="settings-look__header">
+                      <h3>Shell</h3>
+                      <p>Choose the physical room around the record.</p>
+                    </div>
+                    <div
+                      className="settings-theme-grid settings-shell-grid"
+                      role="radiogroup"
+                      aria-label="Visual shell"
+                    >
+                      {THEME_IDS.map((theme) => {
+                        const active = theme === currentTheme;
+                        const meta = SHELL_CARD_META[theme];
 
-                    return (
-                      <button
-                        key={theme}
-                        type="button"
-                        role="radio"
-                        aria-checked={active}
-                        aria-label={`${THEME_LABELS[theme]} settings theme`}
-                        className={`settings-theme-card${active ? " settings-theme-card--active" : ""}`}
-                        onClick={() => handleThemeSelect(theme)}
-                      >
-                        <span
-                          className="settings-theme-card__disc"
-                          style={{
-                            "--settings-card-bg": meta.bg,
-                            "--settings-card-accent": meta.accent,
-                          } as CSSProperties}
-                          aria-hidden="true"
-                        />
-                        <span className="settings-theme-card__copy">
-                          <span className="settings-theme-card__name">{THEME_LABELS[theme]}</span>
-                          <span className="settings-theme-card__note">{meta.note}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
+                        return (
+                          <button
+                            key={theme}
+                            type="button"
+                            role="radio"
+                            aria-checked={active}
+                            aria-label={`${THEME_LABELS[theme]} shell`}
+                            className={`settings-theme-card settings-shell-card settings-shell-card--${theme}${active ? " settings-theme-card--active" : ""}`}
+                            onClick={() => handleThemeSelect(theme)}
+                          >
+                            <span
+                              className="settings-theme-card__disc settings-shell-card__disc"
+                              style={
+                                {
+                                  "--settings-card-bg": meta.bg,
+                                  "--settings-card-accent": meta.accent,
+                                } as CSSProperties
+                              }
+                              aria-hidden="true"
+                            />
+                            <span className="settings-theme-card__copy">
+                              <span className="settings-theme-card__name">
+                                {THEME_LABELS[theme]}
+                              </span>
+                              <span className="settings-theme-card__note">
+                                {meta.note}
+                              </span>
+                              <span className="settings-card__material">
+                                {meta.material}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="settings-look__section">
+                    <div className="settings-look__header">
+                      <h3>Ambient Mode</h3>
+                      <p>Album-reactive light, not another global skin.</p>
+                    </div>
+                    <div
+                      className="settings-ambient-grid"
+                      role="radiogroup"
+                      aria-label="Ambient mode"
+                    >
+                      {AMBIENT_MODE_IDS.map((mode) => {
+                        const active = mode === ambientMode;
+                        const meta = AMBIENT_CARD_META[mode];
+
+                        return (
+                          <button
+                            key={mode}
+                            type="button"
+                            role="radio"
+                            aria-checked={active}
+                            aria-label={`${AMBIENT_MODE_LABELS[mode]} ambient mode`}
+                            className={`settings-ambient-card${active ? " settings-ambient-card--active" : ""}`}
+                            onClick={() => handleAmbientModeSelect(mode)}
+                            style={
+                              {
+                                "--settings-ambient-accent": meta.accent,
+                                "--settings-ambient-gradient": meta.gradient,
+                              } as CSSProperties
+                            }
+                          >
+                            <span
+                              className="settings-ambient-card__preview"
+                              aria-hidden="true"
+                            />
+                            <span className="settings-theme-card__copy">
+                              <span className="settings-theme-card__name">
+                                {AMBIENT_MODE_LABELS[mode]}
+                              </span>
+                              <span className="settings-theme-card__note">
+                                {AMBIENT_MODE_NOTES[mode]}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : activeTab === "VINYL" ? (
                 <div className="settings-toggle-list">
@@ -171,21 +279,19 @@ export function Settings({ open, onClose }: SettingsProps) {
                     label="Vinyl Wobble"
                     description="Subtle platter imperfection while playback is active."
                     checked={settings.vinylWobble}
-                    onToggle={() => updateBackendSettings({ vinylWobble: !settings.vinylWobble })}
+                    onToggle={() =>
+                      updateBackendSettings({
+                        vinylWobble: !settings.vinylWobble,
+                      })
+                    }
                   />
-                  {currentTheme === "noir" && (
-                    <SettingsToggle
-                      label="Album Art Ambient"
-                      description="Let the record sleeve tint the Noir lighting field."
-                      checked={artAmbient}
-                      onToggle={handleArtAmbientToggle}
-                    />
-                  )}
                   <SettingsToggle
                     label="Film Grain"
                     description="Analog texture over the visual engine."
                     checked={settings.filmGrain}
-                    onToggle={() => updateBackendSettings({ filmGrain: !settings.filmGrain })}
+                    onToggle={() =>
+                      updateBackendSettings({ filmGrain: !settings.filmGrain })
+                    }
                   />
                 </div>
               ) : activeTab === "DISPLAY" ? (
@@ -193,13 +299,22 @@ export function Settings({ open, onClose }: SettingsProps) {
                   <div className="settings-slider-row">
                     <div className="settings-slider-row__header">
                       <span className="settings-toggle-row__copy">
-                        <span className="settings-toggle-row__label">Window Mode</span>
-                        <span className="settings-toggle-row__description">Switch between main, fullscreen, and mini player.</span>
+                        <span className="settings-toggle-row__label">
+                          Window Mode
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Switch between main, fullscreen, and mini player.
+                        </span>
                       </span>
                     </div>
-                    <div className="settings-window-mode-grid" role="group" aria-label="Window mode">
+                    <div
+                      className="settings-window-mode-grid"
+                      role="group"
+                      aria-label="Window mode"
+                    >
                       {(["main", "fullscreen", "mini"] as const).map((mode) => {
-                        const active = mode !== "mini" && settings.windowMode === mode;
+                        const active =
+                          mode !== "mini" && settings.windowMode === mode;
 
                         return (
                           <button
@@ -210,10 +325,18 @@ export function Settings({ open, onClose }: SettingsProps) {
                           >
                             <span className="settings-theme-card__copy">
                               <span className="settings-theme-card__name">
-                                {mode === "main" ? "Main" : mode === "fullscreen" ? "Fullscreen" : "Mini"}
+                                {mode === "main"
+                                  ? "Main"
+                                  : mode === "fullscreen"
+                                    ? "Fullscreen"
+                                    : "Mini"}
                               </span>
                               <span className="settings-theme-card__note">
-                                {mode === "main" ? "Native shell" : mode === "fullscreen" ? "Lean-back view" : "280px widget"}
+                                {mode === "main"
+                                  ? "Native shell"
+                                  : mode === "fullscreen"
+                                    ? "Lean-back view"
+                                    : "280px widget"}
                               </span>
                             </span>
                           </button>
@@ -232,22 +355,36 @@ export function Settings({ open, onClose }: SettingsProps) {
                       label="Lean-Back Mode"
                       description="Let controls disappear while the record becomes the room."
                       checked={settings.leanBackMode}
-                      onToggle={() => updateBackendSettings({ leanBackMode: !settings.leanBackMode })}
+                      onToggle={() =>
+                        updateBackendSettings({
+                          leanBackMode: !settings.leanBackMode,
+                        })
+                      }
                     />
                     <SettingsToggle
                       label="Cursor Hide"
                       description="Hide the pointer when playback settles into idle."
                       checked={settings.cursorHide}
-                      onToggle={() => updateBackendSettings({ cursorHide: !settings.cursorHide })}
+                      onToggle={() =>
+                        updateBackendSettings({
+                          cursorHide: !settings.cursorHide,
+                        })
+                      }
                     />
                   </div>
                   <div className="settings-slider-row">
                     <div className="settings-slider-row__header">
                       <span className="settings-toggle-row__copy">
-                        <span className="settings-toggle-row__label">Idle Timeout</span>
-                        <span className="settings-toggle-row__description">Delay before controls fade from view.</span>
+                        <span className="settings-toggle-row__label">
+                          Idle Timeout
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Delay before controls fade from view.
+                        </span>
                       </span>
-                      <span className="settings-slider-row__value">{settings.idleTimeoutSeconds}s</span>
+                      <span className="settings-slider-row__value">
+                        {settings.idleTimeoutSeconds}s
+                      </span>
                     </div>
                     <input
                       className="settings-slider"
@@ -257,9 +394,16 @@ export function Settings({ open, onClose }: SettingsProps) {
                       step="1"
                       value={settings.idleTimeoutSeconds}
                       aria-label="Idle timeout"
-                      onChange={(event) => updateBackendSettings({ idleTimeoutSeconds: Number(event.currentTarget.value) })}
+                      onChange={(event) =>
+                        updateBackendSettings({
+                          idleTimeoutSeconds: Number(event.currentTarget.value),
+                        })
+                      }
                     />
-                    <div className="settings-slider-row__ticks" aria-hidden="true">
+                    <div
+                      className="settings-slider-row__ticks"
+                      aria-hidden="true"
+                    >
                       <span>1s</span>
                       <span>3s</span>
                       <span>5s</span>
@@ -269,16 +413,22 @@ export function Settings({ open, onClose }: SettingsProps) {
               ) : activeTab === "ABOUT" ? (
                 <div className="settings-about">
                   <p className="settings-about__kicker">VinylDeck</p>
-                  <h3>A cinematic vinyl experience for everything playing on your computer.</h3>
-                  <div className="settings-about__grid" aria-label="Build details">
+                  <h3>
+                    A cinematic vinyl experience for everything playing on your
+                    computer.
+                  </h3>
+                  <div
+                    className="settings-about__grid"
+                    aria-label="Build details"
+                  >
                     <span>Visual Engine</span>
-                    <strong>Stage 2</strong>
+                    <strong>Pressing Studio</strong>
                     <span>Shell</span>
                     <strong>Tauri v2</strong>
                     <span>Motion</span>
                     <strong>React 19</strong>
-                    <span>Themes</span>
-                    <strong>Noir / Glass / Aurora / Vapor / Paper</strong>
+                    <span>Look</span>
+                    <strong>Noir / Glass + ambient modes</strong>
                   </div>
                   <div className="settings-about__qa">
                     <SettingsToggle
@@ -289,15 +439,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                     />
                   </div>
                 </div>
-              ) : (
-                <div className="settings-panel__placeholder">
-                  <span className="settings-panel__disc" aria-hidden="true" />
-                  <div>
-                    <h3>Stage 9.4 Themes</h3>
-                    <p>Controls land in the next pass.</p>
-                  </div>
-                </div>
-              )}
+              ) : null}
             </div>
           </motion.section>
         </motion.div>
@@ -313,7 +455,12 @@ interface SettingsToggleProps {
   onToggle: () => void;
 }
 
-function SettingsToggle({ label, description, checked, onToggle }: SettingsToggleProps) {
+function SettingsToggle({
+  label,
+  description,
+  checked,
+  onToggle,
+}: SettingsToggleProps) {
   return (
     <button
       type="button"
@@ -325,7 +472,10 @@ function SettingsToggle({ label, description, checked, onToggle }: SettingsToggl
         <span className="settings-toggle-row__label">{label}</span>
         <span className="settings-toggle-row__description">{description}</span>
       </span>
-      <span className={`settings-switch${checked ? " settings-switch--on" : ""}`} aria-hidden="true">
+      <span
+        className={`settings-switch${checked ? " settings-switch--on" : ""}`}
+        aria-hidden="true"
+      >
         <span className="settings-switch__glow" />
         <span className="settings-switch__thumb" />
       </span>
@@ -353,7 +503,9 @@ function SettingsParticles() {
     const canvasEl = canvas;
     const ctx = context;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     let frameId = 0;
     let particles: Particle[] = [];
 
@@ -411,5 +563,7 @@ function SettingsParticles() {
     };
   }, []);
 
-  return <canvas className="settings-particles" ref={canvasRef} aria-hidden="true" />;
+  return (
+    <canvas className="settings-particles" ref={canvasRef} aria-hidden="true" />
+  );
 }

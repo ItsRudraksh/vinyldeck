@@ -1,7 +1,7 @@
 // src/lib/vinyl/pressingEngine.ts
 // Deterministic album-art → physical vinyl pressing engine.
-// Second-pass tuning: stronger collector-pressing diversity, true translucent
-// candidates, and better handling for black/white/grey artwork.
+// Third pass: material recipes for the hybrid Canvas/WebGL Pressing Studio
+// while keeping CSS variables for the second-pass fallback renderer.
 
 export type VinylPressingType =
   | "solid"
@@ -10,6 +10,17 @@ export type VinylPressingType =
   | "translucent"
   | "dual-tone"
   | "smoke"
+  | "audiophile-black";
+
+export type VinylPressingRecipe =
+  | "opaque-solid"
+  | "clear-tint"
+  | "smoke-clear"
+  | "marble-blend"
+  | "splatter"
+  | "color-in-color"
+  | "merge"
+  | "galaxy"
   | "audiophile-black";
 
 export interface RgbColor {
@@ -45,10 +56,39 @@ export interface ArtworkPalette {
   characteristics: ArtworkPaletteCharacteristics;
 }
 
+export interface VinylShaderMaterial {
+  recipeId: number;
+  translucency: number;
+  roughness: number;
+  grooveIntensity: number;
+  diffraction: number;
+  rimAbsorption: number;
+  textureScale: number;
+  splatterDensity: number;
+  marbleFlow: number;
+  smokeDensity: number;
+  alpha: number;
+}
+
 export interface VinylPressing {
+  /** CSS fallback pressing family. */
   type: VinylPressingType;
+  /** Manufacturing-inspired material recipe used by the WebGL renderer. */
+  recipe: VinylPressingRecipe;
+  /** Human/collector-friendly internal name. */
+  pressingName: string;
   seed: string;
   seedHash: number;
+  colors: {
+    primary: RgbColor;
+    secondary: RgbColor;
+    accent: RgbColor;
+    deep: RgbColor;
+    highlight: RgbColor;
+    edge: RgbColor;
+  };
+  material: VinylShaderMaterial;
+  /** Existing CSS custom properties for fallback and wrapper effects. */
   cssVars: Record<string, string>;
 }
 
@@ -159,10 +199,11 @@ export function deriveVinylPressing(
 ): VinylPressing {
   const seed = normalizeSeed(seedInput);
   const seedHash = hashString(
-    `${seed}|${palette.primary.hex}|${palette.secondary.hex}|${palette.accent.hex}|v2`,
+    `${seed}|${palette.primary.hex}|${palette.secondary.hex}|${palette.accent.hex}|v3-webgl-material`,
   );
   const roll = seededUnit(seedHash);
-  const type = choosePressingType(palette, roll, seedHash);
+  const recipe = choosePressingRecipe(palette, roll, seedHash);
+  const type = fallbackTypeForRecipe(recipe);
   const c = palette.characteristics;
 
   const primary = preparePrimaryColor(
@@ -181,6 +222,9 @@ export function deriveVinylPressing(
   const textureOpacity = textureOpacityFor(type, c, seedHash);
   const translucentAlpha = translucencyFor(type, c, seedHash);
 
+  const material = createShaderMaterial(recipe, type, c, seedHash);
+  const colorSet = createColorSet(type, primary, secondary, accent);
+
   const cssVars = createCssVars({
     type,
     primary,
@@ -193,16 +237,34 @@ export function deriveVinylPressing(
     translucentAlpha,
     hash: seedHash,
     characteristics: c,
+    material,
+    recipe,
   });
 
-  return { type, seed, seedHash, cssVars };
+  return {
+    type,
+    recipe,
+    pressingName: createPressingName(
+      recipe,
+      primary,
+      secondary,
+      accent,
+      c,
+      seedHash,
+    ),
+    seed,
+    seedHash,
+    colors: colorSet,
+    material,
+    cssVars,
+  };
 }
 
-function choosePressingType(
+function choosePressingRecipe(
   palette: ArtworkPalette,
   roll: number,
   hash: number,
-): VinylPressingType {
+): VinylPressingRecipe {
   const { primary, secondary, accent, characteristics: c } = palette;
   const neutralSecondary = secondary.s < 0.18 && secondary.l > 0.58;
   const brightNeutralAccent = accent.s < 0.24 && accent.l > 0.72;
@@ -211,66 +273,262 @@ function choosePressingType(
     colorDistance(primary, accent) < 0.2;
   const twoColorIdentity = c.contrast > 0.34 && c.hueSpread > 0.16;
   const organicRoll = seededUnit(hash ^ 0x165667b1);
+  const blueNight =
+    c.isDark &&
+    c.averageSaturation > 0.18 &&
+    primary.h >= 175 &&
+    primary.h <= 285;
 
-  // Grey/white/black art should not collapse into generic black. Only the very
-  // darkest neutral covers become audiophile black; light/mid neutrals become
-  // smoke, clear-smoke, silver, or grey marble material.
+  // Neutral art gets curated material behavior instead of collapsing to flat black.
   if (c.isAchromatic) {
-    if (c.isNearlyWhite) return organicRoll > 0.35 ? "translucent" : "smoke";
+    if (c.isNearlyWhite)
+      return organicRoll > 0.42 ? "clear-tint" : "smoke-clear";
     if (c.isNearlyBlack)
-      return organicRoll > 0.62 ? "smoke" : "audiophile-black";
-    if (c.contrast > 0.22) return organicRoll > 0.28 ? "smoke" : "marble";
-    return organicRoll > 0.55 ? "translucent" : "smoke";
+      return organicRoll > 0.58 ? "smoke-clear" : "audiophile-black";
+    if (c.contrast > 0.26)
+      return organicRoll > 0.32 ? "smoke-clear" : "marble-blend";
+    return organicRoll > 0.56 ? "clear-tint" : "smoke-clear";
   }
 
-  // High contrast with white/cream/brights should visibly splatter more often.
+  if (blueNight && organicRoll > 0.42) return "galaxy";
+
+  // High contrast plus a pale/neutral secondary should become obvious collector splatter.
   if (
     c.isHighContrast &&
     (neutralSecondary ||
       brightNeutralAccent ||
       Math.abs(primary.l - secondary.l) > 0.34)
   ) {
-    if (roll < 0.68) return "splatter";
-    return twoColorIdentity ? "dual-tone" : "marble";
-  }
-
-  // Colorful multi-hue artwork should usually feel like a special pressing,
-  // not a single flat tinted record.
-  if (c.isColorfulMultiTone) {
-    if (roll < 0.36) return "marble";
     if (roll < 0.64) return "splatter";
-    return twoColorIdentity ? "dual-tone" : "marble";
+    return twoColorIdentity ? "merge" : "marble-blend";
   }
 
-  // Pale, glassy, muted, or airy covers are the translucent candidates.
+  // Colorful covers should usually become special pressings, not safe solids.
+  if (c.isColorfulMultiTone) {
+    if (roll < 0.32) return "marble-blend";
+    if (roll < 0.58) return "splatter";
+    if (roll < 0.78) return "color-in-color";
+    return twoColorIdentity ? "merge" : "marble-blend";
+  }
+
+  // Pale and airy covers are glass/clear candidates.
   if (
     (c.isLight && c.averageSaturation < 0.46) ||
     (primary.l > 0.5 && secondary.l > 0.45 && roll > 0.38)
   ) {
-    return "translucent";
+    return organicRoll > 0.46 ? "clear-tint" : "color-in-color";
   }
 
-  // Dark but colorful covers should become smoky tinted vinyl before becoming black.
+  // Dark colorful covers should be smoke/galaxy before black.
   if (c.isDark && c.averageSaturation > 0.18) {
-    if (roll < 0.45) return "smoke";
-    return c.hueSpread > 0.18 ? "marble" : "solid";
+    if (roll < 0.42) return "smoke-clear";
+    if (primary.h >= 175 && primary.h <= 285 && roll < 0.72) return "galaxy";
+    return c.hueSpread > 0.18 ? "marble-blend" : "opaque-solid";
   }
 
-  if (twoColorIdentity && roll > 0.54) return "dual-tone";
+  if (twoColorIdentity && roll > 0.52) return "merge";
 
-  // Keep solid for genuinely single-mood covers, but do not over-select it.
   if (veryClosePalette || (c.contrast < 0.2 && primary.s > 0.2)) {
-    return roll < 0.55 ? "solid" : "translucent";
+    return roll < 0.52 ? "opaque-solid" : "clear-tint";
   }
 
-  if (roll < 0.18) return "solid";
-  if (roll < 0.58) return "marble";
-  if (roll < 0.78) return "splatter";
-  return "dual-tone";
+  if (roll < 0.16) return "opaque-solid";
+  if (roll < 0.52) return "marble-blend";
+  if (roll < 0.74) return "splatter";
+  if (roll < 0.88) return "color-in-color";
+  return "merge";
+}
+
+function fallbackTypeForRecipe(recipe: VinylPressingRecipe): VinylPressingType {
+  switch (recipe) {
+    case "opaque-solid":
+      return "solid";
+    case "clear-tint":
+    case "color-in-color":
+      return "translucent";
+    case "smoke-clear":
+    case "galaxy":
+      return "smoke";
+    case "marble-blend":
+      return "marble";
+    case "splatter":
+      return "splatter";
+    case "merge":
+      return "dual-tone";
+    case "audiophile-black":
+      return "audiophile-black";
+  }
+}
+
+export function recipeIdFor(recipe: VinylPressingRecipe): number {
+  switch (recipe) {
+    case "opaque-solid":
+      return 0;
+    case "clear-tint":
+      return 1;
+    case "smoke-clear":
+      return 2;
+    case "marble-blend":
+      return 3;
+    case "splatter":
+      return 4;
+    case "color-in-color":
+      return 5;
+    case "merge":
+      return 6;
+    case "galaxy":
+      return 7;
+    case "audiophile-black":
+      return 8;
+  }
+}
+
+function createShaderMaterial(
+  recipe: VinylPressingRecipe,
+  type: VinylPressingType,
+  c: ArtworkPaletteCharacteristics,
+  hash: number,
+): VinylShaderMaterial {
+  const jitter = seededUnit(hash ^ 0x91e10da5);
+  const jitterB = seededUnit(hash ^ 0x43c6a1f7);
+
+  const base: VinylShaderMaterial = {
+    recipeId: recipeIdFor(recipe),
+    translucency: 0.03,
+    roughness: 0.34,
+    grooveIntensity: 0.72,
+    diffraction: 0.1,
+    rimAbsorption: 0.32,
+    textureScale: 1.0 + jitter * 0.45,
+    splatterDensity: 0.42,
+    marbleFlow: 0.42,
+    smokeDensity: 0.34,
+    alpha: 1,
+  };
+
+  switch (recipe) {
+    case "opaque-solid":
+      return {
+        ...base,
+        roughness: 0.32 + jitter * 0.14,
+        grooveIntensity: 0.72,
+        diffraction: 0.08 + jitter * 0.05,
+        rimAbsorption: 0.34,
+      };
+    case "clear-tint":
+      return {
+        ...base,
+        translucency: clamp(
+          (c.isNearlyWhite ? 0.62 : 0.5) + jitter * 0.12,
+          0.46,
+          0.76,
+        ),
+        roughness: 0.2 + jitter * 0.12,
+        grooveIntensity: 0.84,
+        diffraction: 0.18 + jitterB * 0.12,
+        rimAbsorption: 0.52 + jitter * 0.16,
+        alpha: 0.68 + jitterB * 0.14,
+      };
+    case "smoke-clear":
+      return {
+        ...base,
+        translucency: clamp(
+          (c.isDark ? 0.58 : 0.68) + jitter * 0.12,
+          0.48,
+          0.82,
+        ),
+        roughness: 0.28 + jitterB * 0.18,
+        grooveIntensity: 0.78,
+        diffraction: 0.14 + jitter * 0.1,
+        rimAbsorption: c.isDark ? 0.62 : 0.48,
+        smokeDensity: 0.58 + jitter * 0.26,
+        alpha: c.isDark ? 0.78 : 0.7,
+      };
+    case "marble-blend":
+      return {
+        ...base,
+        roughness: 0.42 + jitter * 0.16,
+        grooveIntensity: 0.68,
+        diffraction: 0.1 + jitterB * 0.1,
+        rimAbsorption: 0.4,
+        marbleFlow: 0.62 + jitter * 0.28,
+        textureScale: 1.1 + jitterB * 0.75,
+      };
+    case "splatter":
+      return {
+        ...base,
+        roughness: 0.38 + jitter * 0.18,
+        grooveIntensity: 0.66,
+        diffraction: 0.12 + jitter * 0.08,
+        rimAbsorption: 0.38,
+        splatterDensity: 0.54 + jitterB * 0.34,
+        textureScale: 0.9 + jitter * 0.85,
+      };
+    case "color-in-color":
+      return {
+        ...base,
+        translucency: 0.42 + jitter * 0.18,
+        roughness: 0.26 + jitterB * 0.12,
+        grooveIntensity: 0.78,
+        diffraction: 0.16 + jitter * 0.13,
+        rimAbsorption: 0.48,
+        marbleFlow: 0.5 + jitterB * 0.22,
+        alpha: 0.74 + jitter * 0.12,
+      };
+    case "merge":
+      return {
+        ...base,
+        roughness: 0.34 + jitter * 0.14,
+        grooveIntensity: 0.7,
+        diffraction: 0.11 + jitterB * 0.08,
+        rimAbsorption: 0.38,
+        marbleFlow: 0.46 + jitter * 0.16,
+      };
+    case "galaxy":
+      return {
+        ...base,
+        translucency: 0.32 + jitter * 0.12,
+        roughness: 0.36 + jitter * 0.18,
+        grooveIntensity: 0.76,
+        diffraction: 0.22 + jitterB * 0.18,
+        rimAbsorption: 0.68,
+        smokeDensity: 0.52 + jitter * 0.28,
+        alpha: 0.86,
+      };
+    case "audiophile-black":
+      return {
+        ...base,
+        roughness: 0.48 + jitter * 0.16,
+        grooveIntensity: 0.86,
+        diffraction: 0.07,
+        rimAbsorption: 0.48,
+        textureScale: 0.85 + jitter * 0.2,
+      };
+  }
+}
+
+function createColorSet(
+  type: VinylPressingType,
+  primary: RgbColor,
+  secondary: RgbColor,
+  accent: RgbColor,
+): VinylPressing["colors"] {
+  const deepShift =
+    type === "audiophile-black" ? -0.24 : type === "translucent" ? -0.12 : -0.2;
+  const deep = shiftLightness(primary, deepShift);
+  const highlight = shiftLightness(
+    desaturate(primary, 0.08),
+    type === "translucent" ? 0.36 : 0.24,
+  );
+  const shadow = shiftLightness(primary, type === "smoke" ? -0.28 : -0.34);
+  const edge = mixColors(shadow, BLACK, type === "translucent" ? 0.22 : 0.42);
+
+  return { primary, secondary, accent, deep, highlight, edge };
 }
 
 function createCssVars(input: {
   type: VinylPressingType;
+  recipe: VinylPressingRecipe;
   primary: RgbColor;
   secondary: RgbColor;
   accent: RgbColor;
@@ -281,9 +539,11 @@ function createCssVars(input: {
   translucentAlpha: number;
   hash: number;
   characteristics: ArtworkPaletteCharacteristics;
+  material: VinylShaderMaterial;
 }): Record<string, string> {
   const {
     type,
+    recipe,
     primary,
     secondary,
     accent,
@@ -294,17 +554,13 @@ function createCssVars(input: {
     translucentAlpha,
     hash,
     characteristics,
+    material,
   } = input;
-  const deepShift =
-    type === "audiophile-black" ? -0.24 : type === "translucent" ? -0.12 : -0.2;
-  const deep = shiftLightness(primary, deepShift);
+  const colorSet = createColorSet(type, primary, secondary, accent);
+  const { deep, highlight, edge } = colorSet;
   const soft = shiftLightness(
     desaturate(primary, 0.14),
     type === "translucent" ? 0.2 : 0.14,
-  );
-  const highlight = shiftLightness(
-    desaturate(primary, 0.08),
-    type === "translucent" ? 0.36 : 0.24,
   );
   const shadow = shiftLightness(primary, type === "smoke" ? -0.28 : -0.34);
   const groove =
@@ -323,7 +579,6 @@ function createCssVars(input: {
     type === "audiophile-black" ? accent : secondary,
     type === "solid" ? 0.2 : 0.32,
   );
-  const edge = mixColors(shadow, BLACK, type === "translucent" ? 0.22 : 0.42);
   const pearl = mixColors(
     highlight,
     WHITE,
@@ -360,7 +615,68 @@ function createCssVars(input: {
     "--pressing-organic-y": `${organicY}%`,
     "--pressing-hash-a": `${(hash >>> 0) % 997}px`,
     "--pressing-hash-b": `${(hash >>> 7) % 991}px`,
+    "--pressing-renderer-recipe": recipe,
+    "--pressing-shader-alpha": material.alpha.toFixed(3),
+    "--pressing-rim-absorption": material.rimAbsorption.toFixed(3),
+    "--pressing-reflection-strength": (0.76 + material.diffraction).toFixed(3),
   };
+}
+
+function createPressingName(
+  recipe: VinylPressingRecipe,
+  primary: RgbColor,
+  secondary: RgbColor,
+  accent: RgbColor,
+  c: ArtworkPaletteCharacteristics,
+  hash: number,
+): string {
+  const colorName = nameColor(primary, c);
+  const accentName =
+    seededUnit(hash ^ 0x7342a123) > 0.54
+      ? nameColor(accent, c)
+      : nameColor(secondary, c);
+
+  switch (recipe) {
+    case "opaque-solid":
+      return `${colorName} Opaque Wax`;
+    case "clear-tint":
+      return `${colorName} Clear Tint`;
+    case "smoke-clear":
+      return c.isAchromatic
+        ? "Clear Smoke Pressing"
+        : `${colorName} Smoke Clear`;
+    case "marble-blend":
+      return `${colorName}/${accentName} Marble`;
+    case "splatter":
+      return `${colorName} Splatter`;
+    case "color-in-color":
+      return `${accentName} in ${colorName} Clear`;
+    case "merge":
+      return `${colorName}/${accentName} Merge`;
+    case "galaxy":
+      return `${colorName} Galaxy`;
+    case "audiophile-black":
+      return "180g Audiophile Black";
+  }
+}
+
+function nameColor(color: RgbColor, c: ArtworkPaletteCharacteristics): string {
+  if (c.isAchromatic || color.s < 0.12) {
+    if (color.l > 0.78) return "Bone White";
+    if (color.l > 0.58) return "Silver";
+    if (color.l > 0.34) return "Graphite";
+    return "Black";
+  }
+  const h = ((color.h % 360) + 360) % 360;
+  if (h < 18 || h >= 345) return "Crimson";
+  if (h < 42) return "Amber";
+  if (h < 66) return "Gold";
+  if (h < 150) return "Green";
+  if (h < 190) return "Teal";
+  if (h < 238) return "Blue";
+  if (h < 285) return "Violet";
+  if (h < 330) return "Magenta";
+  return "Rose";
 }
 
 function textureOpacityFor(
@@ -560,7 +876,7 @@ function normalizeSeed(value: string): string {
   return trimmed || "vinyldeck:unknown-record";
 }
 
-function hashString(value: string): number {
+export function hashString(value: string): number {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
     hash ^= value.charCodeAt(index);
@@ -569,7 +885,7 @@ function hashString(value: string): number {
   return hash >>> 0;
 }
 
-function seededUnit(seed: number): number {
+export function seededUnit(seed: number): number {
   let x = seed >>> 0;
   x ^= x << 13;
   x ^= x >>> 17;
@@ -612,7 +928,7 @@ function desaturate(color: RgbColor, amount: number): RgbColor {
   });
 }
 
-function mixColors(a: RgbColor, b: RgbColor, bWeight: number): RgbColor {
+export function mixColors(a: RgbColor, b: RgbColor, bWeight: number): RgbColor {
   const weight = clamp(bWeight, 0, 1);
   return colorFromRgb(
     a.r * (1 - weight) + b.r * weight,
@@ -626,7 +942,7 @@ function colorFromHsl(color: HslColor): RgbColor {
   return colorFromRgb(r, g, b);
 }
 
-function toRgb(color: RgbColor): string {
+export function toRgb(color: RgbColor): string {
   return `rgb(${color.r}, ${color.g}, ${color.b})`;
 }
 
@@ -696,6 +1012,6 @@ function hueToRgb(p: number, q: number, tInput: number): number {
   return p;
 }
 
-function clamp(value: number, min: number, max: number): number {
+export function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
