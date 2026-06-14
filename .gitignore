@@ -52,6 +52,10 @@ Thumbs.db
 *.pem
 changes
 Conversations/**
+raw/
+**/chats/**
+/*prompt*.md
+/*task*.md
 vinyl-pressing-research
 raw/md-vinyl-screenshots/comparison-videos/md-vinyl-app.mp4
 raw/md-vinyl-screenshots/comparison-videos/vinyldeck-current.mp4

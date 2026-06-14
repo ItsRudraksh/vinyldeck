@@ -52,6 +52,7 @@
 | 2026-06-14 | Active Visual Shells | **Noir and Glass are the only exposed shells** | Aurora, Vapor, and Paper are legacy migration inputs, not current UI choices. `legacyThemeToShell()` maps old saved values into Noir/Glass and legacy ambient values into the current Art Ambient model. |
 | 2026-06-14 | Active Vinyl Renderer | **CSS vinyl renderer is active; WebGL remains hard-OFF** | `ENABLE_WEBGL_VINYL=false` in `VinylRecord`. Keep WebGL files as dormant experiment only; do not re-enable without a future material/performance proof. |
 | 2026-06-14 | Vinyl Center | **No center spindle hole** | User requested removing the center dot. Do not restore `.vinyl-hole`; album art should remain unobscured at label center. |
+| 2026-06-14 | Repo Hygiene | **No raw/chat/root prompt/task artifacts in git** | `raw/` is deprecated. Chat exports, root prompt files, root task lists, and `task.md` are local scratch only. `fresh_session_prompt.md` may remain locally but must stay ignored and untracked. Durable context belongs in `.agents/memory/` and docs. |
 
 ---
 
@@ -70,4 +71,4 @@
 
 **NEVER use `--force`, `--yes` combined with destructive scaffold tools, or any flag that overwrites/clears an existing non-empty directory in `c:\Coding\vinyldeck\`.** On 2026-06-08, `npx create-tauri-app . --force` destroyed all pre-existing files. User restored from backup. Always scaffold into a clean temp directory and copy only what is needed.
 
-**Last Updated:** 2026-06-13
+**Last Updated:** 2026-06-14

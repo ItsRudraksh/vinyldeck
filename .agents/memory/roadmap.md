@@ -35,7 +35,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 
 ### [ ] Stage 3 — Tauri Shell & Window Management
 
-- User confirmed visual satisfaction. Detailed execution plan in `backend_master_task_list.md` is approved and ready.
+- User confirmed visual satisfaction. Historical task lists are deprecated as git artifacts; use `.agents/memory/` plus current docs for execution context.
 - Backend Phase 0 baseline/safety gate, Phase 1 Tauri shell foundation, Phase 2 settings persistence, Phase 3 window modes, and Phase 3 backend-owned playback authority extension are verified.
 - Settings persistence has moved to Rust backend authority. WebViews are readers/controllers only; backend validates, persists, and emits `settings-changed`. The old BUG-002 main-only writer fix is superseded by backend ownership.
 - Window modes (Main, Fullscreen, Mini always-on-top) are implemented.
