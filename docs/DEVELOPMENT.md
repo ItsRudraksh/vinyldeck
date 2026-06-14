@@ -1,5 +1,7 @@
 # Development Guide
 
+This guide is for contributors working on VinylDeck locally.
+
 ## Setup
 
 ```powershell
@@ -7,19 +9,30 @@ npm install
 npm run tauri dev
 ```
 
-Use `npm run dev` for browser-only visual work. Browser mode is intentionally mock-backed because Windows SMTC is only available through Tauri.
+Use browser mode for visual work that does not need Windows media integration:
 
-## Source Modes
+```powershell
+npm run dev
+```
+
+## Runtime Modes
 
 | Runtime | Playback source |
 | --- | --- |
 | Browser/Vite | `MockSource` |
 | Tauri dev/build | `TauriSource` over Rust SMTC |
-| Tauri with `VITE_FORCE_MOCK_SOURCE=true` | `MockSource` for visual debugging |
+| Tauri with `VITE_FORCE_MOCK_SOURCE=true` | `MockSource` |
+
+Set mock mode in PowerShell:
+
+```powershell
+$env:VITE_FORCE_MOCK_SOURCE='true'
+npm run tauri dev
+```
 
 ## Verification
 
-Run this before claiming a backend or integration change is ready:
+Run the smallest useful check for the files you touched, then run the broader gate before committing integration work.
 
 ```powershell
 npm run build
@@ -27,41 +40,50 @@ npm run test:frontend
 npm run fmt:rust
 npm run clippy:rust
 npm run test:rust
+git diff --check
 ```
 
-For installer/debug bundle smoke checks:
+For debug bundle smoke checks:
 
 ```powershell
 npm run tauri build -- --debug
 ```
 
-Phase 10 last passed this full automated checkpoint with 13 frontend tests and 35 Rust tests. The interaction polish pass later raised focused coverage to 20 frontend tests and 39 Rust tests before final consolidation.
-
 ## Important Paths
 
 | Path | Purpose |
 | --- | --- |
-| `src/App.tsx` | App boot, settings hydration, source setup, main/mini routing |
+| `src/App.tsx` | App boot, settings hydration, playback source setup, render-mode routing |
+| `src/views/` | Main and mini player views |
+| `src/components/` | Visual and interaction components |
 | `src/lib/playback/` | Playback contracts, store, mock source, Tauri source |
 | `src/lib/settings/` | Frontend settings adapter/cache |
 | `src/lib/window/` | Frontend window adapter |
-| `src-tauri/src/media/` | SMTC model, artwork, commands, poller |
-| `src-tauri/src/settings/` | Rust settings authority |
-| `src-tauri/src/window/` | Window mode service |
-| `src-tauri/src/tray.rs` | Tray menu and close-to-tray behavior |
-| `.agents/memory/` | Living project memory for future agent sessions |
+| `src-tauri/src/media/` | SMTC model, artwork handling, commands, poller |
+| `src-tauri/src/settings/` | Rust-owned settings validation and persistence |
+| `src-tauri/src/window/` | Window-mode service |
+| `src-tauri/src/tray.rs` | Tray menu and close/quit lifecycle |
+| `.agents/memory/` | Internal project memory for future agent sessions |
 
-## Coding Rules
+## Architecture Rules
 
-- Preserve the `PlaybackSource` contract so the visual engine stays platform-neutral.
-- In Tauri, backend commands/events are authority for shared state.
-- Keep browser mock behavior working after backend changes.
-- Use transform/opacity-first animation paths. The active app now exposes Noir and Glass shells only; legacy Aurora/Vapor/Paper theme values are migration inputs.
-- Keep the CSS vinyl renderer active. WebGL vinyl is dormant and hard-OFF until a future performance-proven visual pass.
+- Keep React platform-neutral. Components consume `PlaybackState`, not Windows APIs.
+- In Tauri, Rust commands/events are authoritative for shared playback and settings state.
+- Keep browser `MockSource` useful for visual development.
+- Use transform/opacity-first animation paths.
+- Current exposed shells are Noir and Glass.
+- CSS vinyl is the active renderer.
 - Do not restore the vinyl center spindle hole.
-- Track transition rules: next enters from left and exits right; previous enters from right and exits left. Vinyl stays anchored and uses only an in-place rotational skip impulse.
-- Do not repeat completed backend web research; use `.agents/memory/backend-research.md`.
+- Preserve directional track text: next enters from left; previous enters from right.
 
-## Deferred Distribution Work
+## Documentation Rules
 
-Phase 11 is on hold. Before public-style distribution, revalidate clean release installers, WebView2 bootstrap behavior, uninstall/reinstall, settings location, bundle identifier naming, and the live player compatibility matrix.
+- Public-facing docs should read like product docs, not session logs.
+- Internal progress, approvals, and stale work notes belong in `.agents/memory/`.
+- `README.md` should orient users and contributors quickly.
+- `docs/API.md` and `docs/ARCHITECTURE.md` can use implementation detail.
+- `docs/RELEASE_V1.md` and `CHANGELOG.md` hold release/history facts.
+
+## Distribution Notes
+
+Installer-grade validation is separate from local development. Before a public packaged release, recheck release installers, WebView2 bootstrap behavior, uninstall/reinstall, settings location, bundle identifier naming, and player compatibility.

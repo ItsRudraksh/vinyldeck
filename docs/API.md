@@ -55,7 +55,7 @@ The older backend media authority remains registered:
 - `cmd_media_previous`
 - `cmd_media_seek`
 
-V1 in-app playback does not use these commands in Tauri mode. Tray playback menu code still references this path and should be unified with SMTC before Phase 11 distribution validation.
+In-app playback does not use these commands in Tauri mode. Tray playback menu code still references this path and should be unified with SMTC before distribution validation.
 
 ## Settings Commands And Events
 

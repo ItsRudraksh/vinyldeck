@@ -1,42 +1,41 @@
 # VinylDeck
+> Windows desktop app that renders the active system media session as a cinematic vinyl deck.
 
-VinylDeck is a Windows Tauri v2 + React 19 app that renders the active system media session as a cinematic vinyl player.
+## Primary Docs
+- `README.md`: public project overview, quick start, features, links
+- `docs/USER_GUIDE.md`: user controls, settings, window modes
+- `docs/ARCHITECTURE.md`: system design and state ownership
+- `docs/API.md`: Tauri command/event contracts
+- `docs/DEVELOPMENT.md`: contributor setup and verification
+- `docs/TROUBLESHOOTING.md`: common runtime issues
+- `docs/RELEASE_V1.md`: version notes and distribution checklist
+- `CHANGELOG.md`: notable changes
 
-## Read First
-
-- `README.md` - project overview and commands
-- `docs/ARCHITECTURE.md` - system design and Mermaid diagrams
-- `docs/API.md` - Tauri command/event contracts
-- `docs/DEVELOPMENT.md` - setup and verification
-- `.agents/memory/state.md` - current project state
-- `.agents/memory/backend-research.md` - completed SMTC/Tauri research; do not repeat
-
-## Core Contracts
-
+## Core Concepts
 - Browser mode uses `MockSource`.
-- Tauri mode uses `TauriSource` over Rust `cmd_smtc_*` commands and `media-state-changed` events.
-- React components consume `PlaybackState`; they should not know about Windows APIs.
-- Rust owns persisted settings through `cmd_settings_*` and `settings-changed`.
-- Active shells are Noir and Glass. Legacy Aurora/Vapor/Paper values migrate into the current shell/ambient model.
-- CSS vinyl renderer is active. WebGL vinyl code is dormant and hard-OFF.
-- Center spindle hole is intentionally removed.
-- Shortcut editing UI, autostart/start-with-Windows, and splash screen are not implemented.
-- Phase 11 distribution is on hold after the V1 baseline.
+- Tauri mode uses `TauriSource` over Rust SMTC commands and events.
+- React consumes `PlaybackState`; Rust owns Windows media integration.
+- Rust owns persisted settings and emits backend-approved settings snapshots.
+- Active visual shells are Noir and Glass.
+- CSS vinyl renderer is active.
+- Album art drives ambient color and vinyl material styling.
+
+## Important Paths
+- `src/App.tsx`: app boot and render-mode routing
+- `src/views/`: main and mini views
+- `src/components/`: visual and interaction components
+- `src/lib/playback/`: playback contracts, store, mock source, Tauri source
+- `src/lib/settings/`: frontend settings adapter/cache
+- `src-tauri/src/media/`: SMTC integration
+- `src-tauri/src/settings/`: settings authority
+- `src-tauri/src/window/`: window modes
+- `src-tauri/src/tray.rs`: tray lifecycle
 
 ## Verification
-
-Use:
-
 ```powershell
 npm run build
 npm run test:frontend
 npm run fmt:rust
 npm run clippy:rust
 npm run test:rust
-```
-
-For bundle smoke:
-
-```powershell
-npm run tauri build -- --debug
 ```

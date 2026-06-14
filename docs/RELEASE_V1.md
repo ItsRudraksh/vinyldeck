@@ -1,58 +1,61 @@
-# VinylDeck V1 Baseline
+# VinylDeck 0.1.0 Release Notes
 
-Date: 2026-06-11 baseline, refreshed 2026-06-14
-
-V1 means the current development build baseline after backend Phase 10 hardening, now refreshed with the 2026-06-14 interaction polish consolidation. Backend Phase 10 and real Spotify sync were user-approved; the latest polish remains pending final manual approval in the live Tauri shell.
+VinylDeck `0.1.0` is the current Windows desktop MVP baseline. It is suitable for local development, visual review, and desktop integration testing.
 
 ## Included
 
-- Cinematic React visual engine with active Noir and Glass shells
-- Album-art ambient extraction
-- CSS vinyl renderer active; WebGL vinyl renderer code dormant/hard-OFF
-- Center spindle hole intentionally removed
-- Main, fullscreen, and mini windows
+- Tauri v2 Windows desktop shell
+- React 19 visual engine
+- Real Windows SMTC media snapshots
+- In-app play/pause, previous, next, and seek commands when supported
+- Main, fullscreen, and mini-player windows
+- Tray lifecycle with explicit quit
 - Backend-owned persisted settings
-- Real Windows SMTC media snapshots and in-app controls
-- Cached 500ms SMTC poller with bounded artwork loading
-- Focused-window keyboard shortcuts
-- Keyboard Shortcuts and Quit To Tray toggles
-- Tooltips, keycaps, custom context menu, directional track text, and in-place vinyl skip impulse
-- Close-to-tray lifecycle and explicit quit
-- Automated frontend and Rust regression coverage
+- Noir and Glass visual shells
+- Album-art ambient color extraction
+- Animated CSS vinyl deck with physical tonearm
+- Keyboard shortcuts, tooltips, keycap hints, and context menu
+- Frontend and Rust regression tests
 
-## Verification Evidence
+## Build Metadata
 
-Last full automated checkpoint passed on 2026-06-11:
+| Item | Value |
+| --- | --- |
+| App version | `0.1.0` |
+| Package name | `vinyldeck` |
+| Product name | `VinylDeck` |
+| Tauri identifier | `com.vinyldeck.app` |
+| Bundle targets | MSI, NSIS |
 
-- `npm run build`
-- `npm run test:frontend` -> 13 passed
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
-- `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings`
-- `cargo test --manifest-path src-tauri/Cargo.toml` -> 35 passed
-- `npm run tauri build -- --debug`
+## Verification
 
-Interaction polish automated checkpoint passed on 2026-06-14 before this consolidation:
+Use these commands for the release baseline:
 
-- `npm run test:frontend` -> 20 passed
-- `npm run build`
-- `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`
-- `cargo test --manifest-path src-tauri/Cargo.toml` -> 39 passed
+```powershell
+npm run build
+npm run test:frontend
+npm run fmt:rust
+npm run clippy:rust
+npm run test:rust
+npm run tauri build -- --debug
+```
 
-Debug artifacts were produced:
+## Known Release Work
 
-- `src-tauri/target/debug/vinyldeck.exe`
-- `src-tauri/target/debug/bundle/msi/VinylDeck_0.1.0_x64_en-US.msi`
-- `src-tauri/target/debug/bundle/nsis/VinylDeck_0.1.0_x64-setup.exe`
+Before a public packaged release, complete:
 
-## Deferred
+- clean installer validation
+- WebView2 bootstrap validation
+- uninstall/reinstall smoke test
+- settings-location verification
+- player compatibility matrix
+- bundle identifier review
+- tray playback command-path revalidation
 
-Phase 11 Windows Distribution is on hold:
+## Out Of Scope For 0.1.0
 
-- Release installer build
-- Clean installed-app SMTC validation
-- WebView2 bootstrapper validation
-- Uninstall/reinstall and settings-location smoke test
-- Player compatibility matrix
-- Bundle identifier cleanup
-- Tray playback menu SMTC unification/revalidation
-- Shortcut editing UI, start-with-Windows/autostart, splash screen, active WebGL vinyl, and vinyl left/right slide transitions remain out of scope.
+- shortcut editing UI
+- start-with-Windows/autostart
+- splash screen
+- active WebGL vinyl renderer
+- mobile builds

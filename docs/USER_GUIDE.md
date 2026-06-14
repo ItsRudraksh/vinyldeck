@@ -1,53 +1,89 @@
 # User Guide
 
-## Start VinylDeck
+This guide covers using VinylDeck as a desktop companion for music already playing on Windows.
 
-Run the desktop app with:
+## Starting The App
+
+Run VinylDeck in desktop mode:
 
 ```powershell
 npm run tauri dev
 ```
 
-Start media in Spotify, a browser, or VLC. VinylDeck should pick up the active Windows media session and show track details, album art, play state, duration, and controls.
+Start playback in a Windows media app such as Spotify, a browser, or VLC. VinylDeck listens to the active system media session and renders the current track as a vinyl deck.
 
-## Controls
+Browser development mode is available with mock playback:
 
-- Play/pause, previous, and next are available when the current source reports support.
-- Seek is hidden/disabled when unsupported. V1 relies on SMTC state resync rather than forcing a fake progress model.
-- Keyboard shortcuts work while the VinylDeck window is focused:
-  - Space: play/pause
-  - Left/Right: previous/next
-  - F: fullscreen
-  - M: mini player
-  - T: cycle theme
-  - S: settings
-  - A: Art Ambient
-  - Escape: exit fullscreen or close settings first
-  - Ctrl+Q: explicit quit
+```powershell
+npm run dev
+```
 
-Shortcuts can be disabled from Settings -> Other. Escape remains available for Settings/fullscreen escape behavior.
+## Main Player
+
+The main view combines:
+
+- animated vinyl record with album art
+- physical tonearm
+- track title, artist, and album
+- progress ring and seek support when the source allows it
+- play/pause, previous, and next controls
+- shell picker
+- source badge
+
+Controls automatically disable when the active media source does not support that action.
 
 ## Window Modes
 
-- Main mode is the standard native Windows window.
-- Fullscreen reuses the main window.
-- Mini mode opens a compact always-on-top player window and hides the main window.
-- Closing app windows hides them to tray. Use tray Quit or Ctrl+Q for a full exit.
+| Mode | What it does |
+| --- | --- |
+| Main | Standard VinylDeck desktop window |
+| Fullscreen | Immersive full-window player |
+| Mini | Compact always-on-top player |
 
-## Themes And Settings
+Closing app windows can keep VinylDeck in the tray when Quit To Tray is enabled. Use tray Quit or `Ctrl+Q` for explicit exit.
 
-VinylDeck currently exposes two visual shells: Noir and Glass. Older Aurora, Vapor, and Paper saved values are migrated into the current shell/ambient model. Settings persist through the Rust backend and sync across main/mini windows.
+## Keyboard Shortcuts
 
-Art Ambient is an optional album-colour glow for the active shell. Film Grain, Vinyl Wobble, Lean-Back Mode, Cursor Hide, Idle Timeout, Always On Top, Window Mode, Keyboard Shortcuts, and Quit To Tray are persisted settings.
+Shortcuts work while a VinylDeck window is focused.
 
-Right-click the main player for the custom VinylDeck context menu: playback actions, Art Ambient, fullscreen, mini, Settings, and Quit. In mini mode, the menu keeps mini-safe actions.
+| Action | Shortcut |
+| --- | --- |
+| Play / pause | `Space` |
+| Previous | `Left` |
+| Next | `Right` |
+| Fullscreen | `F` |
+| Mini player | `M` |
+| Cycle shell | `T` |
+| Settings | `S` |
+| Toggle Art Ambient | `A` |
+| Close settings / leave fullscreen | `Escape` |
+| Quit | `Ctrl+Q` |
 
-Track changes are directional when triggered inside VinylDeck: Next enters from the left and exits right; Previous enters from the right and exits left. The record remains anchored and only receives an in-place rotational skip impulse.
+Disable shortcuts in Settings -> Other. Escape remains available for closing Settings and leaving fullscreen.
 
-## V1 Limitations
+## Settings
 
-- This is the V1 development baseline, not the final distribution pass.
-- Version is `0.1.0`.
-- Phase 11 installer validation is deferred.
-- Tray open/mini/quit lifecycle is available. Tray playback controls need SMTC-path revalidation before distribution.
-- Shortcut editing UI, start-with-Windows/autostart, splash screen, and active WebGL vinyl are not implemented.
+Settings persist across app windows.
+
+| Section | Options |
+| --- | --- |
+| Look | Noir and Glass visual shells |
+| Vinyl | Vinyl wobble, film grain, album-art ambient lighting |
+| Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout |
+| Other | Keyboard Shortcuts, Quit To Tray |
+| About | App identity and build information |
+
+## Context Menu
+
+Right-click the player to open the VinylDeck command menu. It includes playback actions, Art Ambient, fullscreen, mini player, Settings, and Quit. Mini mode keeps only actions that make sense for the compact window.
+
+## Visual Behavior
+
+- Noir and Glass are the current visual shells.
+- Art Ambient uses album colors to tint the atmosphere.
+- Track changes triggered inside VinylDeck animate directionally.
+- The record stays visually anchored and receives an in-place skip impulse.
+
+## Troubleshooting
+
+See [Troubleshooting](./TROUBLESHOOTING.md) for media-session detection, disabled controls, WebView2, tray, and shortcut issues.

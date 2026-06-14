@@ -1,98 +1,124 @@
-# VinylDeck
+<h1 align="center">VinylDeck</h1>
 
-VinylDeck is a Windows desktop app that turns whatever is playing on the system into a cinematic vinyl deck: live album art, animated record motion, themeable ambient lighting, mini mode, settings persistence, and real media controls through Windows SMTC.
+<p align="center">
+  <strong>A cinematic vinyl experience for everything playing on your Windows desktop.</strong>
+</p>
 
-V1 status: the current repo is the V1 development baseline plus the 2026-06-14 interaction polish pass. Backend Phase 10 hardening has passed automated verification and the user approved the real Spotify sync fix. The latest interaction polish is browser-inspected and automation-verified, but still awaits final manual approval in the live Tauri shell. Phase 11 Windows distribution/install validation is intentionally on hold for a later release pass.
+<p align="center">
+  <a href="./docs/USER_GUIDE.md">User Guide</a>
+  ·
+  <a href="./docs/ARCHITECTURE.md">Architecture</a>
+  ·
+  <a href="./docs/DEVELOPMENT.md">Development</a>
+  ·
+  <a href="./CHANGELOG.md">Changelog</a>
+</p>
+
+<p align="center">
+  <img alt="Windows" src="https://img.shields.io/badge/platform-Windows-1f6feb">
+  <img alt="Tauri" src="https://img.shields.io/badge/shell-Tauri-24c8db">
+  <img alt="React" src="https://img.shields.io/badge/frontend-React-61dafb">
+  <img alt="Rust" src="https://img.shields.io/badge/backend-Rust-b7410e">
+</p>
+
+VinylDeck turns the track already playing on your system into a living turntable. Album art becomes the record label, extracted colors bloom through the scene, the needle breathes with the music state, and every control feels like part of a physical deck.
+
+Built with Tauri, Rust, React, and Windows media integration, VinylDeck is designed to feel native, lightweight, and quietly dramatic.
+
+## Highlights
+
+- **Works with system media** - reads Windows media sessions from apps such as Spotify, browsers, and VLC.
+- **Cinematic vinyl rendering** - animated record motion, album-art label, physical tonearm, ambient bloom, film grain, and glass/noir shells.
+- **Native desktop feel** - main, fullscreen, and compact mini-player modes with tray lifecycle.
+- **Real media controls** - play, pause, previous, next, and seek flow through Windows SMTC when supported by the active source.
+- **Persistent settings** - visual and behavior preferences sync across app windows through the Rust backend.
+- **Keyboard-first polish** - focused shortcuts, keycap hints, custom tooltips, and a right-click command menu.
+
+## Preview
+
+VinylDeck is a desktop-first visual player, not a streaming service. Start music in your usual app, open VinylDeck, and the active system session becomes the deck.
+
+```mermaid
+flowchart LR
+  Music["Spotify / Browser / VLC"] --> Windows["Windows media session"]
+  Windows --> VinylDeck["VinylDeck"]
+  VinylDeck --> Scene["Animated vinyl deck"]
+```
 
 ## Quick Start
 
 Requirements:
 
-- Windows 10/11 with WebView2
-- Node.js and npm
+- Windows 10 or 11
+- Microsoft WebView2 runtime
+- Node.js + npm
 - Rust toolchain
-- A media app that exposes Windows media sessions, such as Spotify, browser media, or VLC
+
+Run the desktop app:
 
 ```powershell
 npm install
 npm run tauri dev
 ```
 
-For browser-only visual development:
+Run browser-only visual development with mock playback:
 
 ```powershell
 npm run dev
 ```
 
-Browser mode uses the mock source. Tauri mode uses real SMTC unless forced:
+## Controls
 
-```powershell
-$env:VITE_FORCE_MOCK_SOURCE='true'
-npm run tauri dev
-```
-
-## Features
-
-- Real currently-playing media from Windows SMTC
-- React visual engine with two active visual shells: Noir and Glass
-- Album-art ambient color extraction with `fast-average-color`
-- CSS vinyl renderer as the active path; dormant WebGL vinyl code remains hard-OFF
-- Main, fullscreen, and mini window modes
-- Backend-owned persisted settings shared across windows
-- Focused-window keyboard shortcuts
-- Keyboard Shortcuts and Quit To Tray settings toggles
-- Tooltips, keycap hints, custom right-click context menu, directional track text, and in-place vinyl skip impulse
-- Close-to-tray lifecycle and explicit quit
-- Frontend and Rust regression coverage for playback adapters, settings, lifecycle, SMTC commands, and poller edge cases
-
-## Commands
-
-| Command | Purpose |
+| Action | Shortcut |
 | --- | --- |
-| `npm run dev` | Vite browser dev server with mock playback |
-| `npm run build` | TypeScript check and frontend production build |
-| `npm run test:frontend` | Vitest frontend tests |
-| `npm run tauri dev` | Tauri desktop dev app with real SMTC |
-| `npm run check:rust` | Rust compile check |
-| `npm run fmt:rust` | Rust formatting check |
-| `npm run clippy:rust` | Rust lint gate with warnings denied |
-| `npm run test:rust` | Rust test suite |
-| `npm run tauri build -- --debug` | Debug desktop bundle build |
+| Play / pause | `Space` |
+| Previous / next | `Left` / `Right` |
+| Fullscreen | `F` |
+| Mini player | `M` |
+| Cycle shell | `T` |
+| Settings | `S` |
+| Art Ambient | `A` |
+| Quit | `Ctrl+Q` |
 
-## Architecture
-
-```mermaid
-flowchart LR
-  Player["Spotify / Browser / VLC"] --> SMTC["Windows SMTC"]
-  SMTC --> Poller["Rust SMTC poller"]
-  Poller --> Event["media-state-changed event"]
-  Event --> Source["TauriSource"]
-  Source --> Store["Zustand playback cache"]
-  Store --> UI["React visual engine"]
-  UI --> Commands["cmd_smtc_* commands"]
-  Commands --> SMTC
-```
-
-The Visual Engine only consumes the `PlaybackState`/`PlaybackSource` contract. Browser mode supplies `MockSource`; Tauri mode supplies `TauriSource`, which bridges Rust SMTC commands/events into the same interface.
+Shortcuts can be turned off in Settings. Escape remains available for closing Settings or leaving fullscreen.
 
 ## Documentation
 
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Tauri API Reference](./docs/API.md)
-- [Development Guide](./docs/DEVELOPMENT.md)
-- [User Guide](./docs/USER_GUIDE.md)
-- [Troubleshooting](./docs/TROUBLESHOOTING.md)
-- [V1 Release Notes](./docs/RELEASE_V1.md)
-- [Changelog](./CHANGELOG.md)
+- [User Guide](./docs/USER_GUIDE.md) - controls, window modes, settings, and daily use.
+- [Development Guide](./docs/DEVELOPMENT.md) - setup, commands, verification, and contribution workflow.
+- [Architecture](./docs/ARCHITECTURE.md) - React visual engine, Rust backend, SMTC flow, and state ownership.
+- [Tauri API Reference](./docs/API.md) - command and event contracts between frontend and backend.
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) - common runtime and media-session issues.
+- [Release Notes](./docs/RELEASE_V1.md) - version notes and distribution checklist.
+- [Changelog](./CHANGELOG.md) - notable project changes.
 
-## V1 Notes
+## Development Commands
 
-- Version remains `0.1.0` across `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
-- Phase 11 distribution validation is deferred. Debug MSI/NSIS bundles were produced during Phase 10, but clean release installer testing is not part of this V1 baseline.
-- In-app playback controls use real SMTC. Tray window actions are available; tray playback menu unification with the SMTC command path should be revalidated before distribution.
-- A non-blocking Tauri warning currently notes that bundle identifier `com.vinyldeck.app` ends with `.app`; handle this during the deferred distribution pass.
-- Not-current/cancelled items: shortcut editing UI, start-with-Windows/autostart, splash screen, active WebGL vinyl renderer, and vinyl left/right slide transitions.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start Vite with mock playback |
+| `npm run build` | Type-check and build frontend |
+| `npm run test:frontend` | Run Vitest frontend tests |
+| `npm run tauri dev` | Start desktop app with Tauri |
+| `npm run check:rust` | Check Rust backend |
+| `npm run fmt:rust` | Check Rust formatting |
+| `npm run clippy:rust` | Run Rust lint gate |
+| `npm run test:rust` | Run Rust tests |
 
-## Recommended IDE Setup
+## Tech Stack
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- Tauri v2 desktop shell
+- Rust backend for Windows media, settings, tray, and window lifecycle
+- React 19 + TypeScript visual engine
+- Zustand v5 state cache
+- `motion/react` v12 animation
+- `fast-average-color` album-art color extraction
+- Pure CSS theme system with custom properties
+
+## Project Status
+
+VinylDeck is in an active Windows desktop MVP track. The current repository is version `0.1.0`; installer-grade release validation is still separate from day-to-day development.
+
+## License
+
+No license file is currently published.

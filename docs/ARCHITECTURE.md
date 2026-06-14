@@ -119,10 +119,10 @@ stateDiagram-v2
 
 Main and fullscreen reuse the `main` window. Mini is a separate always-on-top window. Close requests hide to tray; explicit quit destroys windows and exits.
 
-## V1 Boundaries
+## Implementation Boundaries
 
 - Real in-app playback uses SMTC through `cmd_smtc_*`.
 - Browser mode remains mock-only by design.
 - Shortcut editing UI, autostart/start-with-Windows, and splash screen are not implemented.
-- Phase 11 release installer validation is on hold.
+- Public installer validation is tracked separately from architecture work.
 - Tray playback menu code still uses the older backend media command path and should be unified with SMTC before distribution-grade release validation.
