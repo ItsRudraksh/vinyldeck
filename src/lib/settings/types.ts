@@ -20,6 +20,7 @@ export interface PersistedSettings {
   alwaysOnTop: boolean;
   keyboardShortcutsEnabled: boolean;
   quitToTray: boolean;
+  startWithWindows: boolean;
   windowMode: WindowMode;
 }
 
@@ -36,5 +37,6 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   alwaysOnTop: false,
   keyboardShortcutsEnabled: true,
   quitToTray: true,
+  startWithWindows: false,
   windowMode: "main",
 };

@@ -53,6 +53,7 @@
 | 2026-06-14 | Active Vinyl Renderer | **CSS vinyl renderer is active; WebGL remains hard-OFF** | `ENABLE_WEBGL_VINYL=false` in `VinylRecord`. Keep WebGL files as dormant experiment only; do not re-enable without a future material/performance proof. |
 | 2026-06-14 | Vinyl Center | **No center spindle hole** | User requested removing the center dot. Do not restore `.vinyl-hole`; album art should remain unobscured at label center. |
 | 2026-06-14 | Repo Hygiene | **No raw/chat/root prompt/task artifacts in git** | `raw/` is deprecated. Chat exports, root prompt files, root task lists, and `task.md` are local scratch only. `fresh_session_prompt.md` may remain locally but must stay ignored and untracked. Durable context belongs in `.agents/memory/` and docs. |
+| 2026-06-14 | Start With Windows | **Opt-in QOL setting, default OFF** | VinylDeck should not force itself into startup. Users who want a tray-resident companion can enable `startWithWindows`; Rust settings authority syncs the desired state to Tauri autostart. |
 
 ---
 

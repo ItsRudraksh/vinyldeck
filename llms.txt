@@ -16,6 +16,7 @@
 - Tauri mode uses `TauriSource` over Rust SMTC commands and events.
 - React consumes `PlaybackState`; Rust owns Windows media integration.
 - Rust owns persisted settings and emits backend-approved settings snapshots.
+- Start With Windows is a Rust-owned persisted setting backed by Tauri autostart.
 - Active visual shells are Noir and Glass.
 - CSS vinyl renderer is active.
 - Album art drives ambient color and vinyl material styling.

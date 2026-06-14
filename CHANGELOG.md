@@ -7,6 +7,10 @@
 - Reframed public documentation so `README.md` and user-facing docs describe VinylDeck as a product instead of an internal progress report.
 - Moved implementation status language into maintainer and release documentation where it belongs.
 
+### Added
+
+- Opt-in Start With Windows setting backed by Tauri autostart.
+
 ## 0.1.0 - 2026-06-14
 
 ### Added

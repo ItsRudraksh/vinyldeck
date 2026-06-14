@@ -61,6 +61,8 @@ Shortcuts work while a VinylDeck window is focused.
 
 Disable shortcuts in Settings -> Other. Escape remains available for closing Settings and leaving fullscreen.
 
+Start With Windows is opt-in. When enabled, VinylDeck launches automatically after sign-in so it can sit ready while you start music normally.
+
 ## Settings
 
 Settings persist across app windows.
@@ -70,7 +72,7 @@ Settings persist across app windows.
 | Look | Noir and Glass visual shells |
 | Vinyl | Vinyl wobble, film grain, album-art ambient lighting |
 | Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout |
-| Other | Keyboard Shortcuts, Quit To Tray |
+| Other | Keyboard Shortcuts, Quit To Tray, Start With Windows |
 | About | App identity and build information |
 
 ## Context Menu

@@ -58,6 +58,10 @@ export function validateSettings(value: unknown): PersistedSettings {
       DEFAULT_SETTINGS.keyboardShortcutsEnabled,
     ),
     quitToTray: readBoolean(raw.quitToTray, DEFAULT_SETTINGS.quitToTray),
+    startWithWindows: readBoolean(
+      raw.startWithWindows,
+      DEFAULT_SETTINGS.startWithWindows,
+    ),
     windowMode,
   };
 }

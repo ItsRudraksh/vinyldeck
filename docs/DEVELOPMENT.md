@@ -61,6 +61,7 @@ npm run tauri build -- --debug
 | `src/lib/window/` | Frontend window adapter |
 | `src-tauri/src/media/` | SMTC model, artwork handling, commands, poller |
 | `src-tauri/src/settings/` | Rust-owned settings validation and persistence |
+| `tauri-plugin-autostart` | Native Start With Windows registration |
 | `src-tauri/src/window/` | Window-mode service |
 | `src-tauri/src/tray.rs` | Tray menu and close/quit lifecycle |
 | `.agents/memory/` | Internal project memory for future agent sessions |

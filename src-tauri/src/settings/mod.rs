@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex;
 
@@ -31,6 +32,7 @@ pub struct PersistedSettings {
     pub always_on_top: bool,
     pub keyboard_shortcuts_enabled: bool,
     pub quit_to_tray: bool,
+    pub start_with_windows: bool,
     pub window_mode: String,
 }
 
@@ -49,6 +51,7 @@ impl Default for PersistedSettings {
             always_on_top: false,
             keyboard_shortcuts_enabled: true,
             quit_to_tray: true,
+            start_with_windows: false,
             window_mode: "main".to_string(),
         }
     }
@@ -68,6 +71,7 @@ pub struct SettingsPatch {
     pub always_on_top: Option<bool>,
     pub keyboard_shortcuts_enabled: Option<bool>,
     pub quit_to_tray: Option<bool>,
+    pub start_with_windows: Option<bool>,
     pub window_mode: Option<String>,
 }
 
@@ -89,16 +93,13 @@ impl SettingsState {
     async fn replace(&self, settings: PersistedSettings) {
         *self.settings.lock().await = settings;
     }
-
-    async fn update(&self, patch: SettingsPatch) -> PersistedSettings {
-        let mut guard = self.settings.lock().await;
-        *guard = apply_patch(&guard, patch);
-        guard.clone()
-    }
 }
 
 pub async fn initialize_settings(app: AppHandle) -> Result<(), String> {
     let settings = load_settings(&app)?;
+    if let Err(error) = sync_start_with_windows(&app, settings.start_with_windows) {
+        eprintln!("[VinylDeck settings] Failed to restore autostart: {error}");
+    }
     app.state::<SettingsState>().replace(settings.clone()).await;
     save_settings(&app, &settings)?;
     Ok(())
@@ -117,7 +118,12 @@ pub async fn cmd_settings_update(
     state: State<'_, SettingsState>,
     patch: SettingsPatch,
 ) -> Result<PersistedSettings, String> {
-    let settings = state.update(patch).await;
+    let current = state.snapshot().await;
+    let settings = apply_patch(&current, patch);
+    if settings.start_with_windows != current.start_with_windows {
+        sync_start_with_windows(&app, settings.start_with_windows)?;
+    }
+    state.replace(settings.clone()).await;
     save_settings(&app, &settings)?;
     emit_settings_changed(&app, &settings);
     Ok(settings)
@@ -129,6 +135,7 @@ pub async fn cmd_settings_reset(
     state: State<'_, SettingsState>,
 ) -> Result<PersistedSettings, String> {
     let settings = PersistedSettings::default();
+    sync_start_with_windows(&app, settings.start_with_windows)?;
     state.replace(settings.clone()).await;
     save_settings(&app, &settings)?;
     emit_settings_changed(&app, &settings);
@@ -186,6 +193,7 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
             defaults.keyboard_shortcuts_enabled,
         ),
         quit_to_tray: read_bool(raw.get("quitToTray"), defaults.quit_to_tray),
+        start_with_windows: read_bool(raw.get("startWithWindows"), defaults.start_with_windows),
         window_mode,
     }
 }
@@ -231,6 +239,9 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
     if let Some(value) = patch.quit_to_tray {
         next.quit_to_tray = value;
     }
+    if let Some(value) = patch.start_with_windows {
+        next.start_with_windows = value;
+    }
     if let Some(window_mode) = patch
         .window_mode
         .filter(|value| WINDOW_MODES.contains(&value.as_str()))
@@ -243,6 +254,16 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
     next.art_ambient = next.ambient_mode != "off";
     next.version = VERSION;
     next
+}
+
+fn sync_start_with_windows(app: &AppHandle, enabled: bool) -> Result<(), String> {
+    let autostart = app.autolaunch();
+    if enabled {
+        autostart.enable()
+    } else {
+        autostart.disable()
+    }
+    .map_err(|error| error.to_string())
 }
 
 fn shell_from_legacy_theme(theme: &str) -> &'static str {
@@ -310,6 +331,7 @@ mod tests {
             "alwaysOnTop": true,
             "keyboardShortcutsEnabled": "no",
             "quitToTray": "no",
+            "startWithWindows": "no",
             "windowMode": "bad"
         })));
 
@@ -321,6 +343,7 @@ mod tests {
         assert_eq!(settings.idle_timeout_seconds, 5);
         assert!(settings.keyboard_shortcuts_enabled);
         assert!(settings.quit_to_tray);
+        assert!(!settings.start_with_windows);
         assert_eq!(settings.window_mode, "main");
         assert_eq!(settings.version, 2);
     }
@@ -430,11 +453,13 @@ mod tests {
             SettingsPatch {
                 keyboard_shortcuts_enabled: Some(false),
                 quit_to_tray: Some(false),
+                start_with_windows: Some(true),
                 ..SettingsPatch::default()
             },
         );
 
         assert!(!settings.keyboard_shortcuts_enabled);
         assert!(!settings.quit_to_tray);
+        assert!(settings.start_with_windows);
     }
 }

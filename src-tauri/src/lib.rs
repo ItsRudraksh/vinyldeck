@@ -9,6 +9,10 @@ pub fn run() {
     tauri::Builder::default()
         .manage(media::MediaState::new())
         .manage(settings::SettingsState::new())
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            None,
+        ))
         .plugin(tauri_plugin_store::Builder::new().build())
         .on_window_event(tray::handle_window_close)
         .invoke_handler(tauri::generate_handler![

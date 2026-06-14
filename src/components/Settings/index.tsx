@@ -383,6 +383,16 @@ export function Settings({ open, onClose }: SettingsProps) {
                       })
                     }
                   />
+                  <SettingsToggle
+                    label="Start With Windows"
+                    description="Launch VinylDeck automatically when you sign in."
+                    checked={settings.startWithWindows}
+                    onToggle={() =>
+                      updateBackendSettings({
+                        startWithWindows: !settings.startWithWindows,
+                      })
+                    }
+                  />
                 </div>
               ) : activeTab === "ABOUT" ? (
                 <div className="settings-about">

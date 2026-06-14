@@ -11,6 +11,7 @@ VinylDeck `0.1.0` is the current Windows desktop MVP baseline. It is suitable fo
 - Main, fullscreen, and mini-player windows
 - Tray lifecycle with explicit quit
 - Backend-owned persisted settings
+- Opt-in Start With Windows setting
 - Noir and Glass visual shells
 - Album-art ambient color extraction
 - Animated CSS vinyl deck with physical tonearm
