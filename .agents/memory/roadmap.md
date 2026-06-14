@@ -43,7 +43,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 - User manually approved seamless main/mini playback sync on 2026-06-11.
 - Required settings authority gate before tray is implemented and manually approved as B3.15-B3.21. Final bottom ThemePicker persistence bypass was fixed by routing theme/art-ambient changes through backend `commitSettings()`.
 - Future dynamic state should use backend-owned command/event authority so no frontend window is a long-term state authority.
-- System tray, focused shortcuts, SMTC integration, and Backend Phase 10 hardening are implemented. Current follow-up work is interaction polish consolidation and docs/memory refresh, with Phase 11 distribution still on hold.
+- System tray, focused shortcuts, SMTC integration, Backend Phase 10 hardening, opt-in Start With Windows, and Phase 11 installer smoke validation are implemented. Remaining release polish is signing/WebView2/player-matrix cleanup rather than core implementation.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)
 
@@ -56,6 +56,6 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 
 - Fine-tune spring stiffness, damping, inertia, glow intensities, and typography.
 
-### [ ] Stage 6 — Build and Ship
+### [x] Stage 6 — Build and Ship
 
-- Compile `.msi` and `.exe`.
+- Release MSI and NSIS installers compiled and MSI installed successfully on 2026-06-14.

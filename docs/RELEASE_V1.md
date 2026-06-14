@@ -1,6 +1,6 @@
 # VinylDeck 0.1.0 Release Notes
 
-VinylDeck `0.1.0` is the current Windows desktop MVP baseline. It is suitable for local development, visual review, and desktop integration testing.
+VinylDeck `0.1.0` is the current Windows desktop MVP baseline. Release installers have been built and smoke-tested on Windows.
 
 ## Included
 
@@ -41,22 +41,36 @@ npm run test:rust
 npm run tauri build -- --debug
 ```
 
+Release installers built on 2026-06-14:
+
+| Installer | Size | Notes |
+| --- | ---: | --- |
+| `VinylDeck_0.1.0_x64_en-US.msi` | 3.82 MiB | Installed successfully; appears in Control Panel |
+| `VinylDeck_0.1.0_x64-setup.exe` | 2.61 MiB | NSIS installer output |
+
+Installed-app validation:
+
+- MSI install completed successfully.
+- Default install location is acceptable.
+- Custom install location `C:\Apps\VinylDeck` worked.
+- App appeared in Windows Control Panel.
+- User verified expected app behavior after installation.
+- Installer size is accepted as optimal for this release.
+
 ## Known Release Work
 
-Before a public packaged release, complete:
+Before a public packaged release, complete or recheck:
 
-- clean installer validation
 - WebView2 bootstrap validation
-- uninstall/reinstall smoke test
 - settings-location verification
 - player compatibility matrix
 - bundle identifier review
 - tray playback command-path revalidation
+- code signing to replace Windows UAC `Publisher: Unknown`
 
 ## Out Of Scope For 0.1.0
 
 - shortcut editing UI
-- start-with-Windows/autostart
 - splash screen
 - active WebGL vinyl renderer
 - mobile builds

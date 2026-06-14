@@ -61,6 +61,10 @@ VinylDeck needs Microsoft WebView2 on Windows. If the Tauri window does not open
 
 Debug bundle builds may warn that the current bundle identifier ends with `.app`. This does not block local development, but identifier naming should be reviewed before a public packaged release.
 
+## Installer Shows Unknown Publisher
+
+Expected for unsigned local builds. Windows UAC shows `Publisher: Unknown` until VinylDeck is code-signed with a trusted certificate. This does not mean the local build is broken; it means Windows cannot verify a publisher identity.
+
 ## Tray Playback Menu Differs From Main Controls
 
 The main in-app controls use the current SMTC command path. Tray playback controls should be revalidated before treating tray playback as release-grade.

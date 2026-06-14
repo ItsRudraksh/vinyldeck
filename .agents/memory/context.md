@@ -17,7 +17,7 @@
 - Tauri main and mini read playback from Rust via `cmd_smtc_*` and `media-state-changed`, not from separate frontend sources.
 - Avoid window-to-window bridges for core state. Windows are views/controllers; backend is authority.
 - Settings have migrated to backend ownership: Rust validates, persists, and emits `settings-changed`; frontend windows are readers/controllers only.
-- V1 baseline is frozen after backend Phase 10 hardening. Phase 11 Windows distribution validation is on hold for a later release pass.
+- V1 release installers were built and MSI installed successfully in the 2026-06-14 distribution smoke pass. Remaining public-release polish is signing, WebView2 bootstrap recheck, settings-location note, bundle identifier review, and player matrix.
 
 ## Technology Stack
 
@@ -35,4 +35,4 @@
 - Vinyl has no center spindle hole.
 - Track direction mapping: next enters from left and exits right; previous enters from right and exits left.
 - VinylRecord must stay anchored on track changes and may only use in-place rotational skip impulse.
-- Shortcut editing UI, start-with-Windows/autostart, and splash screen are cancelled/not-current.
+- Shortcut editing UI and splash screen are cancelled/not-current. Start With Windows is implemented as an opt-in setting, default off.

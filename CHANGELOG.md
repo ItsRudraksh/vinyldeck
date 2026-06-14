@@ -11,6 +11,12 @@
 
 - Opt-in Start With Windows setting backed by Tauri autostart.
 
+### Verified
+
+- Built release MSI and NSIS installers.
+- Installed MSI successfully on Windows.
+- Confirmed Control Panel entry and custom install location.
+
 ## 0.1.0 - 2026-06-14
 
 ### Added

@@ -87,4 +87,4 @@ npm run tauri build -- --debug
 
 ## Distribution Notes
 
-Installer-grade validation is separate from local development. Before a public packaged release, recheck release installers, WebView2 bootstrap behavior, uninstall/reinstall, settings location, bundle identifier naming, and player compatibility.
+Installer-grade validation is separate from local development. The `0.1.0` MSI and NSIS installers were built and smoke-tested on 2026-06-14. Before broader public distribution, recheck WebView2 bootstrap behavior, settings location, bundle identifier naming, player compatibility, and code signing.
