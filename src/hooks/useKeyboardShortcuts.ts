@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { commitSettings } from "../lib/settings";
-import { applyTheme, resetAmbientColors } from "../lib/themes/applier";
+import { ART_AMBIENT_MODE, applyVisualMode, resetAmbientColors } from "../lib/themes/applier";
 import type { ThemeId } from "../lib/themes/applier";
 import { quitApplication } from "../lib/appLifecycle";
 import { canUseSkipControls, canUseTransportControls } from "../lib/playback/capabilities";
@@ -9,30 +9,47 @@ import { useVinylDeckStore } from "../lib/playback/store";
 import { setNativeWindowMode } from "../lib/window";
 import type { RenderWindowMode, WindowMode } from "../lib/window/types";
 
-const THEMES: ThemeId[] = ["noir", "glass", "aurora", "vapor", "paper"];
+const THEMES: ThemeId[] = ["noir", "glass"];
 
 interface KeyboardShortcutOptions {
   renderMode: RenderWindowMode;
   isSettingsOpen?: boolean;
   onCloseSettings?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function useKeyboardShortcuts({
   renderMode,
   isSettingsOpen = false,
   onCloseSettings,
+  onOpenSettings,
 }: KeyboardShortcutOptions) {
-  const optionsRef = useRef({ renderMode, isSettingsOpen, onCloseSettings });
+  const optionsRef = useRef({
+    renderMode,
+    isSettingsOpen,
+    onCloseSettings,
+    onOpenSettings,
+  });
 
   useEffect(() => {
-    optionsRef.current = { renderMode, isSettingsOpen, onCloseSettings };
-  }, [renderMode, isSettingsOpen, onCloseSettings]);
+    optionsRef.current = {
+      renderMode,
+      isSettingsOpen,
+      onCloseSettings,
+      onOpenSettings,
+    };
+  }, [renderMode, isSettingsOpen, onCloseSettings, onOpenSettings]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (shouldIgnoreShortcut(event)) return;
 
-      const { playback, source } = useVinylDeckStore.getState();
+      const { playback, settings, source } = useVinylDeckStore.getState();
+
+      if (!settings.keyboardShortcutsEnabled) {
+        if (event.code === "Escape") handleEscape(event, optionsRef);
+        return;
+      }
 
       if (event.ctrlKey && event.code === "KeyQ") {
         event.preventDefault();
@@ -49,11 +66,19 @@ export function useKeyboardShortcuts({
           break;
         case "ArrowLeft":
           event.preventDefault();
-          if (canUseSkipControls(playback)) source?.previous();
+          if (canUseSkipControls(playback)) {
+            useVinylDeckStore
+              .getState()
+              .markTrackChangeIntent("previous");
+            source?.previous();
+          }
           break;
         case "ArrowRight":
           event.preventDefault();
-          if (canUseSkipControls(playback)) source?.next();
+          if (canUseSkipControls(playback)) {
+            useVinylDeckStore.getState().markTrackChangeIntent("next");
+            source?.next();
+          }
           break;
         case "KeyF":
           event.preventDefault();
@@ -68,6 +93,14 @@ export function useKeyboardShortcuts({
         case "KeyT":
           event.preventDefault();
           void cycleTheme().catch(logShortcutError);
+          break;
+        case "KeyA":
+          event.preventDefault();
+          void toggleArtAmbient().catch(logShortcutError);
+          break;
+        case "KeyS":
+          event.preventDefault();
+          optionsRef.current.onOpenSettings?.();
           break;
         case "Escape":
           handleEscape(event, optionsRef);
@@ -128,8 +161,21 @@ async function cycleTheme() {
   const settings = await commitSettings({ theme: nextTheme });
 
   useVinylDeckStore.getState().hydrateSettings(settings);
-  applyTheme(settings.theme);
-  if (settings.theme !== "noir" || !settings.artAmbient) resetAmbientColors();
+  applyVisualMode(settings.theme, settings.ambientMode);
+  if (settings.ambientMode === "off") resetAmbientColors();
+}
+
+async function toggleArtAmbient() {
+  const currentMode = useVinylDeckStore.getState().ambientMode;
+  const nextMode = currentMode === "off" ? ART_AMBIENT_MODE : "off";
+  const settings = await commitSettings({
+    ambientMode: nextMode,
+    artAmbient: nextMode !== "off",
+  });
+
+  useVinylDeckStore.getState().hydrateSettings(settings);
+  applyVisualMode(settings.theme, settings.ambientMode);
+  if (settings.ambientMode === "off") resetAmbientColors();
 }
 
 function logShortcutError(error: unknown) {

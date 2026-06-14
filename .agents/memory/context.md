@@ -26,5 +26,13 @@
 - **Animation:** `motion/react` v12 (formerly framer-motion)
 - **State Management:** Zustand v5
 - **Color Extraction:** `fast-average-color` v9 — simple algorithm + HSL boost
-- **Theming:** CSS Custom Properties (5 cinematic themes: Noir, Glass, Aurora, Vapor, Paper)
+- **Theming:** CSS Custom Properties. Current exposed shells: Noir and Glass. Legacy Aurora, Vapor, and Paper values migrate into Noir/Glass plus Art Ambient.
 - **Ambient Bloom:** Two CSS orbs with `mix-blend-mode: screen`, single extracted color, uniform wash
+
+## Current Visual Locks
+
+- CSS vinyl renderer is active; WebGL vinyl code is dormant and hard-OFF.
+- Vinyl has no center spindle hole.
+- Track direction mapping: next enters from left and exits right; previous enters from right and exits left.
+- VinylRecord must stay anchored on track changes and may only use in-place rotational skip impulse.
+- Shortcut editing UI, start-with-Windows/autostart, and splash screen are cancelled/not-current.

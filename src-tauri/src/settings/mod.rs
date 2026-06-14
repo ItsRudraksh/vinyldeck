@@ -12,7 +12,6 @@ const VERSION: u8 = 2;
 
 const SHELL_THEMES: &[&str] = &["noir", "glass"];
 const LEGACY_THEMES: &[&str] = &["noir", "glass", "aurora", "vapor", "paper"];
-const AMBIENT_MODES: &[&str] = &["off", "beam", "caustic", "aurora"];
 const WINDOW_MODES: &[&str] = &["main", "fullscreen", "mini"];
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -30,6 +29,8 @@ pub struct PersistedSettings {
     pub cursor_hide: bool,
     pub idle_timeout_seconds: u8,
     pub always_on_top: bool,
+    pub keyboard_shortcuts_enabled: bool,
+    pub quit_to_tray: bool,
     pub window_mode: String,
 }
 
@@ -46,6 +47,8 @@ impl Default for PersistedSettings {
             cursor_hide: true,
             idle_timeout_seconds: 3,
             always_on_top: false,
+            keyboard_shortcuts_enabled: true,
+            quit_to_tray: true,
             window_mode: "main".to_string(),
         }
     }
@@ -63,6 +66,8 @@ pub struct SettingsPatch {
     pub cursor_hide: Option<bool>,
     pub idle_timeout_seconds: Option<u8>,
     pub always_on_top: Option<bool>,
+    pub keyboard_shortcuts_enabled: Option<bool>,
+    pub quit_to_tray: Option<bool>,
     pub window_mode: Option<String>,
 }
 
@@ -160,7 +165,7 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
         shell_from_legacy_theme(&legacy_theme).to_string()
     };
     let art_ambient = read_bool(raw.get("artAmbient"), false);
-    let ambient_mode = read_string_choice(raw.get("ambientMode"), AMBIENT_MODES)
+    let ambient_mode = normalize_ambient_mode(raw.get("ambientMode"))
         .unwrap_or_else(|| ambient_from_legacy_theme(&legacy_theme, art_ambient).to_string());
     let window_mode = read_string_choice(raw.get("windowMode"), WINDOW_MODES)
         .unwrap_or_else(|| defaults.window_mode.clone());
@@ -176,6 +181,11 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
         cursor_hide: read_bool(raw.get("cursorHide"), defaults.cursor_hide),
         idle_timeout_seconds: read_idle_timeout(raw.get("idleTimeoutSeconds")),
         always_on_top: read_bool(raw.get("alwaysOnTop"), defaults.always_on_top),
+        keyboard_shortcuts_enabled: read_bool(
+            raw.get("keyboardShortcutsEnabled"),
+            defaults.keyboard_shortcuts_enabled,
+        ),
+        quit_to_tray: read_bool(raw.get("quitToTray"), defaults.quit_to_tray),
         window_mode,
     }
 }
@@ -183,12 +193,15 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
 fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSettings {
     let mut next = current.clone();
 
-    if let Some(theme) = patch.theme.filter(|value| SHELL_THEMES.contains(&value.as_str())) {
+    if let Some(theme) = patch
+        .theme
+        .filter(|value| SHELL_THEMES.contains(&value.as_str()))
+    {
         next.theme = theme;
     }
     if let Some(mode) = patch
         .ambient_mode
-        .filter(|value| AMBIENT_MODES.contains(&value.as_str()))
+        .and_then(|value| normalize_ambient_mode_string(&value))
     {
         next.ambient_mode = mode;
     } else if let Some(value) = patch.art_ambient {
@@ -211,6 +224,12 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
     }
     if let Some(value) = patch.always_on_top {
         next.always_on_top = value;
+    }
+    if let Some(value) = patch.keyboard_shortcuts_enabled {
+        next.keyboard_shortcuts_enabled = value;
+    }
+    if let Some(value) = patch.quit_to_tray {
+        next.quit_to_tray = value;
     }
     if let Some(window_mode) = patch
         .window_mode
@@ -235,11 +254,22 @@ fn shell_from_legacy_theme(theme: &str) -> &'static str {
 
 fn ambient_from_legacy_theme(theme: &str, art_ambient: bool) -> &'static str {
     match theme {
-        "glass" => "caustic",
-        "aurora" | "vapor" => "aurora",
-        "paper" => "off",
+        "aurora" | "vapor" => "beam",
         "noir" if art_ambient => "beam",
         _ => "off",
+    }
+}
+
+fn normalize_ambient_mode(value: Option<&Value>) -> Option<String> {
+    let value = value?.as_str()?;
+    normalize_ambient_mode_string(value)
+}
+
+fn normalize_ambient_mode_string(value: &str) -> Option<String> {
+    match value {
+        "off" => Some("off".to_string()),
+        "beam" | "caustic" | "aurora" => Some("beam".to_string()),
+        _ => None,
     }
 }
 
@@ -278,6 +308,8 @@ mod tests {
             "cursorHide": false,
             "idleTimeoutSeconds": 99,
             "alwaysOnTop": true,
+            "keyboardShortcutsEnabled": "no",
+            "quitToTray": "no",
             "windowMode": "bad"
         })));
 
@@ -287,6 +319,8 @@ mod tests {
         assert!(settings.vinyl_wobble);
         assert!(!settings.film_grain);
         assert_eq!(settings.idle_timeout_seconds, 5);
+        assert!(settings.keyboard_shortcuts_enabled);
+        assert!(settings.quit_to_tray);
         assert_eq!(settings.window_mode, "main");
         assert_eq!(settings.version, 2);
     }
@@ -295,7 +329,7 @@ mod tests {
     fn migrates_legacy_themes_to_shell_and_ambient_modes() {
         let aurora = validate_settings(Some(json!({ "theme": "aurora" })));
         assert_eq!(aurora.theme, "noir");
-        assert_eq!(aurora.ambient_mode, "aurora");
+        assert_eq!(aurora.ambient_mode, "beam");
         assert!(aurora.art_ambient);
 
         let paper = validate_settings(Some(json!({ "theme": "paper" })));
@@ -352,7 +386,7 @@ mod tests {
             },
         );
 
-        assert_eq!(caustic.ambient_mode, "caustic");
+        assert_eq!(caustic.ambient_mode, "beam");
         assert!(caustic.art_ambient);
         assert_eq!(off.ambient_mode, "off");
         assert!(!off.art_ambient);
@@ -386,5 +420,21 @@ mod tests {
         assert_eq!(fullscreen.window_mode, "fullscreen");
         assert_eq!(mini_attempt.window_mode, "fullscreen");
         assert_eq!(main.window_mode, "main");
+    }
+
+    #[test]
+    fn patch_interaction_toggles() {
+        let current = PersistedSettings::default();
+        let settings = apply_patch(
+            &current,
+            SettingsPatch {
+                keyboard_shortcuts_enabled: Some(false),
+                quit_to_tray: Some(false),
+                ..SettingsPatch::default()
+            },
+        );
+
+        assert!(!settings.keyboard_shortcuts_enabled);
+        assert!(!settings.quit_to_tray);
     }
 }

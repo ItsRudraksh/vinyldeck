@@ -44,7 +44,8 @@ interface ExtractedArtworkVisuals {
   ambient: {
     primary: string;
     secondary: string;
-  } | null;
+    accent: string;
+  };
   palette: ArtworkPalette;
   pressing: VinylPressing;
 }
@@ -147,15 +148,12 @@ export async function extractArtworkVisuals(
 ): Promise<ExtractedArtworkVisuals | null> {
   try {
     const imgEl = await loadImage(artworkSrc);
-    const [ambient, palette] = await Promise.all([
-      extractAmbientFromImage(imgEl),
-      extractArtworkPaletteFromImage(imgEl),
-    ]);
+    const palette = extractArtworkPaletteFromImage(imgEl);
     const safePalette = palette ?? createFallbackPalette();
     const pressing = deriveVinylPressing(safePalette, seed);
 
     return {
-      ambient,
+      ambient: buildAmbientFromPalette(safePalette),
       palette: safePalette,
       pressing,
     };
@@ -192,6 +190,47 @@ async function extractAmbientFromImage(imgEl: HTMLImageElement): Promise<{
 
   console.debug(`[VinylDeck] ambient: raw=rgb(${r},${g},${b}) → ${color}`);
   return { primary: color, secondary: color };
+}
+
+function buildAmbientFromPalette(palette: ArtworkPalette): {
+  primary: string;
+  secondary: string;
+  accent: string;
+} {
+  return {
+    primary: colorToAmbientCss(palette.primary, "primary"),
+    secondary: colorToAmbientCss(palette.secondary, "secondary"),
+    accent: colorToAmbientCss(palette.accent, "accent"),
+  };
+}
+
+function colorToAmbientCss(
+  color: RgbColor,
+  role: "primary" | "secondary" | "accent",
+): string {
+  let h = color.h / 360;
+  let s = color.s;
+  let l = color.l;
+
+  if (s < 0.07) {
+    // Neutral artwork should become a restrained silver/warm-grey glow instead
+    // of forcing a fake hue. The pressing engine already protects these cases.
+    const neutralLightness = role === "accent" ? 0.52 : role === "secondary" ? 0.42 : 0.34;
+    const value = Math.round(neutralLightness * 255);
+    const warmth = role === "accent" ? 8 : 0;
+    return `rgb(${value + warmth},${value + Math.round(warmth * 0.7)},${value})`;
+  }
+
+  const minS = role === "accent" ? 0.5 : role === "secondary" ? 0.38 : 0.42;
+  const maxS = role === "accent" ? 0.86 : 0.76;
+  const minL = role === "accent" ? 0.42 : role === "secondary" ? 0.34 : 0.3;
+  const maxL = role === "accent" ? 0.62 : role === "secondary" ? 0.56 : 0.5;
+
+  s = Math.min(maxS, Math.max(minS, s * 1.08));
+  l = Math.min(maxL, Math.max(minL, l));
+
+  const [r, g, b] = hslToRgb(h, s, l);
+  return `rgb(${r},${g},${b})`;
 }
 
 export async function extractArtworkPalette(
@@ -470,9 +509,13 @@ export function useColorExtraction(
         return;
       }
 
-      if (ambientEnabled && result.ambient) {
-        applyAmbientColors(result.ambient.primary, result.ambient.secondary);
-      } else if (ambientEnabled) {
+      if (ambientEnabled) {
+        applyAmbientColors(
+          result.ambient.primary,
+          result.ambient.secondary,
+          result.ambient.accent,
+        );
+      } else {
         resetAmbientColors();
       }
 

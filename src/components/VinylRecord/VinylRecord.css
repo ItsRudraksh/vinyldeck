@@ -648,32 +648,6 @@
   opacity: 0.72;
 }
 
-/* ── Spindle hole ──────────────────────────────────────────── */
-.vinyl-hole {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 3.4%;
-  height: 3.4%;
-  min-width: 8px;
-  min-height: 8px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      circle at 35% 28%,
-      rgba(255, 255, 255, 0.16),
-      transparent 34%
-    ),
-    radial-gradient(circle at center, #030303 0%, #000000 72%, #111111 100%);
-  z-index: 12;
-  box-shadow:
-    inset 0 4px 8px rgba(0, 0, 0, 0.92),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 0 3px
-      color-mix(in srgb, var(--pressing-highlight, #ffffff) 9%, transparent);
-}
-
 /* ══════════════════════════════════════════════════════════════
    Theme-specific label personality kept here because it belongs
    to the component surface, while pressing-material controls live
@@ -835,24 +809,23 @@
   }
 }
 
-/* ─────────────────────────────────────────────────────────── */
-/* Hybrid WebGL Pressing Studio renderer                       */
-/* ─────────────────────────────────────────────────────────── */
 .vinyl-shader-canvas {
   position: absolute;
   inset: 0;
+  z-index: 4;
+  display: block;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  z-index: 4;
-  display: block;
-  pointer-events: none;
   opacity: 0;
-  mix-blend-mode: normal;
+  pointer-events: none;
   transform: translateZ(0);
   transition: opacity 520ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* DORMANT EXPERIMENT: WebGL vinyl renderer support.
+   Runtime flag in VinylRecord/index.tsx is hardcoded OFF.
+   Keep these styles for future material/lighting pass; CSS renderer is active path. */
 .vinyl-wrapper--shader-ready .vinyl-shader-canvas {
   opacity: 1;
 }
@@ -860,15 +833,9 @@
 .vinyl-wrapper--shader-ready .vinyl-disc {
   background: transparent;
   box-shadow:
-    0 0 0 1px
-      color-mix(in srgb, var(--pressing-highlight, #ffffff) 14%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, #ffffff 4%, transparent),
-    inset 0 0 32px
-      color-mix(in srgb, var(--pressing-edge, #000000) 48%, transparent),
-    0 36px 68px rgba(0, 0, 0, 0.8),
-    0 10px 42px rgba(0, 0, 0, 0.54),
-    0 0 120px
-      color-mix(in srgb, var(--pressing-primary, #000000) 16%, transparent);
+    inset 0 0 38px rgba(0, 0, 0, 0.72),
+    0 22px 52px rgba(0, 0, 0, 0.46),
+    0 0 0 1px color-mix(in srgb, var(--pressing-primary, #1b1b1b) 30%, transparent);
 }
 
 .vinyl-wrapper--shader-ready .vinyl-pressing-base,
@@ -881,67 +848,24 @@
 }
 
 .vinyl-wrapper--shader-ready .vinyl-translucent-ghost {
-  opacity: calc(var(--pressing-ghost-opacity, 0) * 0.7);
-  filter: blur(14px) saturate(1.25) contrast(1.04);
+  z-index: 5;
+  opacity: 0.18;
   mix-blend-mode: screen;
 }
 
-.vinyl-wrapper--shader-ready .vinyl-label-ring {
-  z-index: 8;
-  opacity: 0.92;
-}
-
+.vinyl-wrapper--shader-ready .vinyl-label-ring,
 .vinyl-wrapper--shader-ready .vinyl-label {
-  z-index: 9;
+  z-index: 12;
 }
 
-.vinyl-wrapper--shader-ready .vinyl-hole {
-  z-index: 10;
-}
-
-[data-vinyl-recipe="clear-tint"] .vinyl-wrapper--shader-ready .vinyl-disc,
-[data-vinyl-recipe="smoke-clear"] .vinyl-wrapper--shader-ready .vinyl-disc,
-[data-vinyl-recipe="color-in-color"] .vinyl-wrapper--shader-ready .vinyl-disc,
-[data-vinyl-recipe="galaxy"] .vinyl-wrapper--shader-ready .vinyl-disc {
-  box-shadow:
-    0 0 0 1px
-      color-mix(in srgb, var(--pressing-highlight, #ffffff) 20%, transparent),
-    inset 0 0 0 1px color-mix(in srgb, #ffffff 7%, transparent),
-    inset 0 0 42px
-      color-mix(in srgb, var(--pressing-edge, #000000) 34%, transparent),
-    inset 0 0 120px
-      color-mix(in srgb, var(--pressing-edge, #000000) 24%, transparent),
-    0 34px 68px rgba(0, 0, 0, 0.72),
-    0 0 115px
-      color-mix(in srgb, var(--pressing-primary, #000000) 20%, transparent);
+.vinyl-wrapper--css-renderer .vinyl-shader-canvas {
+  opacity: 0;
 }
 
 [data-theme="glass"] .vinyl-wrapper--shader-ready .vinyl-disc {
-  filter: saturate(1.04) contrast(1.02);
   box-shadow:
-    0 0 0 1px
-      color-mix(
-        in srgb,
-        var(--pressing-highlight, #ffffff) 18%,
-        rgba(0, 88, 188, 0.12)
-      ),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
-    inset 0 0 42px
-      color-mix(in srgb, var(--pressing-edge, #000000) 24%, transparent),
-    0 36px 74px rgba(58, 74, 96, 0.23),
-    0 10px 32px rgba(58, 74, 96, 0.18),
-    0 0 115px
-      color-mix(in srgb, var(--pressing-primary, #0058bc) 13%, transparent);
-}
-
-[data-theme="aurora"] .vinyl-wrapper--shader-ready .vinyl-disc {
-  filter: saturate(1.15) contrast(1.05);
-}
-
-[data-theme="vapor"] .vinyl-wrapper--shader-ready .vinyl-disc {
-  filter: saturate(1.24) contrast(1.08);
-}
-
-[data-theme="paper"] .vinyl-wrapper--shader-ready .vinyl-disc {
-  filter: saturate(0.88) sepia(0.08) contrast(0.97);
+    inset 0 0 42px rgba(255, 255, 255, 0.04),
+    inset 0 0 70px rgba(0, 0, 0, 0.38),
+    0 26px 58px rgba(0, 0, 0, 0.44),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
 }

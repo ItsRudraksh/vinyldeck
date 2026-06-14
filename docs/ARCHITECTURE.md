@@ -23,7 +23,7 @@ flowchart TB
     Source["PlaybackSource\nMockSource or TauriSource"]
     Store["Zustand cache"]
     Views["MainView / MiniView"]
-    Components["Vinyl, controls, settings, themes"]
+    Components["Vinyl, controls, settings, shells"]
   end
 
   Player --> SMTC
@@ -81,6 +81,12 @@ The poller emits semantic changes immediately and position resyncs periodically.
 | Window mode and lifecycle | Rust window/tray modules | Request mode changes |
 | Theme application | CSS custom properties | Apply backend-approved setting |
 
+## Current Visual Surface
+
+The current app exposes two active shells: Noir and Glass. Older Aurora, Vapor, and Paper values remain migration inputs only. Album art still drives the vinyl pressing material and optional Art Ambient glow.
+
+The active vinyl renderer is the CSS/DOM renderer. WebGL vinyl code remains in the repo as a dormant experiment with its feature flag hardcoded off. The center spindle hole is intentionally absent so album artwork remains unobscured.
+
 ## Settings Flow
 
 ```mermaid
@@ -117,5 +123,6 @@ Main and fullscreen reuse the `main` window. Mini is a separate always-on-top wi
 
 - Real in-app playback uses SMTC through `cmd_smtc_*`.
 - Browser mode remains mock-only by design.
+- Shortcut editing UI, autostart/start-with-Windows, and splash screen are not implemented.
 - Phase 11 release installer validation is on hold.
 - Tray playback menu code still uses the older backend media command path and should be unified with SMTC before distribution-grade release validation.

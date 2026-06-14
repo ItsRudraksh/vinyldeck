@@ -8,6 +8,7 @@ export type { WindowMode };
 export interface PersistedSettings {
   version: 2;
   theme: ThemeId;
+  /** v2 field kept, but only off/on values are exposed now: off | beam. */
   ambientMode: AmbientModeId;
   /** Legacy compatibility flag. Derived from ambientMode and kept for old callers/tests. */
   artAmbient: boolean;
@@ -17,6 +18,8 @@ export interface PersistedSettings {
   cursorHide: boolean;
   idleTimeoutSeconds: number;
   alwaysOnTop: boolean;
+  keyboardShortcutsEnabled: boolean;
+  quitToTray: boolean;
   windowMode: WindowMode;
 }
 
@@ -31,5 +34,7 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   cursorHide: true,
   idleTimeoutSeconds: 3,
   alwaysOnTop: false,
+  keyboardShortcutsEnabled: true,
+  quitToTray: true,
   windowMode: "main",
 };

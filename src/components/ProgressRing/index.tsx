@@ -50,7 +50,7 @@ export function ProgressRing({
       if (deg < 0) deg += 360;
       return deg;
     },
-    [size],
+    [size]
   );
 
   const handlePointerDown = useCallback(
@@ -63,7 +63,7 @@ export function ProgressRing({
       setScrubPosition(pos);
       setScrubAngle(deg);
     },
-    [onSeek, duration, angleFromPointer],
+    [onSeek, duration, angleFromPointer]
   );
 
   const handlePointerMove = useCallback(
@@ -74,7 +74,7 @@ export function ProgressRing({
       setScrubPosition(pos);
       setScrubAngle(deg);
     },
-    [isScrubbing, onSeek, duration, angleFromPointer],
+    [isScrubbing, onSeek, duration, angleFromPointer]
   );
 
   const handlePointerUp = useCallback(
@@ -86,7 +86,7 @@ export function ProgressRing({
       setIsScrubbing(false);
       onSeek(pos);
     },
-    [isScrubbing, onSeek, duration, angleFromPointer],
+    [isScrubbing, onSeek, duration, angleFromPointer]
   );
   // ── End of hooks block ────────────────────────────────────────
 
@@ -101,6 +101,8 @@ export function ProgressRing({
   const displayPosition = isScrubbing ? scrubPosition : position;
   const progress = Math.min(Math.max(displayPosition / duration, 0), 1);
   const dashOffset = circumference * (1 - progress);
+
+  const artAmbient = ambientMode !== "off";
 
   // Scrub handle position on the arc
   const handleDeg = progress * 360 - 90;
@@ -126,7 +128,7 @@ export function ProgressRing({
         left: 0,
         zIndex: 5,
         pointerEvents: onSeek ? "all" : "none",
-        cursor: isScrubbing ? "grabbing" : onSeek ? "pointer" : "default",
+        cursor: isScrubbing ? "grabbing" : (onSeek ? "pointer" : "default"),
         overflow: "visible",
       }}
       aria-label={`Track progress: ${formatTime(displayPosition)} / ${formatTime(duration)}`}
@@ -135,8 +137,8 @@ export function ProgressRing({
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      {/* Aurora Mist — decorative outer breathing ring */}
-      {ambientMode === "aurora" && (
+      {/* Art Ambient — decorative outer breathing ring */}
+      {artAmbient && (
         <motion.circle
           cx={center}
           cy={center}
@@ -174,10 +176,9 @@ export function ProgressRing({
         transform={`rotate(-90, ${center}, ${center})`}
         style={{
           filter: `drop-shadow(0 0 ${isScrubbing ? "8px" : "4px"} var(--ring-glow))`,
-          animation:
-            ambientMode === "aurora"
-              ? "glow-pulse 3.6s ease-in-out infinite alternate"
-              : "none",
+          animation: artAmbient
+            ? "glow-pulse 3.6s ease-in-out infinite alternate"
+            : "none",
         }}
         animate={{ strokeDashoffset: dashOffset }}
         transition={{ duration: isScrubbing ? 0 : 0.3, ease: "linear" }}

@@ -225,3 +225,104 @@
 [data-theme="glass"] .controls-btn-primary {
   color: #ffffff;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Liquid Glass material pass — optical wrapper, crisp controls
+   ═══════════════════════════════════════════════════════════════ */
+.controls-pill.liquid-glass {
+  display: block;
+  padding: 10px 18px;
+  border-radius: 9999px;
+}
+
+.controls-pill__content {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+[data-theme="glass"] .controls-pill.liquid-glass {
+  --glass-blur: 32px;
+  --glass-bend-opacity: 0.58;
+  --glass-face-opacity: 0.42;
+  --glass-edge-opacity: 0.92;
+  --glass-specular-opacity: 0.38;
+  box-shadow:
+    0 16px 48px rgba(46, 66, 88, 0.18),
+    0 2px 10px rgba(255, 255, 255, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -22px 40px rgba(94, 136, 178, 0.1);
+}
+
+[data-theme="glass"] .controls-pill .liquid-glass__bend {
+  inset: -18px;
+  opacity: 0.72;
+}
+
+[data-theme="glass"] .controls-pill .liquid-glass__face {
+  background:
+    radial-gradient(circle at 50% -18%, rgba(255, 255, 255, 0.88), transparent 52%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.14));
+}
+
+[data-theme="glass"] .controls-btn-secondary {
+  color: rgba(55, 68, 82, 0.55);
+}
+
+[data-theme="glass"] .controls-btn-secondary:not(:disabled):hover {
+  color: rgba(16, 25, 34, 0.82);
+  background: rgba(255, 255, 255, 0.24);
+}
+
+[data-theme="glass"] .controls-btn-primary {
+  background:
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.72), transparent 30%),
+    linear-gradient(145deg, #0787ff, #005fc4 62%, #004995);
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.62),
+    inset -2px -2px 4px rgba(0, 38, 88, 0.32),
+    0 9px 22px rgba(0, 105, 210, 0.28),
+    0 2px 9px rgba(48, 80, 112, 0.18);
+}
+
+[data-theme="glass"] .controls-btn-primary.playing {
+  box-shadow:
+    inset 1px 1px 1px rgba(255, 255, 255, 0.62),
+    inset -2px -2px 4px rgba(0, 38, 88, 0.32),
+    0 0 0 2px rgba(0, 112, 217, 0.35),
+    0 0 28px rgba(0, 112, 217, 0.28),
+    0 9px 22px rgba(0, 105, 210, 0.26);
+}
+
+[data-theme="noir"] .controls-pill.liquid-glass {
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.065),
+    inset 0 -24px 52px rgba(0, 0, 0, 0.42);
+}
+
+/* THIRD PASS: Noir no longer uses watery glass; Glass is deliberately testable. */
+[data-theme="noir"] .controls-pill.liquid-glass {
+  background: linear-gradient(180deg, rgba(16,16,16,0.82), rgba(0,0,0,0.84));
+  border-color: rgba(255,255,255,0.07);
+  box-shadow:
+    0 20px 66px rgba(0,0,0,0.72),
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    inset 0 -22px 54px rgba(0,0,0,0.52);
+}
+
+[data-theme="glass"] .controls-pill.liquid-glass {
+  --glass-refract-opacity: 1.16;
+  --glass-bend-opacity: 0.96;
+  --glass-edge-opacity: 1;
+  --glass-specular-opacity: 0.78;
+  box-shadow:
+    0 24px 70px rgba(42, 90, 130, 0.20),
+    0 0 18px rgba(255,255,255,0.46),
+    inset 2px 2px 1px rgba(255,255,255,0.98),
+    inset -2px -2px 1px rgba(80,165,230,0.26),
+    inset 0 -22px 48px rgba(80,160,230,0.14);
+}

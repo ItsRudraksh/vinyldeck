@@ -17,6 +17,10 @@ VinylDeck is a Windows Tauri v2 + React 19 app that renders the active system me
 - Tauri mode uses `TauriSource` over Rust `cmd_smtc_*` commands and `media-state-changed` events.
 - React components consume `PlaybackState`; they should not know about Windows APIs.
 - Rust owns persisted settings through `cmd_settings_*` and `settings-changed`.
+- Active shells are Noir and Glass. Legacy Aurora/Vapor/Paper values migrate into the current shell/ambient model.
+- CSS vinyl renderer is active. WebGL vinyl code is dormant and hard-OFF.
+- Center spindle hole is intentionally removed.
+- Shortcut editing UI, autostart/start-with-Windows, and splash screen are not implemented.
 - Phase 11 distribution is on hold after the V1 baseline.
 
 ## Verification

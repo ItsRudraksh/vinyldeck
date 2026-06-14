@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_PLAYBACK, useVinylDeckStore } from "./store";
 import type { PlaybackSource, PlaybackState } from "./types";
 
@@ -59,6 +59,7 @@ function createFakeSource(initialState = EMPTY_PLAYBACK) {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   useVinylDeckStore.getState().clearSource();
 });
 
@@ -123,5 +124,94 @@ describe("playback store source lifecycle", () => {
     expect(oldSource.listenerCount()).toBe(0);
     expect(newSource.listenerCount()).toBe(1);
     expect(useVinylDeckStore.getState().source).toBe(newSource.source);
+  });
+});
+
+describe("playback store scrub and track-change runtime state", () => {
+  it("uses pending seek as displayed position immediately", () => {
+    const snapshot = makeSnapshot("Seekable");
+    useVinylDeckStore.getState().updatePlayback({
+      ...snapshot,
+      position: 10,
+      duration: 180,
+    });
+
+    useVinylDeckStore.getState().beginPendingSeek(90);
+
+    expect(useVinylDeckStore.getState().getPosition()).toBe(90);
+  });
+
+  it("clears pending seek when backend position settles near target", () => {
+    const snapshot = makeSnapshot("Settled");
+    useVinylDeckStore.getState().updatePlayback({
+      ...snapshot,
+      position: 10,
+      duration: 180,
+    });
+
+    useVinylDeckStore.getState().beginPendingSeek(90);
+    useVinylDeckStore.getState().updatePlayback({
+      ...snapshot,
+      position: 90.5,
+      duration: 180,
+    });
+
+    expect(useVinylDeckStore.getState().pendingSeekPosition).toBeNull();
+  });
+
+  it("ignores stale pending seek after timeout", () => {
+    vi.useFakeTimers();
+    const snapshot = makeSnapshot("Timeout");
+    useVinylDeckStore.getState().updatePlayback({
+      ...snapshot,
+      position: 10,
+      duration: 180,
+    });
+
+    useVinylDeckStore.getState().beginPendingSeek(90);
+    vi.advanceTimersByTime(1600);
+
+    expect(useVinylDeckStore.getState().getPosition()).not.toBe(90);
+  });
+
+  it("uses next intent on the next semantic track change", () => {
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("One"));
+    useVinylDeckStore.getState().markTrackChangeIntent("next");
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("Two"));
+
+    expect(useVinylDeckStore.getState().trackChangeDirection).toBe("next");
+    expect(useVinylDeckStore.getState().trackChangeNonce).toBeGreaterThan(0);
+    expect(useVinylDeckStore.getState().pendingTrackChangeDirection).toBe(
+      "unknown",
+    );
+  });
+
+  it("uses previous intent on the next semantic track change", () => {
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("Two"));
+    useVinylDeckStore.getState().markTrackChangeIntent("previous");
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("One"));
+
+    expect(useVinylDeckStore.getState().trackChangeDirection).toBe("previous");
+  });
+
+  it("keeps intent until a different track arrives", () => {
+    const snapshot = makeSnapshot("Same");
+    useVinylDeckStore.getState().updatePlayback(snapshot);
+    useVinylDeckStore.getState().markTrackChangeIntent("next");
+    useVinylDeckStore.getState().updatePlayback({
+      ...snapshot,
+      position: 30,
+    });
+
+    expect(useVinylDeckStore.getState().pendingTrackChangeDirection).toBe(
+      "next",
+    );
+  });
+
+  it("uses unknown direction for external source-driven track changes", () => {
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("One"));
+    useVinylDeckStore.getState().updatePlayback(makeSnapshot("Two"));
+
+    expect(useVinylDeckStore.getState().trackChangeDirection).toBe("unknown");
   });
 });

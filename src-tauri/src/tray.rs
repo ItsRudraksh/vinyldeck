@@ -8,6 +8,7 @@ use tokio::time::{interval, Duration};
 use crate::{
     app_lifecycle,
     media::{self, MediaState},
+    settings::SettingsState,
     window::{self, WindowMode, MAIN_LABEL, MINI_LABEL},
 };
 
@@ -89,21 +90,51 @@ pub fn handle_window_close(window: &tauri::Window, event: &tauri::WindowEvent) {
         return;
     };
 
-    if !should_hide_to_tray(window.label()) {
-        return;
-    }
-
-    api.prevent_close();
-    if let Err(error) = window.hide() {
-        eprintln!(
-            "[VinylDeck tray] failed to hide {} on close request: {error}",
-            window.label()
-        );
+    match close_request_action(window.label(), should_quit_to_tray(window.app_handle())) {
+        CloseRequestAction::AllowClose => {}
+        CloseRequestAction::Quit => {
+            api.prevent_close();
+            app_lifecycle::quit(window.app_handle());
+        }
+        CloseRequestAction::HideToTray => {
+            api.prevent_close();
+            if let Err(error) = window.hide() {
+                eprintln!(
+                    "[VinylDeck tray] failed to hide {} on close request: {error}",
+                    window.label()
+                );
+            }
+        }
     }
 }
 
 fn should_hide_to_tray(label: &str) -> bool {
     matches!(label, MAIN_LABEL | MINI_LABEL)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CloseRequestAction {
+    AllowClose,
+    HideToTray,
+    Quit,
+}
+
+fn close_request_action(label: &str, quit_to_tray: bool) -> CloseRequestAction {
+    if !should_hide_to_tray(label) {
+        return CloseRequestAction::AllowClose;
+    }
+
+    if quit_to_tray {
+        CloseRequestAction::HideToTray
+    } else {
+        CloseRequestAction::Quit
+    }
+}
+
+fn should_quit_to_tray(app: &AppHandle) -> bool {
+    app.try_state::<SettingsState>()
+        .map(|state| tauri::async_runtime::block_on(state.snapshot()).quit_to_tray)
+        .unwrap_or(true)
 }
 
 fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {
@@ -205,7 +236,7 @@ fn tray_tooltip(track: &str, artist: &str, source_name: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{should_hide_to_tray, tray_tooltip};
+    use super::{close_request_action, should_hide_to_tray, tray_tooltip, CloseRequestAction};
     use crate::window::{MAIN_LABEL, MINI_LABEL};
 
     #[test]
@@ -214,6 +245,22 @@ mod tests {
         assert!(should_hide_to_tray(MINI_LABEL));
         assert!(!should_hide_to_tray("settings"));
         assert!(!should_hide_to_tray("devtools"));
+    }
+
+    #[test]
+    fn close_action_respects_quit_to_tray_setting() {
+        assert_eq!(
+            close_request_action(MAIN_LABEL, true),
+            CloseRequestAction::HideToTray
+        );
+        assert_eq!(
+            close_request_action(MAIN_LABEL, false),
+            CloseRequestAction::Quit
+        );
+        assert_eq!(
+            close_request_action("devtools", false),
+            CloseRequestAction::AllowClose
+        );
     }
 
     #[test]

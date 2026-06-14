@@ -8,6 +8,10 @@ import type { PlaybackState, PlaybackSource } from "./types";
 import type { AmbientModeId, ThemeId } from "../themes/applier";
 import { DEFAULT_SETTINGS } from "../settings/types";
 import type { PersistedSettings } from "../settings/types";
+import type { TrackChangeDirection } from "../trackTransition/types";
+
+const PENDING_SEEK_TIMEOUT_MS = 1500;
+const PENDING_SEEK_SETTLE_SECONDS = 1.25;
 
 // ── Store state types ─────────────────────────────────────────
 export interface PlaybackStoreState {
@@ -34,6 +38,15 @@ export interface PlaybackStoreState {
 
   // Dev visual QA: force no-media state without stopping MockSource.
   devForceEmpty: boolean;
+
+  // Runtime-only seek optimism: masks SMTC poll lag after user releases scrub.
+  pendingSeekPosition: number | null;
+  pendingSeekStartedAt: number;
+
+  // Runtime-only direction hint for physical track-change motion.
+  trackChangeDirection: TrackChangeDirection;
+  trackChangeNonce: number;
+  pendingTrackChangeDirection: TrackChangeDirection;
 }
 
 export interface PlaybackStoreActions {
@@ -46,6 +59,8 @@ export interface PlaybackStoreActions {
 
   // Client-side position (extrapolated from lastSync + elapsed)
   getPosition(): number;
+  beginPendingSeek(seconds: number): void;
+  clearPendingSeek(): void;
 
   // Persisted settings
   hydrateSettings(settings: PersistedSettings): void;
@@ -55,6 +70,9 @@ export interface PlaybackStoreActions {
 
   // Dev visual QA
   setDevForceEmpty(enabled: boolean): void;
+
+  // Runtime track-change motion intent
+  markTrackChangeIntent(direction: TrackChangeDirection): void;
 }
 
 export type VinylDeckStore = PlaybackStoreState & PlaybackStoreActions;
@@ -89,11 +107,15 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     source: null,
     sourceUnsubscribe: null,
     devForceEmpty: false,
+    pendingSeekPosition: null,
+    pendingSeekStartedAt: 0,
+    trackChangeDirection: "unknown",
+    trackChangeNonce: 0,
+    pendingTrackChangeDirection: "unknown",
 
     // ── Set source and subscribe to its state changes ─────────
     setSource(source) {
-      const { source: existing, sourceUnsubscribe: existingUnsubscribe } =
-        get();
+      const { source: existing, sourceUnsubscribe: existingUnsubscribe } = get();
       if (existing === source && existingUnsubscribe) return;
 
       if (existingUnsubscribe) existingUnsubscribe();
@@ -106,6 +128,11 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
         playback: initialState,
         lastKnownPosition: initialState.position,
         lastSyncTime: Date.now(),
+        pendingSeekPosition: null,
+        pendingSeekStartedAt: 0,
+        trackChangeDirection: "unknown",
+        trackChangeNonce: 0,
+        pendingTrackChangeDirection: "unknown",
       });
 
       // Subscribe to state changes from source
@@ -135,25 +162,90 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
         playback: EMPTY_PLAYBACK,
         lastKnownPosition: 0,
         lastSyncTime: Date.now(),
+        pendingSeekPosition: null,
+        pendingSeekStartedAt: 0,
+        trackChangeDirection: "unknown",
+        trackChangeNonce: 0,
+        pendingTrackChangeDirection: "unknown",
       });
     },
 
     // ── Update playback snapshot from source event ────────────
     updatePlayback(state) {
+      const current = get();
+      const trackChanged =
+        state.track !== current.playback.track ||
+        state.artist !== current.playback.artist ||
+        state.album !== current.playback.album ||
+        state.sourceId !== current.playback.sourceId;
+      const pendingSeekExpired =
+        current.pendingSeekPosition !== null &&
+        Date.now() - current.pendingSeekStartedAt > PENDING_SEEK_TIMEOUT_MS;
+      const pendingSeekSettled =
+        current.pendingSeekPosition !== null &&
+        Math.abs(state.position - current.pendingSeekPosition) <=
+          PENDING_SEEK_SETTLE_SECONDS;
+      const consumeDirection =
+        trackChanged && current.pendingTrackChangeDirection !== "unknown";
+
       set({
         playback: state,
         lastKnownPosition: state.position,
         lastSyncTime: Date.now(),
+        pendingSeekPosition:
+          pendingSeekExpired || pendingSeekSettled || trackChanged
+            ? null
+            : current.pendingSeekPosition,
+        pendingSeekStartedAt:
+          pendingSeekExpired || pendingSeekSettled || trackChanged
+            ? 0
+            : current.pendingSeekStartedAt,
+        trackChangeDirection: consumeDirection
+          ? current.pendingTrackChangeDirection
+          : trackChanged
+            ? "unknown"
+            : current.trackChangeDirection,
+        trackChangeNonce: trackChanged
+          ? current.trackChangeNonce + 1
+          : current.trackChangeNonce,
+        pendingTrackChangeDirection: consumeDirection
+          ? "unknown"
+          : current.pendingTrackChangeDirection,
       });
     },
 
     // ── Client-side position extrapolation ────────────────────
     // Between SMTC sync events, advance position using elapsed real time.
     getPosition() {
-      const { playback, lastKnownPosition, lastSyncTime } = get();
+      const {
+        playback,
+        lastKnownPosition,
+        lastSyncTime,
+        pendingSeekPosition,
+        pendingSeekStartedAt,
+      } = get();
+      if (
+        pendingSeekPosition !== null &&
+        Date.now() - pendingSeekStartedAt <= PENDING_SEEK_TIMEOUT_MS
+      ) {
+        return Math.min(Math.max(pendingSeekPosition, 0), playback.duration);
+      }
       if (!playback.isPlaying) return lastKnownPosition;
       const elapsed = (Date.now() - lastSyncTime) / 1000;
       return Math.min(lastKnownPosition + elapsed, playback.duration);
+    },
+
+    beginPendingSeek(seconds) {
+      const duration = get().playback.duration;
+      if (duration <= 0) return;
+      set({
+        pendingSeekPosition: Math.min(Math.max(seconds, 0), duration),
+        pendingSeekStartedAt: Date.now(),
+      });
+    },
+
+    clearPendingSeek() {
+      set({ pendingSeekPosition: null, pendingSeekStartedAt: 0 });
     },
 
     hydrateSettings(settings) {
@@ -168,12 +260,10 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     updateSettings(partial) {
       set((state) => {
         const nextSettings = { ...state.settings, ...partial };
-        if (
-          partial.artAmbient !== undefined &&
-          partial.ambientMode === undefined
-        ) {
+        if (partial.artAmbient !== undefined && partial.ambientMode === undefined) {
           nextSettings.ambientMode = partial.artAmbient ? "beam" : "off";
         }
+        nextSettings.ambientMode = nextSettings.ambientMode === "off" ? "off" : "beam";
         nextSettings.artAmbient = nextSettings.ambientMode !== "off";
 
         return {
@@ -203,7 +293,11 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     setDevForceEmpty(enabled) {
       set({ devForceEmpty: enabled });
     },
-  })),
+
+    markTrackChangeIntent(direction) {
+      set({ pendingTrackChangeDirection: direction });
+    },
+  }))
 );
 
 // ── Convenience selectors (stable references) ─────────────────
@@ -216,3 +310,6 @@ export const selectAmbientMode = (s: VinylDeckStore) => s.ambientMode;
 export const selectSource = (s: VinylDeckStore) => s.source;
 export const selectDevForceEmpty = (s: VinylDeckStore) => s.devForceEmpty;
 export const selectSettings = (s: VinylDeckStore) => s.settings;
+export const selectTrackChangeDirection = (s: VinylDeckStore) =>
+  s.trackChangeDirection;
+export const selectTrackChangeNonce = (s: VinylDeckStore) => s.trackChangeNonce;

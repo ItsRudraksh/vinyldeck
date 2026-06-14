@@ -10,13 +10,14 @@ import {
   sanitizeSettingsForTheme,
   subscribeToSettingsChanges,
 } from "./lib/settings";
-import { applyTheme, resetAmbientColors } from "./lib/themes/applier";
+import { applyVisualMode, resetAmbientColors } from "./lib/themes/applier";
 import {
   getCurrentRenderWindowMode,
   setNativeAlwaysOnTop,
   setNativeWindowMode,
 } from "./lib/window";
 import type { RenderWindowMode } from "./lib/window/types";
+import { LiquidGlassFilters } from "./components/LiquidGlass";
 import { MainView } from "./views/MainView";
 import { MiniView } from "./views/MiniView";
 
@@ -33,9 +34,8 @@ function App() {
     function applySettings(settings: Awaited<ReturnType<typeof loadSettings>>) {
       const safeSettings = sanitizeSettingsForTheme(settings);
       useVinylDeckStore.getState().hydrateSettings(safeSettings);
-      applyTheme(safeSettings.theme);
-      if (safeSettings.theme !== "noir" || !safeSettings.artAmbient)
-        resetAmbientColors();
+      applyVisualMode(safeSettings.theme, safeSettings.ambientMode);
+      if (safeSettings.ambientMode === "off") resetAmbientColors();
       return safeSettings;
     }
 
@@ -78,7 +78,15 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return renderMode === "mini" ? <MiniView /> : <MainView />;
+  const view = renderMode === "mini" ? <MiniView /> : <MainView />;
+
+  return (
+    <>
+      <LiquidGlassFilters />
+      {view}
+    </>
+  );
 }
+
 
 export default App;

@@ -1,9 +1,10 @@
 // src/hooks/useVinylRotation.ts
 // RAF-based rotation with inertia on pause.
-// Direct DOM mutation for the CSS fallback, plus optional per-frame callback for
-// the WebGL vinyl shader. No React state = zero re-renders.
+// Direct DOM mutation (no React state) = zero re-renders.
+// Element must have id="vinyl-disc".
 
 import { useEffect, useRef } from "react";
+import type { TrackChangeDirection } from "../lib/trackTransition/types";
 
 export interface VinylRotationFrame {
   rotation: number;
@@ -14,16 +15,16 @@ export interface VinylRotationFrame {
 interface UseVinylRotationOptions {
   isPlaying: boolean;
   rpm?: number; // default 33.33
-  /** CSS fallback element id. Pass null to disable DOM rotation. */
-  elementId?: string | null;
-  /** Called from the same RAF that drives rotation; used by WebGL uniforms. */
+  skipDirection?: TrackChangeDirection;
+  skipNonce?: number;
   onFrame?: (frame: VinylRotationFrame) => void;
 }
 
 export function useVinylRotation({
   isPlaying,
   rpm = 33.33,
-  elementId = "vinyl-disc",
+  skipDirection = "unknown",
+  skipNonce = 0,
   onFrame,
 }: UseVinylRotationOptions): void {
   const rafRef = useRef<number | null>(null);
@@ -32,44 +33,49 @@ export function useVinylRotation({
   const lastTimestampRef = useRef<number | null>(null);
   const targetVelocityRef = useRef<number>(0);
   const isPlayingRef = useRef<boolean>(isPlaying);
-  const elementIdRef = useRef<string | null | undefined>(elementId);
+  const skipImpulseRef = useRef<number>(0);
+  const lastSkipNonceRef = useRef<number>(skipNonce);
   const onFrameRef = useRef<typeof onFrame>(onFrame);
 
+  // degreesPerMs at 33.33 RPM:  (33.33 / 60) * (360 / 1000) ≈ 0.19998 deg/ms
   const degreesPerMs = (rpm / 60) * (360 / 1000);
 
   useEffect(() => {
     onFrameRef.current = onFrame;
   }, [onFrame]);
 
-  useEffect(() => {
-    elementIdRef.current = elementId;
-  }, [elementId]);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-    targetVelocityRef.current = isPlaying ? degreesPerMs : 0;
-
-    if (isPlaying && rafRef.current === null) {
-      lastTimestampRef.current = null;
-      rafRef.current = requestAnimationFrame(tick);
+  function applyFrame(delta: number) {
+    const target = targetVelocityRef.current;
+    const current = velocityRef.current;
+    const lerpFactor = target > current ? 0.06 : 0.018;
+    velocityRef.current = current + (target - current) * lerpFactor;
+    skipImpulseRef.current *= 0.88;
+    if (Math.abs(skipImpulseRef.current) < 0.0005) {
+      skipImpulseRef.current = 0;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, degreesPerMs]);
+    rotationRef.current =
+      (rotationRef.current +
+        (velocityRef.current + skipImpulseRef.current) * delta) %
+      360;
 
-  useEffect(() => {
+    const disc = document.getElementById("vinyl-disc");
+    if (disc) {
+      disc.style.transform = `rotate(${rotationRef.current}deg)`;
+    }
+
+    onFrameRef.current?.({
+      rotation: rotationRef.current,
+      velocity: velocityRef.current + skipImpulseRef.current,
+      deltaMs: delta,
+    });
+  }
+
+  function wakeLoop() {
     if (rafRef.current === null) {
+      lastTimestampRef.current = null;
       rafRef.current = requestAnimationFrame(tick);
     }
-
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-      lastTimestampRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   function tick(timestamp: number) {
     if (lastTimestampRef.current === null) {
@@ -78,32 +84,13 @@ export function useVinylRotation({
 
     const delta = Math.min(timestamp - lastTimestampRef.current, 50);
     lastTimestampRef.current = timestamp;
+    applyFrame(delta);
 
-    const target = targetVelocityRef.current;
-    const current = velocityRef.current;
-    const lerpFactor = target > current ? 0.06 : 0.018;
-    velocityRef.current = current + (target - current) * lerpFactor;
-    rotationRef.current =
-      (rotationRef.current + velocityRef.current * delta) % 360;
-
-    const nextRotation = rotationRef.current;
-    const nextVelocity = velocityRef.current;
-    const targetElementId = elementIdRef.current;
-
-    if (targetElementId) {
-      const disc = document.getElementById(targetElementId);
-      if (disc) {
-        disc.style.transform = `rotate(${nextRotation}deg)`;
-      }
-    }
-
-    onFrameRef.current?.({
-      rotation: nextRotation,
-      velocity: nextVelocity,
-      deltaMs: delta,
-    });
-
-    if (Math.abs(nextVelocity) < 0.0001 && !isPlayingRef.current) {
+    if (
+      Math.abs(velocityRef.current) < 0.0001 &&
+      Math.abs(skipImpulseRef.current) < 0.0001 &&
+      !isPlayingRef.current
+    ) {
       rafRef.current = null;
       lastTimestampRef.current = null;
       return;
@@ -111,4 +98,34 @@ export function useVinylRotation({
 
     rafRef.current = requestAnimationFrame(tick);
   }
+
+  // Sync target velocity whenever isPlaying changes.
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    targetVelocityRef.current = isPlaying ? degreesPerMs : 0;
+    if (isPlaying || Math.abs(velocityRef.current) > 0.0001) wakeLoop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, degreesPerMs]);
+
+  useEffect(() => {
+    if (skipNonce === lastSkipNonceRef.current) return;
+    lastSkipNonceRef.current = skipNonce;
+    if (skipDirection === "next") {
+      skipImpulseRef.current += degreesPerMs * 1.65;
+    } else if (skipDirection === "previous") {
+      skipImpulseRef.current -= degreesPerMs * 2.15;
+    }
+    if (Math.abs(skipImpulseRef.current) > 0) wakeLoop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipDirection, skipNonce, degreesPerMs]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+        lastTimestampRef.current = null;
+      }
+    };
+  }, []);
 }

@@ -115,3 +115,18 @@
 .mini-view__return:active {
   transform: translate3d(0, 0, 0) scale(0.94);
 }
+
+/* Liquid Glass material pass for mini return control. */
+.mini-view__return {
+  overflow: hidden;
+  background: var(--surface-bg);
+  border-color: var(--surface-border);
+  -webkit-backdrop-filter: var(--surface-backdrop);
+  backdrop-filter: var(--surface-backdrop);
+  box-shadow: var(--surface-shadow);
+}
+
+.mini-view__return > svg {
+  position: relative;
+  z-index: 1;
+}

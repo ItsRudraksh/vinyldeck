@@ -13,8 +13,8 @@ import { motion, useAnimation } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import "./NeedleArm.css";
 
-const NEEDLE_ANGLE_LIFTED = 25;  // degrees: resting, off record
-const NEEDLE_ANGLE_DOWN   = 10;  // degrees: playing, on record
+const NEEDLE_ANGLE_LIFTED = 15; // degrees: resting, off record
+const NEEDLE_ANGLE_DOWN = 4; // degrees: playing, on record
 const LIFT_BEFORE_SKIP_DEG = 30; // degrees: temporary lift on track skip
 
 interface NeedleArmProps {
@@ -61,7 +61,7 @@ export function NeedleArm({ isPlaying, trackKey }: NeedleArmProps) {
     };
 
     doSkipAnimation();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackKey]);
 
   // Normal play/pause toggling
@@ -69,17 +69,19 @@ export function NeedleArm({ isPlaying, trackKey }: NeedleArmProps) {
     const targetAngle = isPlaying ? NEEDLE_ANGLE_DOWN : NEEDLE_ANGLE_LIFTED;
     setIsLifted(!isPlaying);
 
-    controls.start({
-      rotate: targetAngle,
-      transition: { type: "spring", stiffness: 60, damping: 18, mass: 1.2 },
-    }).then(() => {
-      // Phase 3.2: Needle bump only on arm drop (not on lift)
-      if (isPlaying) {
-        setShowBump(true);
-        setTimeout(() => setShowBump(false), 140);
-      }
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    controls
+      .start({
+        rotate: targetAngle,
+        transition: { type: "spring", stiffness: 60, damping: 18, mass: 1.2 },
+      })
+      .then(() => {
+        // Phase 3.2: Needle bump only on arm drop (not on lift)
+        if (isPlaying) {
+          setShowBump(true);
+          setTimeout(() => setShowBump(false), 140);
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying]);
 
   return (
@@ -89,16 +91,33 @@ export function NeedleArm({ isPlaying, trackKey }: NeedleArmProps) {
         animate={controls}
         initial={{ rotate: NEEDLE_ANGLE_LIFTED }}
       >
-        {/* Hinge pivot */}
-        <div className="needle-arm__hinge" />
+        {/* Pivot stack + counterweight */}
+        <div className="needle-arm__pivot-stack" aria-hidden="true">
+          <div className="needle-arm__counterweight" />
+          <div className="needle-arm__base-ring" />
+          <div className="needle-arm__hinge" />
+        </div>
 
-        {/* Arm rod */}
+        {/* Arm wand */}
         <div className="needle-arm__body" />
+        <div className="needle-arm__bend" />
 
         {/* Headshell + cartridge */}
-        <div className={`needle-arm__head${showBump ? " needle-arm__head--bump" : ""}`}>
+        <div
+          className={`needle-arm__head${showBump ? " needle-arm__head--bump" : ""}`}
+        >
+          <div className="needle-arm__headshell-plate" />
+          <div className="needle-arm__cartridge">
+            <span className="needle-arm__stylus" aria-hidden="true" />
+          </div>
+          <div className="needle-arm__screws" aria-hidden="true">
+            <span />
+            <span />
+          </div>
           {/* Phase 3.1: LED — theme-colored via --ui-accent, dimmed when lifted */}
-          <div className={`needle-arm__led${isLifted ? " needle-arm__led--dim" : ""}`} />
+          <div
+            className={`needle-arm__led${isLifted ? " needle-arm__led--dim" : ""}`}
+          />
         </div>
       </motion.div>
     </div>

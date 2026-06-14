@@ -20,8 +20,12 @@ Start media in Spotify, a browser, or VLC. VinylDeck should pick up the active W
   - F: fullscreen
   - M: mini player
   - T: cycle theme
+  - S: settings
+  - A: Art Ambient
   - Escape: exit fullscreen or close settings first
   - Ctrl+Q: explicit quit
+
+Shortcuts can be disabled from Settings -> Other. Escape remains available for Settings/fullscreen escape behavior.
 
 ## Window Modes
 
@@ -32,12 +36,18 @@ Start media in Spotify, a browser, or VLC. VinylDeck should pick up the active W
 
 ## Themes And Settings
 
-VinylDeck includes Noir, Glass, Aurora, Vapor, and Paper themes. Settings persist through the Rust backend and sync across main/mini windows.
+VinylDeck currently exposes two visual shells: Noir and Glass. Older Aurora, Vapor, and Paper saved values are migrated into the current shell/ambient model. Settings persist through the Rust backend and sync across main/mini windows.
 
-Album Art Ambient is intentionally Noir-only. Film Grain, Vinyl Wobble, Lean-Back Mode, Cursor Hide, Idle Timeout, Always On Top, and Window Mode are persisted settings.
+Art Ambient is an optional album-colour glow for the active shell. Film Grain, Vinyl Wobble, Lean-Back Mode, Cursor Hide, Idle Timeout, Always On Top, Window Mode, Keyboard Shortcuts, and Quit To Tray are persisted settings.
+
+Right-click the main player for the custom VinylDeck context menu: playback actions, Art Ambient, fullscreen, mini, Settings, and Quit. In mini mode, the menu keeps mini-safe actions.
+
+Track changes are directional when triggered inside VinylDeck: Next enters from the left and exits right; Previous enters from the right and exits left. The record remains anchored and only receives an in-place rotational skip impulse.
 
 ## V1 Limitations
 
 - This is the V1 development baseline, not the final distribution pass.
+- Version is `0.1.0`.
 - Phase 11 installer validation is deferred.
 - Tray open/mini/quit lifecycle is available. Tray playback controls need SMTC-path revalidation before distribution.
+- Shortcut editing UI, start-with-Windows/autostart, splash screen, and active WebGL vinyl are not implemented.

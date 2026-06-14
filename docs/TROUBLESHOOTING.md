@@ -21,7 +21,11 @@ The backend polls SMTC every 500ms and emits position resyncs periodically. The 
 
 ## App Closes To Tray Instead Of Exiting
 
-This is expected. Use tray Quit or Ctrl+Q to exit the process.
+This is expected while `Quit To Tray` is enabled. Turn it off in Settings -> Other if the window close button should exit the app. Tray Quit and Ctrl+Q always request explicit exit when shortcuts are enabled.
+
+## Keyboard Shortcuts Do Nothing
+
+Check Settings -> Other -> Keyboard Shortcuts. When disabled, all focused-window shortcuts are disabled except Escape for closing Settings or leaving fullscreen.
 
 ## WebView2 Shutdown Log
 
@@ -34,3 +38,7 @@ A benign WebView2 shutdown message was observed during manual lifecycle testing.
 ## Tray Playback Menu Does Not Match In-App SMTC Controls
 
 The in-app controls use `cmd_smtc_*`. The tray playback menu still references the legacy backend media command path. Revalidate and unify this before treating tray playback as distribution-ready.
+
+## WebGL Vinyl Is Not Active
+
+Expected. The WebGL renderer is a dormant experiment and is hardcoded off. The CSS vinyl renderer is the active path.

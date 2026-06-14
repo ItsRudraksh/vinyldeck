@@ -2,12 +2,13 @@ import { invoke, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useVinylDeckStore } from "../playback/store";
 import {
+  ART_AMBIENT_MODE,
   applyVisualMode,
-  isAmbientModeId,
   isLegacyThemeId,
   isThemeId,
   legacyThemeToAmbientMode,
   legacyThemeToShell,
+  normalizeAmbientMode,
   resetAmbientColors,
 } from "../themes/applier";
 import { DEFAULT_SETTINGS, WINDOW_MODES } from "./types";
@@ -32,9 +33,11 @@ export function validateSettings(value: unknown): PersistedSettings {
     ? rawTheme
     : legacyThemeToShell(legacyTheme);
   const legacyArtAmbient = readBoolean(raw.artAmbient, false);
-  const ambientMode: AmbientModeId = isAmbientModeId(raw.ambientMode)
-    ? raw.ambientMode
-    : legacyThemeToAmbientMode(legacyTheme, legacyArtAmbient);
+  const rawAmbientMode = raw.ambientMode;
+  const ambientMode: AmbientModeId =
+    typeof rawAmbientMode === "string"
+      ? normalizeAmbientMode(rawAmbientMode)
+      : legacyThemeToAmbientMode(legacyTheme, legacyArtAmbient);
   const windowMode = isWindowMode(raw.windowMode)
     ? raw.windowMode
     : DEFAULT_SETTINGS.windowMode;
@@ -50,6 +53,11 @@ export function validateSettings(value: unknown): PersistedSettings {
     cursorHide: readBoolean(raw.cursorHide, DEFAULT_SETTINGS.cursorHide),
     idleTimeoutSeconds: readIdleTimeout(raw.idleTimeoutSeconds),
     alwaysOnTop: readBoolean(raw.alwaysOnTop, DEFAULT_SETTINGS.alwaysOnTop),
+    keyboardShortcutsEnabled: readBoolean(
+      raw.keyboardShortcutsEnabled,
+      DEFAULT_SETTINGS.keyboardShortcutsEnabled,
+    ),
+    quitToTray: readBoolean(raw.quitToTray, DEFAULT_SETTINGS.quitToTray),
     windowMode,
   };
 }
@@ -59,18 +67,14 @@ export async function loadSettings(): Promise<PersistedSettings> {
   clearLegacySettingsHandoff();
 
   try {
-    return validateSettings(
-      await invoke<PersistedSettings>("cmd_settings_snapshot"),
-    );
+    return validateSettings(await invoke<PersistedSettings>("cmd_settings_snapshot"));
   } catch (error) {
     console.warn("[Settings] Snapshot failed:", error);
     return DEFAULT_SETTINGS;
   }
 }
 
-export async function commitSettings(
-  patch: SettingsPatch,
-): Promise<PersistedSettings> {
+export async function commitSettings(patch: SettingsPatch): Promise<PersistedSettings> {
   const normalizedPatch = normalizePatch(patch);
 
   if (!isTauri()) {
@@ -95,9 +99,7 @@ export async function resetSettings(): Promise<PersistedSettings> {
     return DEFAULT_SETTINGS;
   }
 
-  return validateSettings(
-    await invoke<PersistedSettings>("cmd_settings_reset"),
-  );
+  return validateSettings(await invoke<PersistedSettings>("cmd_settings_reset"));
 }
 
 export async function subscribeToSettingsChanges(
@@ -113,10 +115,11 @@ export async function subscribeToSettingsChanges(
 function normalizePatch(patch: SettingsPatch): SettingsPatch {
   const next: SettingsPatch = { ...patch };
   if (patch.artAmbient !== undefined && patch.ambientMode === undefined) {
-    next.ambientMode = patch.artAmbient ? "beam" : "off";
+    next.ambientMode = patch.artAmbient ? ART_AMBIENT_MODE : "off";
   }
   if (patch.ambientMode !== undefined) {
-    next.artAmbient = patch.ambientMode !== "off";
+    next.ambientMode = normalizeAmbientMode(patch.ambientMode);
+    next.artAmbient = next.ambientMode !== "off";
   }
   return next;
 }
@@ -129,9 +132,7 @@ function clearLegacySettingsHandoff(): void {
   }
 }
 
-function isWindowMode(
-  value: unknown,
-): value is PersistedSettings["windowMode"] {
+function isWindowMode(value: unknown): value is PersistedSettings["windowMode"] {
   return (
     typeof value === "string" &&
     WINDOW_MODES.includes(value as PersistedSettings["windowMode"])
@@ -149,9 +150,7 @@ function readIdleTimeout(value: unknown): number {
   return Math.min(5, Math.max(1, Math.round(value)));
 }
 
-export function sanitizeSettingsForTheme(
-  settings: PersistedSettings,
-): PersistedSettings {
+export function sanitizeSettingsForTheme(settings: PersistedSettings): PersistedSettings {
   const next = validateSettings(settings);
   if (next.ambientMode === "off") resetAmbientColors();
   return next;

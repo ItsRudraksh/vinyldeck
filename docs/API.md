@@ -66,6 +66,10 @@ V1 in-app playback does not use these commands in Tauri mode. Tray playback menu
 | `cmd_settings_reset` | none | Reset to defaults |
 | `settings-changed` | persisted settings | Backend-approved settings snapshot |
 
+Current persisted settings fields include `theme`, `ambientMode`, `artAmbient`, `vinylWobble`, `filmGrain`, `leanBackMode`, `cursorHide`, `idleTimeoutSeconds`, `alwaysOnTop`, `keyboardShortcutsEnabled`, `quitToTray`, and `windowMode`.
+
+The active shell choices are `noir` and `glass`. Legacy theme values `aurora`, `vapor`, and `paper` are migrated into the current shell/ambient model rather than exposed as live choices.
+
 ## Window And Lifecycle Commands
 
 | Command | Args | Meaning |
@@ -76,3 +80,4 @@ V1 in-app playback does not use these commands in Tauri mode. Tray playback menu
 | `cmd_quit_app` | none | Explicit process quit |
 
 Close button behavior is handled by Rust window events and hides app windows to tray.
+When `quitToTray` is `false`, closing main/mini requests explicit app quit instead.

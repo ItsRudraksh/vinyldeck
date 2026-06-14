@@ -2,15 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  AMBIENT_MODE_IDS,
-  AMBIENT_MODE_LABELS,
-  AMBIENT_MODE_NOTES,
+  ART_AMBIENT_MODE,
   THEME_IDS,
   THEME_LABELS,
   applyVisualMode,
   resetAmbientColors,
 } from "../../lib/themes/applier";
-import type { AmbientModeId, ThemeId } from "../../lib/themes/applier";
+import type { ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
@@ -22,7 +20,7 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "ABOUT"] as const;
+const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "OTHER", "ABOUT"] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 const SHELL_CARD_META: Record<
@@ -40,28 +38,6 @@ const SHELL_CARD_META: Record<
     accent: "#0070d9",
     note: "Liquid display case",
     material: "Refractive glass",
-  },
-};
-
-const AMBIENT_CARD_META: Record<
-  AmbientModeId,
-  { accent: string; gradient: string }
-> = {
-  off: {
-    accent: "#8a8a8a",
-    gradient: "linear-gradient(135deg, #080808, #1a1a1a)",
-  },
-  beam: {
-    accent: "#f1d8b8",
-    gradient: "linear-gradient(135deg, #130f0a, #c99b63)",
-  },
-  caustic: {
-    accent: "#65dcff",
-    gradient: "linear-gradient(135deg, #eaf7ff, #4cbfea)",
-  },
-  aurora: {
-    accent: "#9c62ff",
-    gradient: "linear-gradient(135deg, #18102e, #00cdb8)",
   },
 };
 
@@ -92,9 +68,13 @@ export function Settings({ open, onClose }: SettingsProps) {
     updateBackendSettings({ theme });
   }
 
-  function handleAmbientModeSelect(mode: AmbientModeId) {
-    if (mode === "off") resetAmbientColors();
-    updateBackendSettings({ ambientMode: mode, artAmbient: mode !== "off" });
+  function handleArtAmbientToggle() {
+    const nextMode = ambientMode === "off" ? ART_AMBIENT_MODE : "off";
+    if (nextMode === "off") resetAmbientColors();
+    updateBackendSettings({
+      ambientMode: nextMode,
+      artAmbient: nextMode !== "off",
+    });
   }
 
   function handleWindowModeSelect(mode: WindowMode) {
@@ -227,49 +207,19 @@ export function Settings({ open, onClose }: SettingsProps) {
 
                   <div className="settings-look__section">
                     <div className="settings-look__header">
-                      <h3>Ambient Mode</h3>
-                      <p>Album-reactive light, not another global skin.</p>
+                      <h3>Art Ambient</h3>
+                      <p>
+                        Small album-colour glow using the same palette as the
+                        vinyl pressing.
+                      </p>
                     </div>
-                    <div
-                      className="settings-ambient-grid"
-                      role="radiogroup"
-                      aria-label="Ambient mode"
-                    >
-                      {AMBIENT_MODE_IDS.map((mode) => {
-                        const active = mode === ambientMode;
-                        const meta = AMBIENT_CARD_META[mode];
-
-                        return (
-                          <button
-                            key={mode}
-                            type="button"
-                            role="radio"
-                            aria-checked={active}
-                            aria-label={`${AMBIENT_MODE_LABELS[mode]} ambient mode`}
-                            className={`settings-ambient-card${active ? " settings-ambient-card--active" : ""}`}
-                            onClick={() => handleAmbientModeSelect(mode)}
-                            style={
-                              {
-                                "--settings-ambient-accent": meta.accent,
-                                "--settings-ambient-gradient": meta.gradient,
-                              } as CSSProperties
-                            }
-                          >
-                            <span
-                              className="settings-ambient-card__preview"
-                              aria-hidden="true"
-                            />
-                            <span className="settings-theme-card__copy">
-                              <span className="settings-theme-card__name">
-                                {AMBIENT_MODE_LABELS[mode]}
-                              </span>
-                              <span className="settings-theme-card__note">
-                                {AMBIENT_MODE_NOTES[mode]}
-                              </span>
-                            </span>
-                          </button>
-                        );
-                      })}
+                    <div className="settings-toggle-list settings-toggle-list--compact">
+                      <SettingsToggle
+                        label="Art Ambient"
+                        description="Subtle primary, secondary, and accent glows behind the record. Shortcut: A."
+                        checked={ambientMode !== "off"}
+                        onToggle={handleArtAmbientToggle}
+                      />
                     </div>
                   </div>
                 </div>
@@ -410,25 +360,54 @@ export function Settings({ open, onClose }: SettingsProps) {
                     </div>
                   </div>
                 </div>
+              ) : activeTab === "OTHER" ? (
+                <div className="settings-toggle-list">
+                  <SettingsToggle
+                    label="Keyboard Shortcuts"
+                    description="Use Space, arrows, and single-key actions while VinylDeck is focused."
+                    checked={settings.keyboardShortcutsEnabled}
+                    onToggle={() =>
+                      updateBackendSettings({
+                        keyboardShortcutsEnabled:
+                          !settings.keyboardShortcutsEnabled,
+                      })
+                    }
+                  />
+                  <SettingsToggle
+                    label="Quit To Tray"
+                    description="Keep VinylDeck available from the tray when closing the player window."
+                    checked={settings.quitToTray}
+                    onToggle={() =>
+                      updateBackendSettings({
+                        quitToTray: !settings.quitToTray,
+                      })
+                    }
+                  />
+                </div>
               ) : activeTab === "ABOUT" ? (
                 <div className="settings-about">
                   <p className="settings-about__kicker">VinylDeck</p>
                   <h3>
-                    A cinematic vinyl experience for everything playing on your
-                    computer.
+                    A focused desktop player that turns whatever is playing on
+                    your computer into a living vinyl deck.
                   </h3>
+                  <p className="settings-about__body">
+                    VinylDeck follows your system media session, reacts to album
+                    art, and keeps a beautiful record-player view close by
+                    without taking over your workspace.
+                  </p>
                   <div
                     className="settings-about__grid"
-                    aria-label="Build details"
+                    aria-label="App details"
                   >
-                    <span>Visual Engine</span>
-                    <strong>Pressing Studio</strong>
-                    <span>Shell</span>
-                    <strong>Tauri v2</strong>
-                    <span>Motion</span>
-                    <strong>React 19</strong>
-                    <span>Look</span>
-                    <strong>Noir / Glass + ambient modes</strong>
+                    <span>Version</span>
+                    <strong>0.1.0</strong>
+                    <span>Playback</span>
+                    <strong>System media</strong>
+                    <span>Windows</span>
+                    <strong>Main, fullscreen, mini</strong>
+                    <span>Visuals</span>
+                    <strong>Noir, Glass, Art Ambient</strong>
                   </div>
                   <div className="settings-about__qa">
                     <SettingsToggle

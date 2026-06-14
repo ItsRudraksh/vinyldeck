@@ -1,7 +1,7 @@
 /* ============================================================
-   VinylDeck Theme System — two physical shells + ambient modes
-   Shells: Noir OLED velvet, Glass liquid optical display case.
-   Ambient modes are applied via data-ambient-mode and rendered by AmbientLayer.
+   VinylDeck Theme System — calm reset
+   Shells: Noir OLED velvet, Glass liquid/blurred display case.
+   Ambient: one Art Ambient toggle, implemented as subtle album-colour glow.
    ============================================================ */
 
 :root {
@@ -32,9 +32,13 @@
   --needle-shadow: rgba(0, 0, 0, 0.72);
 
   --ambient-primary: #d8d8d8;
-  --ambient-secondary: #72685f;
-  --ambient-blur: 140px;
-  --ambient-opacity: 0.52;
+  --ambient-secondary: #8f8278;
+  --ambient-accent: #f1efea;
+  --ambient-opacity: 0;
+  --ambient-blur: 58px;
+  --art-orb-size: min(34vw, 430px);
+  --art-orb-blur: 58px;
+  --art-orb-blend: screen;
 
   --ui-bg: rgba(12, 12, 12, 0.76);
   --ui-border: rgba(255, 255, 255, 0.095);
@@ -55,10 +59,11 @@
   --surface-bg: var(--ui-bg);
   --surface-border: var(--ui-border);
   --surface-shadow:
-    0 18px 54px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 18px 54px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --surface-inner-highlight: rgba(255, 255, 255, 0.08);
-  --surface-backdrop: blur(24px) saturate(1.35) contrast(1.02);
-  --surface-specular-opacity: 0.22;
+  --surface-backdrop: blur(22px) saturate(1.25) contrast(1.02);
+  --surface-specular-opacity: 0.2;
   --surface-radius: var(--radius-full);
 
   --room-center-light: rgba(255, 255, 255, 0.02);
@@ -73,11 +78,19 @@
   --room-grain-blend: overlay;
   --room-velvet-opacity: 0.14;
 
-  --ambient-beam-opacity: 0.42;
-  --ambient-reflection-opacity: 0.22;
-  --ambient-caustic-opacity: 0.18;
-  --ambient-glass-orb-opacity: 0.06;
-  --ambient-aurora-opacity: 0.34;
+  --glass-blur: 22px;
+  --glass-bend-opacity: 0.26;
+  --glass-face-opacity: 0.28;
+  --glass-edge-opacity: 0.52;
+  --glass-specular-opacity: 0.22;
+  --glass-face-layer-opacity: 1;
+  --glass-refract-opacity: 0.2;
+  --glass-lens-blur: 8px;
+  --glass-refract-blend: normal;
+  --glass-lens-field:
+    radial-gradient(circle at 24% 20%, rgba(86, 175, 255, 0.24), transparent 26%),
+    radial-gradient(circle at 78% 32%, rgba(255, 205, 235, 0.2), transparent 32%),
+    linear-gradient(135deg, rgba(255,255,255,0.2), rgba(160,210,255,0.12));
 
   --theme-transition: 600ms cubic-bezier(0.25, 0.1, 0.25, 1);
   --spring-curve: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -109,10 +122,11 @@
   --needle-hinge-color: #5e5e5e;
   --needle-shadow: rgba(0, 0, 0, 0.76);
 
-  --ambient-primary: #e8e2dc;
-  --ambient-secondary: #8c7665;
-  --ambient-blur: 140px;
-  --ambient-opacity: 0.46;
+  --ambient-opacity: 0;
+  --ambient-blur: 60px;
+  --art-orb-size: min(41vw, 560px);
+  --art-orb-blur: 72px;
+  --art-orb-blend: screen;
 
   --ui-bg: rgba(7, 7, 7, 0.78);
   --ui-border: rgba(255, 255, 255, 0.075);
@@ -130,40 +144,38 @@
   --glow-radius: 90px;
   --glow-opacity: 0.38;
 
-  --surface-bg: linear-gradient(
-    180deg,
-    rgba(20, 20, 20, 0.78),
-    rgba(5, 5, 5, 0.72)
-  );
-  --surface-border: rgba(255, 255, 255, 0.075);
+  --surface-bg: linear-gradient(180deg, rgba(16, 16, 16, 0.82), rgba(0, 0, 0, 0.86));
+  --surface-border: rgba(255, 255, 255, 0.07);
   --surface-shadow:
-    0 22px 60px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    inset 0 -24px 60px rgba(0, 0, 0, 0.32);
-  --surface-inner-highlight: rgba(255, 255, 255, 0.065);
-  --surface-backdrop: blur(22px) saturate(1.12) contrast(1.04);
-  --surface-specular-opacity: 0.16;
+    0 22px 68px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -24px 56px rgba(0, 0, 0, 0.52);
+  --surface-inner-highlight: rgba(255, 255, 255, 0.06);
+  --surface-backdrop: blur(18px) saturate(1.05) contrast(1.04);
+  --surface-specular-opacity: 0.12;
 
-  --room-center-light: rgba(255, 255, 255, 0.022);
-  --room-floor-light: rgba(255, 255, 255, 0.012);
+  --room-center-light: rgba(255, 255, 255, 0.018);
+  --room-floor-light: rgba(255, 255, 255, 0.008);
   --room-vignette: radial-gradient(
     ellipse at 50% 42%,
-    transparent 23%,
-    rgba(0, 0, 0, 0.58) 69%,
-    rgba(0, 0, 0, 0.98) 100%
+    transparent 24%,
+    rgba(0, 0, 0, 0.62) 69%,
+    rgba(0, 0, 0, 0.985) 100%
   );
   --room-grain-opacity: 0.032;
   --room-grain-blend: overlay;
   --room-velvet-opacity: 0.18;
 
-  --ambient-beam-opacity: 0.42;
-  --ambient-reflection-opacity: 0.18;
-  --ambient-caustic-opacity: 0.14;
-  --ambient-glass-orb-opacity: 0.025;
-  --ambient-aurora-opacity: 0.32;
+  --glass-refract-opacity: 0;
+  --glass-bend-opacity: 0;
+  --glass-face-opacity: 0.07;
+  --glass-edge-opacity: 0.14;
+  --glass-specular-opacity: 0.1;
+  --glass-face-layer-opacity: 1;
 }
 
 [data-theme="glass"] {
-  --bg: #f5f2ea;
+  --bg: #f7f5ee;
   --color-scheme: light;
 
   --font-display: "Manrope", "Inter", system-ui, sans-serif;
@@ -187,13 +199,14 @@
   --needle-hinge-color: #9fb4cf;
   --needle-shadow: rgba(28, 48, 72, 0.38);
 
-  --ambient-primary: #2b86d3;
-  --ambient-secondary: #75d7c8;
-  --ambient-blur: 110px;
-  --ambient-opacity: 0.38;
+  --ambient-opacity: 0;
+  --ambient-blur: 66px;
+  --art-orb-size: min(44vw, 620px);
+  --art-orb-blur: 82px;
+  --art-orb-blend: multiply;
 
-  --ui-bg: rgba(255, 255, 255, 0.48);
-  --ui-border: rgba(60, 88, 120, 0.18);
+  --ui-bg: rgba(255, 255, 255, 0.42);
+  --ui-border: rgba(255, 255, 255, 0.68);
   --ui-text-primary: rgba(22, 27, 34, 0.88);
   --ui-text-secondary: rgba(48, 58, 69, 0.58);
   --ui-accent: #006fd6;
@@ -208,61 +221,49 @@
   --glow-radius: 100px;
   --glow-opacity: 0.36;
 
-  --surface-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.54),
-    rgba(255, 255, 255, 0.24)
-  );
-  --surface-border: rgba(255, 255, 255, 0.72);
+  --surface-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0.12));
+  --surface-border: rgba(255, 255, 255, 0.78);
   --surface-shadow:
-    0 24px 70px rgba(45, 60, 78, 0.19), inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -28px 60px rgba(80, 120, 160, 0.07);
+    0 24px 74px rgba(45, 62, 82, 0.16),
+    0 2px 12px rgba(255, 255, 255, 0.45),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.92),
+    inset -1px -1px 1px rgba(110, 160, 210, 0.18),
+    inset 0 -26px 58px rgba(80, 120, 160, 0.07);
   --surface-inner-highlight: rgba(255, 255, 255, 0.88);
-  --surface-backdrop: blur(28px) saturate(1.55) contrast(1.04);
-  --surface-specular-opacity: 0.36;
+  --surface-backdrop: blur(28px) saturate(1.62) contrast(1.08) brightness(1.02);
+  --surface-specular-opacity: 0.4;
+  --surface-radius: 24px;
 
-  --room-center-light: rgba(255, 255, 255, 0.58);
-  --room-floor-light: rgba(120, 150, 180, 0.16);
+  --room-center-light: rgba(255, 255, 255, 0.6);
+  --room-floor-light: rgba(120, 150, 180, 0.12);
   --room-vignette: radial-gradient(
     ellipse at 50% 42%,
-    transparent 30%,
-    rgba(72, 86, 110, 0.08) 70%,
-    rgba(30, 38, 50, 0.16) 100%
+    transparent 34%,
+    rgba(72, 86, 110, 0.07) 72%,
+    rgba(30, 38, 50, 0.12) 100%
   );
-  --room-grain-opacity: 0.012;
+  --room-grain-opacity: 0.01;
   --room-grain-blend: multiply;
   --room-velvet-opacity: 0;
 
-  --ambient-beam-opacity: 0.24;
-  --ambient-reflection-opacity: 0.34;
-  --ambient-caustic-opacity: 0.32;
-  --ambient-glass-orb-opacity: 0.2;
-  --ambient-aurora-opacity: 0.24;
+  --glass-blur: 28px;
+  --glass-refract-opacity: 0.28;
+  --glass-bend-opacity: 0.32;
+  --glass-face-opacity: 0.28;
+  --glass-edge-opacity: 0.78;
+  --glass-specular-opacity: 0.38;
+  --glass-face-layer-opacity: 0.9;
+  --glass-refract-blend: normal;
 }
 
-/* Ambient-mode root tuning. AmbientLayer also uses mode-specific classes. */
 [data-ambient-mode="off"] {
   --ambient-opacity: 0;
 }
 
 [data-ambient-mode="beam"] {
+  --ambient-opacity: 0.62;
+}
+
+[data-theme="glass"][data-ambient-mode="beam"] {
   --ambient-opacity: 0.46;
-}
-
-[data-ambient-mode="caustic"] {
-  --ambient-opacity: 0.38;
-}
-
-[data-ambient-mode="aurora"] {
-  --ambient-opacity: 0.54;
-}
-
-[data-theme="noir"][data-ambient-mode="aurora"] {
-  --ambient-primary: #734dff;
-  --ambient-secondary: #00cdb8;
-}
-
-[data-theme="glass"][data-ambient-mode="aurora"] {
-  --ambient-primary: #8a7dff;
-  --ambient-secondary: #31c7ce;
 }

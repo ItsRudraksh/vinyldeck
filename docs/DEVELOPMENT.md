@@ -35,7 +35,7 @@ For installer/debug bundle smoke checks:
 npm run tauri build -- --debug
 ```
 
-Phase 10 last passed this full automated checkpoint with 13 frontend tests and 35 Rust tests.
+Phase 10 last passed this full automated checkpoint with 13 frontend tests and 35 Rust tests. The interaction polish pass later raised focused coverage to 20 frontend tests and 39 Rust tests before final consolidation.
 
 ## Important Paths
 
@@ -56,7 +56,10 @@ Phase 10 last passed this full automated checkpoint with 13 frontend tests and 3
 - Preserve the `PlaybackSource` contract so the visual engine stays platform-neutral.
 - In Tauri, backend commands/events are authority for shared state.
 - Keep browser mock behavior working after backend changes.
-- Use transform/opacity-first animation paths; documented exceptions are Aurora and Vapor background-position identity effects.
+- Use transform/opacity-first animation paths. The active app now exposes Noir and Glass shells only; legacy Aurora/Vapor/Paper theme values are migration inputs.
+- Keep the CSS vinyl renderer active. WebGL vinyl is dormant and hard-OFF until a future performance-proven visual pass.
+- Do not restore the vinyl center spindle hole.
+- Track transition rules: next enters from left and exits right; previous enters from right and exits left. Vinyl stays anchored and uses only an in-place rotational skip impulse.
 - Do not repeat completed backend web research; use `.agents/memory/backend-research.md`.
 
 ## Deferred Distribution Work

@@ -26,7 +26,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 ### [x] Stage 2 — Visual Engine with MockSource ✅ COMPLETE
 
 - **Focus:** Build the complete UI with mock data.
-- Global CSS & Themes (5 cinematic themes, CSS custom properties).
+- Global CSS & shell system. Current exposed shells are Noir and Glass; Aurora/Vapor/Paper are legacy-migrated values.
 - VinylRecord, NeedleArm, AmbientLayer, ProgressRing, TrackInfo, Controls.
 - `MockSource` integration and Color Extraction (fast-average-color simple + HSL boost).
 - Ambient bloom: mix-blend-mode: screen, single-color uniform wash.
@@ -43,7 +43,7 @@ _Do not skip ahead. Do not build the media layer before the visual engine looks 
 - User manually approved seamless main/mini playback sync on 2026-06-11.
 - Required settings authority gate before tray is implemented and manually approved as B3.15-B3.21. Final bottom ThemePicker persistence bypass was fixed by routing theme/art-ambient changes through backend `commitSettings()`.
 - Future dynamic state should use backend-owned command/event authority so no frontend window is a long-term state authority.
-- System tray and keyboard shortcuts follow when user starts Backend Phase 4 at B4.1.
+- System tray, focused shortcuts, SMTC integration, and Backend Phase 10 hardening are implemented. Current follow-up work is interaction polish consolidation and docs/memory refresh, with Phase 11 distribution still on hold.
 
 ### [ ] Stage 4 — SMTC Media Integration (Windows)
 

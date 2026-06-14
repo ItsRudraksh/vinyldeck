@@ -9,6 +9,9 @@
 //   - Secondary btn hover: lifts to --ui-text-primary + bg
 
 import { motion, AnimatePresence } from "motion/react";
+import { Kbd } from "../Kbd";
+import { LiquidGlass } from "../LiquidGlass";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../Tooltip";
 import "./Controls.css";
 
 interface ControlsProps {
@@ -105,82 +108,110 @@ export function Controls({
   const canUseSkip = canControl && canSkip;
 
   return (
-    <div className="controls-pill" role="group" aria-label="Playback controls">
+    <LiquidGlass
+      className="controls-pill"
+      contentClassName="controls-pill__content"
+      variant="dock"
+      intensity="strong"
+      role="group"
+      aria-label="Playback controls"
+    >
       {/* ── Previous ── */}
-      <motion.button
-        className="controls-btn-secondary"
-        disabled={!canUseSkip}
-        onClick={onPrevious}
-        aria-label="Previous track"
-        style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
-        whileHover={canUseSkip ? { scale: 1.1 } : {}}
-        whileTap={canUseSkip ? { scale: 0.86 } : {}}
-        transition={{ type: "spring", stiffness: 350, damping: 22 }}
-      >
-        <IconPrev />
-      </motion.button>
+      <Tooltip>
+        <TooltipTrigger>
+          <motion.button
+            className="controls-btn-secondary"
+            disabled={!canUseSkip}
+            onClick={onPrevious}
+            aria-label="Previous track"
+            style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
+            whileHover={canUseSkip ? { scale: 1.1 } : {}}
+            whileTap={canUseSkip ? { scale: 0.86 } : {}}
+            transition={{ type: "spring", stiffness: 350, damping: 22 }}
+          >
+            <IconPrev />
+          </motion.button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Previous <Kbd>Left</Kbd>
+        </TooltipContent>
+      </Tooltip>
 
       {/* ── Play / Pause — primary CTA ── */}
-      <motion.button
-        className={`controls-btn-primary ${isPlaying ? "playing" : "paused"}`}
-        disabled={!canControl}
-        onClick={isPlaying ? onPause : onPlay}
-        aria-label={isPlaying ? "Pause" : "Play"}
-        whileHover={canControl ? { scale: 1.06 } : {}}
-        whileTap={canControl ? { scale: 0.88 } : {}}
-        transition={{ type: "spring", stiffness: 350, damping: 22 }}
-      >
-        {/* Phase 4.4: AnimatePresence icon morph — exits old, enters new */}
-        <AnimatePresence mode="popLayout" initial={false}>
-          {isPlaying ? (
-            <motion.span
-              key="pause"
-              className="controls-icon"
-              variants={iconVariants}
-              initial="exit"
-              animate="enter"
-              exit="exit"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <IconPause />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="play"
-              className="controls-icon"
-              variants={iconVariants}
-              initial="exit"
-              animate="enter"
-              exit="exit"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <IconPlay />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <Tooltip>
+        <TooltipTrigger>
+          <motion.button
+            className={`controls-btn-primary ${isPlaying ? "playing" : "paused"}`}
+            disabled={!canControl}
+            onClick={isPlaying ? onPause : onPlay}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            whileHover={canControl ? { scale: 1.06 } : {}}
+            whileTap={canControl ? { scale: 0.88 } : {}}
+            transition={{ type: "spring", stiffness: 350, damping: 22 }}
+          >
+            {/* Phase 4.4: AnimatePresence icon morph — exits old, enters new */}
+            <AnimatePresence mode="popLayout" initial={false}>
+              {isPlaying ? (
+                <motion.span
+                  key="pause"
+                  className="controls-icon"
+                  variants={iconVariants}
+                  initial="exit"
+                  animate="enter"
+                  exit="exit"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <IconPause />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="play"
+                  className="controls-icon"
+                  variants={iconVariants}
+                  initial="exit"
+                  animate="enter"
+                  exit="exit"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <IconPlay />
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {isPlaying ? "Pause" : "Play"} <Kbd>Space</Kbd>
+        </TooltipContent>
+      </Tooltip>
 
       {/* ── Next ── */}
-      <motion.button
-        className="controls-btn-secondary"
-        disabled={!canUseSkip}
-        onClick={onNext}
-        aria-label="Next track"
-        style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
-        whileHover={canUseSkip ? { scale: 1.1 } : {}}
-        whileTap={canUseSkip ? { scale: 0.86 } : {}}
-        transition={{ type: "spring", stiffness: 350, damping: 22 }}
-      >
-        <IconNext />
-      </motion.button>
-    </div>
+      <Tooltip>
+        <TooltipTrigger>
+          <motion.button
+            className="controls-btn-secondary"
+            disabled={!canUseSkip}
+            onClick={onNext}
+            aria-label="Next track"
+            style={{ opacity: canUseSkip ? 0.65 : 0.35 }}
+            whileHover={canUseSkip ? { scale: 1.1 } : {}}
+            whileTap={canUseSkip ? { scale: 0.86 } : {}}
+            transition={{ type: "spring", stiffness: 350, damping: 22 }}
+          >
+            <IconNext />
+          </motion.button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Next <Kbd>Right</Kbd>
+        </TooltipContent>
+      </Tooltip>
+    </LiquidGlass>
   );
 }
