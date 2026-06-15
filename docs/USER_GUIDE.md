@@ -40,6 +40,11 @@ Controls automatically disable when the active media source does not support tha
 | Fullscreen | Immersive full-window player |
 | Mini | Compact always-on-top player |
 
+<p align="center">
+  <img src="../app-screenshots/16-glass-fullscreen-track2-idle.png" width="400" alt="Fullscreen Mode" />
+  <img src="../app-screenshots/01-mini-noir-playing-controls-visible.png" width="400" alt="Mini Player Mode" />
+</p>
+
 Closing app windows can keep VinylDeck in the tray when Quit To Tray is enabled. Use tray Quit or `Ctrl+Q` for explicit exit.
 
 ## Keyboard Shortcuts
@@ -66,6 +71,10 @@ Start With Windows is opt-in. When enabled, VinylDeck launches automatically aft
 ## Settings
 
 Settings persist across app windows.
+
+<p align="center">
+  <img src="../app-screenshots/13-glass-settings-about.png" width="600" alt="Settings Dialog" />
+</p>
 
 | Section | Options |
 | --- | --- |

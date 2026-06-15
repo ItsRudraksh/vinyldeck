@@ -1,4 +1,7 @@
-<h1 align="center">VinylDeck</h1>
+<h1 align="center">
+  <img src="./app-screenshots/icon.png" width="100" alt="VinylDeck Icon" /><br>
+  VinylDeck
+</h1>
 
 <p align="center">
   <strong>A cinematic vinyl experience for everything playing on your Windows desktop.</strong>
@@ -38,6 +41,17 @@ Built with Tauri, Rust, React, and Windows media integration, VinylDeck is desig
 ## Preview
 
 VinylDeck is a desktop-first visual player, not a streaming service. Start music in your usual app, open VinylDeck, and the active system session becomes the deck.
+
+<p align="center">
+  <img src="./app-screenshots/05-glass-main-playing-full-ui.png" width="800" alt="VinylDeck Glass Theme" />
+</p>
+<p align="center">
+  <img src="./app-screenshots/11-noir-main-playing-full-ui.png" width="800" alt="VinylDeck Noir Theme" />
+</p>
+<p align="center">
+  <img src="./app-screenshots/03-mini-glass-playing.png" width="400" alt="VinylDeck Mini Player" />
+  <img src="./app-screenshots/17-spotify-source-playing.png" width="400" alt="Spotify Integration" />
+</p>
 
 ```mermaid
 flowchart LR
