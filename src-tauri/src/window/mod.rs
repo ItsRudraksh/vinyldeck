@@ -131,9 +131,9 @@ fn show_mini(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-fn window_debug_log(message: &str) {
+fn window_debug_log(_message: &str) {
     #[cfg(debug_assertions)]
-    println!("[VinylDeck window] {message}");
+    println!("[VinylDeck window] {_message}");
 }
 
 #[cfg(test)]

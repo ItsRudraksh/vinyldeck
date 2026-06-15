@@ -17,6 +17,7 @@ interface TrackInfoProps {
   artist: string;
   album?: string;
   direction?: TrackChangeDirection;
+  showTooltip?: boolean;
 }
 
 const slideTransition = {
@@ -41,6 +42,7 @@ export function TrackInfo({
   artist,
   album,
   direction = "unknown",
+  showTooltip = true,
 }: TrackInfoProps) {
   const trackKey = `${track}::${artist}`;
   const isEmpty = !track || track === "Nothing Playing";
@@ -58,6 +60,19 @@ export function TrackInfo({
       opacity: 0,
     },
   };
+
+  const content = (
+    <>
+      {/* Phase 5.1: --font-display, hover bloom via CSS */}
+      <h2 className="track-info__title">{track}</h2>
+
+      {/* Phase 5.1: --font-body, uppercase tracking */}
+      {artist && <p className="track-info__artist">{artist}</p>}
+
+      {/* Phase 5.1: --font-mono, muted stamp */}
+      {album && <p className="track-info__album">{album}</p>}
+    </>
+  );
 
   return (
     <div className="track-info">
@@ -85,19 +100,16 @@ export function TrackInfo({
             exit="exit"
             transition={slideTransition}
           >
-            <Tooltip>
-              <TooltipTrigger className="track-info__tooltip-trigger">
-                {/* Phase 5.1: --font-display, hover bloom via CSS */}
-                <h2 className="track-info__title">{track}</h2>
-
-                {/* Phase 5.1: --font-body, uppercase tracking */}
-                {artist && <p className="track-info__artist">{artist}</p>}
-
-                {/* Phase 5.1: --font-mono, muted stamp */}
-                {album && <p className="track-info__album">{album}</p>}
-              </TooltipTrigger>
-              <TooltipContent>{track}</TooltipContent>
-            </Tooltip>
+            {showTooltip ? (
+              <Tooltip>
+                <TooltipTrigger className="track-info__tooltip-trigger">
+                  {content}
+                </TooltipTrigger>
+                <TooltipContent>{track}</TooltipContent>
+              </Tooltip>
+            ) : (
+              <div className="track-info__tooltip-trigger">{content}</div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

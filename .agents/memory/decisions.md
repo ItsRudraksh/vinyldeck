@@ -54,6 +54,11 @@
 | 2026-06-14 | Vinyl Center | **No center spindle hole** | User requested removing the center dot. Do not restore `.vinyl-hole`; album art should remain unobscured at label center. |
 | 2026-06-14 | Repo Hygiene | **No raw/chat/root prompt/task artifacts in git** | `raw/` is deprecated. Chat exports, root prompt files, root task lists, and `task.md` are local scratch only. `fresh_session_prompt.md` may remain locally but must stay ignored and untracked. Durable context belongs in `.agents/memory/` and docs. |
 | 2026-06-14 | Start With Windows | **Opt-in QOL setting, default OFF** | VinylDeck should not force itself into startup. Users who want a tray-resident companion can enable `startWithWindows`; Rust settings authority syncs the desired state to Tauri autostart. |
+| 2026-06-15 | App Icon Identity | **Half-Light Disc `normal-transparent` is the final V1 icon mark** | User selected the richer Half-Light Disc render after comparing IconForge and normal-v2/VD variants. The complete Tauri icon set was regenerated from that source, including Square/Store/icns/png/mobile scale assets. Windows uses a single installer-safe multi-size `icons/icon.ico`; keep one consistent icon identity across app, taskbar, tray, shortcuts, and installer contexts. |
+| 2026-06-15 | Windows Installer Templates | **Keep tracked WiX/NSIS templates for icon and uninstall behavior** | Tauri defaults did not put `ProductIcon` on every shortcut and did not provide the desired NSIS folder cleanup behavior. `src-tauri/installer/main.wxs` and `installer.nsi` are intentional release assets: MSI shortcuts use `ProductIcon`, NSIS installer/uninstaller use `icons/icon.ico`, NSIS shortcuts use the installed exe icon, and NSIS uninstall can remove app data/settings through its checkbox. If Explorer shows an old exe/shortcut icon while extracted exe resources are correct, treat it as Windows icon cache or a cached old shortcut. |
+| 2026-06-15 | Window Position Persistence | **Reverted from V1 scope** | The attempted `miniWindowPosition` settings path and Tauri `window-state` plugin integration regressed mini-mode behavior. Keep the prior window-mode flow: entering mini builds/shows mini and hides main; returning main destroys mini and restores main. Revisit main/mini position persistence only with a separate proof pass. |
+| 2026-06-15 | Mini Context Menu | **Disabled in mini mode** | Mini is a minimal companion surface. Keep the custom right-click context menu on main only; mini should expose hover controls, keyboard shortcuts, tray behavior, and the return button without an in-window context menu. |
+| 2026-06-15 | Devtools In Release | **Explicitly denied** | Release builds should not expose WebView devtools. Keep `core:webview:deny-internal-toggle-devtools` in capabilities and do not enable Tauri's devtools feature for public builds. |
 
 ---
 
@@ -72,4 +77,4 @@
 
 **NEVER use `--force`, `--yes` combined with destructive scaffold tools, or any flag that overwrites/clears an existing non-empty directory in `c:\Coding\vinyldeck\`.** On 2026-06-08, `npx create-tauri-app . --force` destroyed all pre-existing files. User restored from backup. Always scaffold into a clean temp directory and copy only what is needed.
 
-**Last Updated:** 2026-06-14
+**Last Updated:** 2026-06-15

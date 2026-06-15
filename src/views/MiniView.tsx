@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import {
   currentMonitor,
@@ -7,22 +7,12 @@ import {
 } from "@tauri-apps/api/window";
 import { isTauri } from "@tauri-apps/api/core";
 import { AmbientLayer } from "../components/AmbientLayer";
-import { AppContextMenu } from "../components/AppContextMenu";
 import { Controls } from "../components/Controls";
 import { TrackInfo } from "../components/TrackInfo";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../components/Tooltip";
 import { VinylRecord } from "../components/VinylRecord";
 import { VaporGrid } from "../components/VaporGrid";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
-import { quitApplication } from "../lib/appLifecycle";
-import { canUseSkipControls, canUseTransportControls } from "../lib/playback/capabilities";
-import { commitSettings } from "../lib/settings";
-import {
-  ART_AMBIENT_MODE,
-  applyVisualMode,
-  resetAmbientColors,
-} from "../lib/themes/applier";
 import { setNativeWindowMode } from "../lib/window";
 import {
   EMPTY_PLAYBACK,
@@ -118,83 +108,12 @@ export function MiniView() {
     source?.previous();
   }
 
-  function applyCommittedSettings(nextSettings: typeof settings) {
-    useVinylDeckStore.getState().hydrateSettings(nextSettings);
-    applyVisualMode(nextSettings.theme, nextSettings.ambientMode);
-    if (nextSettings.ambientMode === "off") resetAmbientColors();
-  }
-
-  function handleArtAmbientToggle() {
-    const nextMode = settings.ambientMode === "off" ? ART_AMBIENT_MODE : "off";
-    if (nextMode === "off") resetAmbientColors();
-    void commitSettings({
-      ambientMode: nextMode,
-      artAmbient: nextMode !== "off",
-    })
-      .then(applyCommittedSettings)
-      .catch((error) => {
-        console.warn("[ContextMenu] Art Ambient failed:", error);
-      });
-  }
-
-  const contextMenuActions = useMemo(
-    () => [
-      {
-        id: "play-pause",
-        label: isPlaying ? "Pause" : "Play",
-        kbd: "Space",
-        disabled: !canUseTransportControls(effectivePlayback),
-        onSelect: isPlaying ? handlePause : handlePlay,
-      },
-      {
-        id: "previous",
-        label: "Previous",
-        kbd: "Left",
-        disabled: !canUseSkipControls(effectivePlayback),
-        onSelect: handlePrevious,
-      },
-      {
-        id: "next",
-        label: "Next",
-        kbd: "Right",
-        disabled: !canUseSkipControls(effectivePlayback),
-        onSelect: handleNext,
-      },
-      {
-        id: "art-ambient",
-        label:
-          settings.ambientMode === "off" ? "Art Ambient On" : "Art Ambient Off",
-        kbd: "A",
-        onSelect: handleArtAmbientToggle,
-      },
-      {
-        id: "main",
-        label: "Main Window",
-        kbd: "M",
-        onSelect: () => {
-          void setNativeWindowMode("main");
-        },
-      },
-      {
-        id: "quit",
-        label: "Quit",
-        kbd: "Ctrl Q",
-        destructive: true,
-        onSelect: () => {
-          void quitApplication().catch((error) => {
-            console.warn("[ContextMenu] Quit failed:", error);
-          });
-        },
-      },
-    ],
-    [effectivePlayback, isPlaying, settings.ambientMode],
-  );
-
   return (
     <main
       className="mini-view"
       onMouseMove={revealControls}
       onMouseDown={handleMouseDown}
+      onContextMenu={(event) => event.preventDefault()}
       onTouchStart={revealControls}
     >
       <AmbientLayer
@@ -205,20 +124,15 @@ export function MiniView() {
       <VaporGrid />
 
       <section className="mini-view__centerpiece" aria-label="Mini player">
-        <Tooltip maxVisibleMs={1800}>
-          <TooltipTrigger>
-            <VinylRecord
-              isPlaying={isPlaying}
-              vinylWobble={settings.vinylWobble}
-              artworkDataUrl={artworkDataUrl}
-              trackTitle={effectivePlayback.track}
-              size={172}
-              trackChangeDirection={trackChangeDirection}
-              trackChangeNonce={trackChangeNonce}
-            />
-          </TooltipTrigger>
-          <TooltipContent>Drag to seek</TooltipContent>
-        </Tooltip>
+        <VinylRecord
+          isPlaying={isPlaying}
+          vinylWobble={settings.vinylWobble}
+          artworkDataUrl={artworkDataUrl}
+          trackTitle={effectivePlayback.track}
+          size={172}
+          trackChangeDirection={trackChangeDirection}
+          trackChangeNonce={trackChangeNonce}
+        />
       </section>
 
       <div className="mini-view__track">
@@ -227,6 +141,7 @@ export function MiniView() {
           artist={effectivePlayback.artist}
           album={effectivePlayback.album}
           direction={trackChangeDirection}
+          showTooltip={false}
         />
       </div>
 
@@ -241,16 +156,14 @@ export function MiniView() {
           onPause={handlePause}
           onNext={handleNext}
           onPrevious={handlePrevious}
+          showTooltips={false}
         />
       </div>
-
-      <AppContextMenu actions={contextMenuActions} />
 
       <button
         className={`mini-view__return${controlsVisible ? " mini-view__return--visible" : ""}`}
         type="button"
         aria-label="Return to main window"
-        title="Return to main window"
         onClick={(event) => {
           event.stopPropagation();
           void setNativeWindowMode("main");
