@@ -1,6 +1,6 @@
 # VinylDeck 0.1.0 Release Notes
 
-VinylDeck `0.1.0` is the current Windows desktop MVP baseline. Release installers have been built and smoke-tested on Windows.
+VinylDeck `0.1.0` is the first public release for Windows desktop. Ready-to-use MSI and NSIS installers are available on the GitHub Releases page.
 
 ## Included
 

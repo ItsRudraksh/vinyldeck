@@ -132,7 +132,7 @@ Shortcuts can be turned off in Settings. Escape remains available for closing Se
 
 ## Project Status
 
-VinylDeck is in an active Windows desktop MVP track. The current repository is version `0.1.0`; installer-grade release validation is still separate from day-to-day development.
+VinylDeck is actively developed for Windows. The current version is `0.1.0`. Ready-to-use installers are available on the GitHub Releases page.
 
 ## License
 
