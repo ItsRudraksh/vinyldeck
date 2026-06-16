@@ -1,4 +1,5 @@
 [build]
+  base = "landing"
   command = "npm run build"
   publish = "dist"
 
