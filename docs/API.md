@@ -84,4 +84,4 @@ The active shell choices are `noir` and `glass`. Legacy theme values `aurora`, `
 Close button behavior is handled by Rust window events and hides app windows to tray.
 When `quitToTray` is `false`, closing main/mini requests explicit app quit instead.
 When `startWithWindows` changes, the backend syncs the desired state to the Tauri autostart plugin.
-Mini mode creates a separate transparent-capable, frameless, always-on-top WebView window. It is resizable with a minimum inner size of `140x140`; entering main/fullscreen destroys the Mini window.
+Mini mode creates a separate transparent-capable, frameless, always-on-top WebView window. It starts at `280x280`, can shrink down to `140x140`, and cannot expand beyond the original `280x280` square; entering main/fullscreen destroys the Mini window.

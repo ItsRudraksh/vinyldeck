@@ -1,6 +1,6 @@
 [package]
 name = "vinyldeck"
-version = "0.1.0"
+version = "0.1.1"
 description = "A cinematic vinyl experience for everything playing on your computer."
 authors = ["VinylDeck"]
 edition = "2021"

@@ -1,6 +1,6 @@
-# VinylDeck 0.1.0 Release Notes
+# VinylDeck 0.1.1 Release Notes
 
-VinylDeck `0.1.0` is the first public release for Windows desktop. Ready-to-use MSI and NSIS installers are available on the GitHub Releases page.
+VinylDeck `0.1.1` is the current Windows desktop release. Ready-to-use MSI and NSIS installers are available on the GitHub Releases page.
 
 ## Included
 
@@ -23,11 +23,19 @@ VinylDeck `0.1.0` is the first public release for Windows desktop. Ready-to-use 
 
 | Item | Value |
 | --- | --- |
-| App version | `0.1.0` |
+| App version | `0.1.1` |
 | Package name | `vinyldeck` |
 | Product name | `VinylDeck` |
 | Tauri identifier | `com.vinyldeck.app` |
 | Bundle targets | MSI, NSIS |
+
+## 0.1.1 Highlights
+
+- Mini player can shrink from `280x280` down to `140x140` and cannot expand beyond the original square.
+- Mini vinyl and hover controls scale proportionally while shrinking.
+- Track text fades away at compact Mini sizes so the record remains clear.
+- Optional Mini Transparency uses native Windows Acrylic behind the Mini player.
+- Download links now point at the `v0.1.1` GitHub release assets.
 
 ## Verification
 
@@ -42,7 +50,7 @@ npm run test:rust
 npm run tauri build -- --debug
 ```
 
-Release installers built on 2026-06-14:
+Original `0.1.0` release installers built on 2026-06-14:
 
 | Installer | Size | Notes |
 | --- | ---: | --- |
@@ -69,7 +77,7 @@ Before a public packaged release, complete or recheck:
 - tray playback command-path revalidation
 - code signing to replace Windows UAC `Publisher: Unknown`
 
-## Out Of Scope For 0.1.0
+## Out Of Scope
 
 - shortcut editing UI
 - splash screen

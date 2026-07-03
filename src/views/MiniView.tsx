@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { MouseEvent } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import {
   currentMonitor,
   getCurrentWindow,
@@ -30,6 +30,9 @@ const MINI_CONTROLS_HIDE_MS = 1400;
 const MINI_SNAP_THRESHOLD_PX = 28;
 const MINI_SNAP_MARGIN_PX = 8;
 const MINI_SNAP_SETTLE_MS = 180;
+const MINI_BASE_SIZE = 280;
+const MINI_BASE_VINYL_SIZE = 172;
+const MINI_COMPACT_TRACK_THRESHOLD = 218;
 
 /** Class toggled on <html> only inside the Mini window's own document, so it
  * never leaks into Main/Fullscreen (separate WebView, separate DOM). Lets
@@ -59,6 +62,23 @@ export function MiniView() {
   const artworkDataUrl = devForceEmpty ? null : rawArtworkDataUrl;
   const [controlsVisible, setControlsVisible] = useState(false);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const miniMetrics = useMiniResizeMetrics();
+  const miniStyle = {
+    "--mini-scale": miniMetrics.scale,
+    "--mini-track-offset": `${100 * miniMetrics.scale}px`,
+    "--mini-track-width": `${230 * miniMetrics.scale}px`,
+    "--mini-track-gutter": `${26 * miniMetrics.scale}px`,
+    "--mini-track-scale": 0.72 * miniMetrics.scale,
+    "--mini-track-compact-scale": 0.64 * miniMetrics.scale,
+    "--mini-controls-scale": 0.68 * miniMetrics.scale,
+    "--mini-control-bottom": `${13 * miniMetrics.scale}px`,
+    "--mini-control-translate": `${14 * miniMetrics.scale}px`,
+    "--mini-control-pad-y": `${8 * miniMetrics.scale}px`,
+    "--mini-control-pad-x": `${14 * miniMetrics.scale}px`,
+    "--mini-return-size": `${30 * miniMetrics.scale}px`,
+    "--mini-return-icon-size": `${16 * miniMetrics.scale}px`,
+    "--mini-return-offset": `${10 * miniMetrics.scale}px`,
+  } as CSSProperties;
 
   function revealControls() {
     setControlsVisible(true);
@@ -129,7 +149,8 @@ export function MiniView() {
 
   return (
     <main
-      className={`mini-view${isTransparent ? " mini-view--transparent" : ""}`}
+      className={`mini-view${isTransparent ? " mini-view--transparent" : ""}${miniMetrics.isCompact ? " mini-view--compact" : ""}`}
+      style={miniStyle}
       onMouseMove={revealControls}
       onMouseDown={handleMouseDown}
       onContextMenu={(event) => event.preventDefault()}
@@ -148,7 +169,7 @@ export function MiniView() {
           vinylWobble={settings.vinylWobble}
           artworkDataUrl={artworkDataUrl}
           trackTitle={effectivePlayback.track}
-          size={172}
+          size={miniMetrics.vinylSize}
           trackChangeDirection={trackChangeDirection}
           trackChangeNonce={trackChangeNonce}
         />
@@ -206,6 +227,41 @@ export function MiniView() {
       </button>
     </main>
   );
+}
+
+function useMiniResizeMetrics() {
+  const [metrics, setMetrics] = useState(readMiniResizeMetrics);
+
+  useEffect(() => {
+    function updateMetrics() {
+      setMetrics(readMiniResizeMetrics());
+    }
+
+    updateMetrics();
+    window.addEventListener("resize", updateMetrics);
+    return () => window.removeEventListener("resize", updateMetrics);
+  }, []);
+
+  return metrics;
+}
+
+function readMiniResizeMetrics() {
+  if (typeof window === "undefined") {
+    return {
+      scale: 1,
+      vinylSize: MINI_BASE_VINYL_SIZE,
+      isCompact: false,
+    };
+  }
+
+  const side = Math.min(window.innerWidth, window.innerHeight, MINI_BASE_SIZE);
+  const scale = side / MINI_BASE_SIZE;
+
+  return {
+    scale,
+    vinylSize: Math.round(MINI_BASE_VINYL_SIZE * scale),
+    isCompact: side < MINI_COMPACT_TRACK_THRESHOLD,
+  };
 }
 
 function useMiniCornerSnap() {

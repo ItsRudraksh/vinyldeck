@@ -362,7 +362,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                   <div className="settings-toggle-list settings-toggle-list--compact">
                     <SettingsToggle
                       label="Mini Transparency"
-                      description="Mini only. Blurs your desktop through the player using Windows Acrylic; the vinyl and controls float over it. Mini is also freely resizable to any size."
+                      description="Mini only. Blurs your desktop through the player using Windows Acrylic; the vinyl and controls float over it. Mini can shrink from its 280px square down to a compact size."
                       checked={settings.miniTransparentMode}
                       onToggle={() =>
                         updateBackendSettings({

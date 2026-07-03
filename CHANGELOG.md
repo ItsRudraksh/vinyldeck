@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+## 0.1.1 - 2026-07-03
+
 ### Changed
 
 - Reframed public documentation so `README.md` and user-facing docs describe VinylDeck as a product instead of an internal progress report.
 - Moved implementation status language into maintainer and release documentation where it belongs.
+- Mini player is now shrink-resizable from `280x280` down to `140x140`, with proportional vinyl/control scaling and compact track text fade-out.
 
 ### Added
 

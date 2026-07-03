@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use tauri::{
     window::{Effect, EffectsBuilder},
-    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+    AppHandle, LogicalSize, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 
 use crate::settings::SettingsState;
@@ -10,10 +10,11 @@ use crate::settings::SettingsState;
 pub(crate) const MAIN_LABEL: &str = "main";
 pub(crate) const MINI_LABEL: &str = "mini";
 
-/// Mini is freely resizable to any size the user drags it to. This is only a
-/// floor so the window can't be dragged down to nothing.
+/// Mini starts at the approved 280px square and can only shrink from there.
 const MINI_MIN_WIDTH: f64 = 140.0;
 const MINI_MIN_HEIGHT: f64 = 140.0;
+const MINI_MAX_WIDTH: f64 = 280.0;
+const MINI_MAX_HEIGHT: f64 = 280.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum WindowMode {
@@ -108,13 +109,14 @@ async fn show_mini(app: &AppHandle) -> Result<(), String> {
     let mini = match app.get_webview_window(MINI_LABEL) {
         Some(window) => {
             window_debug_log("show_mini: reusing existing mini window");
+            apply_mini_resize_bounds(&window);
             apply_mini_transparency(&window, transparent);
             window
         }
         None => {
             window_debug_log("show_mini: building mini window at app URL index.html");
 
-            // Mini is always created resizable (to any size, floor only) and
+            // Mini is always created shrink-resizable and
             // always created transparent-capable so the Mini Transparency
             // setting can be toggled at runtime without recreating the
             // window. When the setting is off, opaque CSS in MiniView paints
@@ -124,6 +126,7 @@ async fn show_mini(app: &AppHandle) -> Result<(), String> {
                     .title("VinylDeck Mini")
                     .inner_size(280.0, 280.0)
                     .min_inner_size(MINI_MIN_WIDTH, MINI_MIN_HEIGHT)
+                    .max_inner_size(MINI_MAX_WIDTH, MINI_MAX_HEIGHT)
                     .resizable(true)
                     .decorations(false)
                     .transparent(true)
@@ -155,6 +158,18 @@ async fn show_mini(app: &AppHandle) -> Result<(), String> {
     window_debug_log("show_mini: focused");
 
     Ok(())
+}
+
+fn apply_mini_resize_bounds(window: &WebviewWindow) {
+    let min_size = LogicalSize::new(MINI_MIN_WIDTH, MINI_MIN_HEIGHT);
+    let max_size = LogicalSize::new(MINI_MAX_WIDTH, MINI_MAX_HEIGHT);
+
+    if let Err(error) = window.set_min_size(Some(min_size)) {
+        eprintln!("[VinylDeck window] failed to apply mini min size: {error}");
+    }
+    if let Err(error) = window.set_max_size(Some(max_size)) {
+        eprintln!("[VinylDeck window] failed to apply mini max size: {error}");
+    }
 }
 
 /// Applies or clears the Mini-only Acrylic blur-through effect on an
