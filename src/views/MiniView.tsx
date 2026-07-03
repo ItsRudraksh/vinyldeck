@@ -31,6 +31,12 @@ const MINI_SNAP_THRESHOLD_PX = 28;
 const MINI_SNAP_MARGIN_PX = 8;
 const MINI_SNAP_SETTLE_MS = 180;
 
+/** Class toggled on <html> only inside the Mini window's own document, so it
+ * never leaks into Main/Fullscreen (separate WebView, separate DOM). Lets
+ * global.css punch the body/root background fully transparent so the native
+ * Windows Acrylic effect behind the WebView is visible. */
+const MINI_TRANSPARENT_HTML_CLASS = "mini-transparent-active";
+
 export function MiniView() {
   const playback = useVinylDeckStore(selectPlayback);
   const rawIsPlaying = useVinylDeckStore(selectIsPlaying);
@@ -44,6 +50,7 @@ export function MiniView() {
   );
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const settings = useVinylDeckStore((s) => s.settings);
+  const isTransparent = settings.miniTransparentMode;
 
   useKeyboardShortcuts({ renderMode: "mini" });
 
@@ -84,6 +91,18 @@ export function MiniView() {
     };
   }, []);
 
+  // Mini Transparency is exclusive to this window: toggle a class on this
+  // document's <html> so global.css can drop body/#root to fully transparent
+  // while the setting is on, revealing the native Acrylic effect applied by
+  // the Rust backend. Always cleaned up on unmount/toggle-off.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle(MINI_TRANSPARENT_HTML_CLASS, isTransparent);
+    return () => {
+      root.classList.remove(MINI_TRANSPARENT_HTML_CLASS);
+    };
+  }, [isTransparent]);
+
   useColorExtraction(artworkDataUrl, {
     ambientEnabled: settings.ambientMode !== "off",
     seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
@@ -110,7 +129,7 @@ export function MiniView() {
 
   return (
     <main
-      className="mini-view"
+      className={`mini-view${isTransparent ? " mini-view--transparent" : ""}`}
       onMouseMove={revealControls}
       onMouseDown={handleMouseDown}
       onContextMenu={(event) => event.preventDefault()}

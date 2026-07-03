@@ -10,6 +10,7 @@
 ### Added
 
 - Opt-in Start With Windows setting backed by Tauri autostart.
+- Resizable Mini player window with optional Mini Transparency backed by native Windows Acrylic.
 
 ### Verified
 

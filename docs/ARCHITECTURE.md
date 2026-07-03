@@ -100,7 +100,7 @@ flowchart LR
   Zustand --> Theme["CSS theme application"]
 ```
 
-Rust clamps and normalizes settings before persistence. Frontend validation is defensive only; WebViews are views/controllers, not durable storage authorities.
+Rust clamps and normalizes settings before persistence. Frontend validation is defensive only; WebViews are views/controllers, not durable storage authorities. Mini Transparency is part of the same Rust-owned settings contract: changing `miniTransparentMode` persists the value and, if Mini is open, immediately applies or clears the native Acrylic window effect.
 
 ## Window And Lifecycle Model
 
@@ -117,12 +117,12 @@ stateDiagram-v2
   HiddenTray --> [*]: tray quit / Ctrl+Q
 ```
 
-Main and fullscreen reuse the `main` window. Mini is a separate always-on-top window. Close requests hide to tray; explicit quit destroys windows and exits.
+Main and fullscreen reuse the `main` window. Mini is a separate frameless, transparent-capable, always-on-top WebView window. It is freely resizable above a small `140x140` floor, can opt into native Windows Acrylic blur-through through `miniTransparentMode`, and is destroyed when returning to main/fullscreen. Close requests hide to tray; explicit quit destroys windows and exits.
 
 ## Implementation Boundaries
 
 - Real in-app playback uses SMTC through `cmd_smtc_*`.
 - Browser mode remains mock-only by design.
-- Shortcut editing UI, autostart/start-with-Windows, and splash screen are not implemented.
+- Shortcut editing UI and splash screen are not implemented.
 - Public installer validation is tracked separately from architecture work.
 - Tray playback menu code still uses the older backend media command path and should be unified with SMTC before distribution-grade release validation.

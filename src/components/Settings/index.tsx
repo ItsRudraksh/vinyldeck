@@ -286,7 +286,7 @@ export function Settings({ open, onClose }: SettingsProps) {
                                   ? "Native shell"
                                   : mode === "fullscreen"
                                     ? "Lean-back view"
-                                    : "280px widget"}
+                                    : "Resizable widget"}
                               </span>
                             </span>
                           </button>
@@ -358,6 +358,18 @@ export function Settings({ open, onClose }: SettingsProps) {
                       <span>3s</span>
                       <span>5s</span>
                     </div>
+                  </div>
+                  <div className="settings-toggle-list settings-toggle-list--compact">
+                    <SettingsToggle
+                      label="Mini Transparency"
+                      description="Mini only. Blurs your desktop through the player using Windows Acrylic; the vinyl and controls float over it. Mini is also freely resizable to any size."
+                      checked={settings.miniTransparentMode}
+                      onToggle={() =>
+                        updateBackendSettings({
+                          miniTransparentMode: !settings.miniTransparentMode,
+                        })
+                      }
+                    />
                   </div>
                 </div>
               ) : activeTab === "OTHER" ? (

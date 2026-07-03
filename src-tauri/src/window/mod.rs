@@ -1,9 +1,19 @@
 use std::str::FromStr;
 
-use tauri::{AppHandle, Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri::{
+    window::{Effect, EffectsBuilder},
+    AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
+};
+
+use crate::settings::SettingsState;
 
 pub(crate) const MAIN_LABEL: &str = "main";
 pub(crate) const MINI_LABEL: &str = "mini";
+
+/// Mini is freely resizable to any size the user drags it to. This is only a
+/// floor so the window can't be dragged down to nothing.
+const MINI_MIN_WIDTH: f64 = 140.0;
+const MINI_MIN_HEIGHT: f64 = 140.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum WindowMode {
@@ -28,7 +38,7 @@ impl FromStr for WindowMode {
 #[tauri::command]
 pub async fn cmd_set_window_mode(app: AppHandle, mode: String) -> Result<(), String> {
     window_debug_log(&format!("cmd_set_window_mode requested: {mode}"));
-    set_window_mode(&app, WindowMode::from_str(&mode)?)
+    set_window_mode(&app, WindowMode::from_str(&mode)?).await
 }
 
 #[tauri::command]
@@ -44,11 +54,11 @@ pub fn cmd_set_always_on_top(app: AppHandle, enabled: bool) -> Result<(), String
     Ok(())
 }
 
-pub(crate) fn set_window_mode(app: &AppHandle, mode: WindowMode) -> Result<(), String> {
+pub(crate) async fn set_window_mode(app: &AppHandle, mode: WindowMode) -> Result<(), String> {
     match mode {
         WindowMode::Main => show_main(app),
         WindowMode::Fullscreen => show_fullscreen(app),
-        WindowMode::Mini => show_mini(app),
+        WindowMode::Mini => show_mini(app).await,
     }
 }
 
@@ -90,25 +100,41 @@ fn show_fullscreen(app: &AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-fn show_mini(app: &AppHandle) -> Result<(), String> {
+async fn show_mini(app: &AppHandle) -> Result<(), String> {
     window_debug_log("show_mini: start");
+
+    let transparent = should_apply_mini_transparency(app).await;
 
     let mini = match app.get_webview_window(MINI_LABEL) {
         Some(window) => {
             window_debug_log("show_mini: reusing existing mini window");
+            apply_mini_transparency(&window, transparent);
             window
         }
         None => {
             window_debug_log("show_mini: building mini window at app URL index.html");
-            WebviewWindowBuilder::new(app, MINI_LABEL, WebviewUrl::App("index.html".into()))
-                .title("VinylDeck Mini")
-                .inner_size(280.0, 280.0)
-                .resizable(false)
-                .decorations(false)
-                .always_on_top(true)
-                .skip_taskbar(true)
-                .build()
-                .map_err(|error| error.to_string())?
+
+            // Mini is always created resizable (to any size, floor only) and
+            // always created transparent-capable so the Mini Transparency
+            // setting can be toggled at runtime without recreating the
+            // window. When the setting is off, opaque CSS in MiniView paints
+            // over the transparency so nothing changes visually.
+            let mut builder =
+                WebviewWindowBuilder::new(app, MINI_LABEL, WebviewUrl::App("index.html".into()))
+                    .title("VinylDeck Mini")
+                    .inner_size(280.0, 280.0)
+                    .min_inner_size(MINI_MIN_WIDTH, MINI_MIN_HEIGHT)
+                    .resizable(true)
+                    .decorations(false)
+                    .transparent(true)
+                    .always_on_top(true)
+                    .skip_taskbar(true);
+
+            if transparent {
+                builder = builder.effects(EffectsBuilder::new().effect(Effect::Acrylic).build());
+            }
+
+            builder.build().map_err(|error| error.to_string())?
         }
     };
     window_debug_log("show_mini: mini window ready");
@@ -129,6 +155,34 @@ fn show_mini(app: &AppHandle) -> Result<(), String> {
     window_debug_log("show_mini: focused");
 
     Ok(())
+}
+
+/// Applies or clears the Mini-only Acrylic blur-through effect on an
+/// already-built Mini window. Safe to call any time the Mini Transparency
+/// setting changes, whether or not Mini currently exists (callers should
+/// check `get_webview_window` first).
+pub(crate) fn apply_mini_transparency(window: &WebviewWindow, enabled: bool) {
+    if enabled {
+        if let Err(error) =
+            window.set_effects(EffectsBuilder::new().effect(Effect::Acrylic).build())
+        {
+            eprintln!("[VinylDeck window] failed to apply mini acrylic effect: {error}");
+        }
+    } else if let Err(error) = window.set_effects(None) {
+        eprintln!("[VinylDeck window] failed to clear mini acrylic effect: {error}");
+    }
+}
+
+/// Reads the persisted Mini Transparency setting. This is called from inside
+/// an already-async command/task (`cmd_set_window_mode`, the tray's spawned
+/// task), so it awaits the settings snapshot directly instead of using
+/// `tauri::async_runtime::block_on`, which would panic with "Cannot start a
+/// runtime from within a runtime" in that context.
+async fn should_apply_mini_transparency(app: &AppHandle) -> bool {
+    match app.try_state::<SettingsState>() {
+        Some(state) => state.snapshot().await.mini_transparent_mode,
+        None => false,
+    }
 }
 
 fn window_debug_log(_message: &str) {

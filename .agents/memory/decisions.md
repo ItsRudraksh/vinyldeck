@@ -59,6 +59,7 @@
 | 2026-06-15 | Window Position Persistence | **Reverted from V1 scope** | The attempted `miniWindowPosition` settings path and Tauri `window-state` plugin integration regressed mini-mode behavior. Keep the prior window-mode flow: entering mini builds/shows mini and hides main; returning main destroys mini and restores main. Revisit main/mini position persistence only with a separate proof pass. |
 | 2026-06-15 | Mini Context Menu | **Disabled in mini mode** | Mini is a minimal companion surface. Keep the custom right-click context menu on main only; mini should expose hover controls, keyboard shortcuts, tray behavior, and the return button without an in-window context menu. |
 | 2026-06-15 | Devtools In Release | **Explicitly denied** | Release builds should not expose WebView devtools. Keep `core:webview:deny-internal-toggle-devtools` in capabilities and do not enable Tauri's devtools feature for public builds. |
+| 2026-07-03 | Mini Transparency | **Mini-only Acrylic mode, default OFF** | Mini is a separate transparent-capable Tauri WebView and may apply native Windows Acrylic when `miniTransparentMode` is enabled. The Mini document toggles transparent backgrounds only in its own WebView; main/fullscreen stay opaque. Mini is freely resizable above a `140x140` floor. |
 
 ---
 
@@ -77,4 +78,4 @@
 
 **NEVER use `--force`, `--yes` combined with destructive scaffold tools, or any flag that overwrites/clears an existing non-empty directory in `c:\Coding\vinyldeck\`.** On 2026-06-08, `npx create-tauri-app . --force` destroyed all pre-existing files. User restored from backup. Always scaffold into a clean temp directory and copy only what is needed.
 
-**Last Updated:** 2026-06-15
+**Last Updated:** 2026-07-03

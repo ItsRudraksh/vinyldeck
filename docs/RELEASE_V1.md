@@ -8,10 +8,11 @@ VinylDeck `0.1.0` is the first public release for Windows desktop. Ready-to-use 
 - React 19 visual engine
 - Real Windows SMTC media snapshots
 - In-app play/pause, previous, next, and seek commands when supported
-- Main, fullscreen, and mini-player windows
+- Main, fullscreen, and resizable mini-player windows
 - Tray lifecycle with explicit quit
 - Backend-owned persisted settings
 - Opt-in Start With Windows setting
+- Optional Mini Transparency using native Windows Acrylic
 - Noir and Glass visual shells
 - Album-art ambient color extraction
 - Animated CSS vinyl deck with physical tonearm

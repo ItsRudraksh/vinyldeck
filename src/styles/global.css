@@ -511,3 +511,16 @@ img {
   box-shadow: 0 0 12px
     color-mix(in srgb, var(--ambient-primary) 60%, transparent);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Mini Transparency — Mini-only Acrylic blur-through mode.
+   Scoped to `html.mini-transparent-active`, which MiniView.tsx only
+   ever sets on its own window's document (Main/Fullscreen are a
+   separate WebView/DOM and never receive this class).
+   ═══════════════════════════════════════════════════════════════ */
+
+html.mini-transparent-active,
+html.mini-transparent-active body,
+html.mini-transparent-active #root {
+  background: transparent !important;
+}

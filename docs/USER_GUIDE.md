@@ -38,12 +38,14 @@ Controls automatically disable when the active media source does not support tha
 | --- | --- |
 | Main | Standard VinylDeck desktop window |
 | Fullscreen | Immersive full-window player |
-| Mini | Compact always-on-top player |
+| Mini | Resizable always-on-top player |
 
 <p align="center">
   <img src="../app-screenshots/16-glass-fullscreen-track2-idle.png" width="400" alt="Fullscreen Mode" />
   <img src="../app-screenshots/01-mini-noir-playing-controls-visible.png" width="400" alt="Mini Player Mode" />
 </p>
+
+Mini can be resized freely; VinylDeck only keeps a small minimum size so the window cannot collapse to nothing. Turn on Mini Transparency in Settings -> Display to let Windows Acrylic blur your desktop through the Mini player while the vinyl, track text, and hover controls stay readable.
 
 Closing app windows can keep VinylDeck in the tray when Quit To Tray is enabled. Use tray Quit or `Ctrl+Q` for explicit exit.
 
@@ -80,7 +82,7 @@ Settings persist across app windows.
 | --- | --- |
 | Look | Noir and Glass visual shells |
 | Vinyl | Vinyl wobble, film grain, album-art ambient lighting |
-| Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout |
+| Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout, Mini Transparency |
 | Other | Keyboard Shortcuts, Quit To Tray, Start With Windows |
 | About | App identity and build information |
 

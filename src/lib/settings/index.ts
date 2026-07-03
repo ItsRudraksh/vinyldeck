@@ -63,6 +63,10 @@ export function validateSettings(value: unknown): PersistedSettings {
       DEFAULT_SETTINGS.startWithWindows,
     ),
     windowMode,
+    miniTransparentMode: readBoolean(
+      raw.miniTransparentMode,
+      DEFAULT_SETTINGS.miniTransparentMode,
+    ),
   };
 }
 
@@ -71,14 +75,18 @@ export async function loadSettings(): Promise<PersistedSettings> {
   clearLegacySettingsHandoff();
 
   try {
-    return validateSettings(await invoke<PersistedSettings>("cmd_settings_snapshot"));
+    return validateSettings(
+      await invoke<PersistedSettings>("cmd_settings_snapshot"),
+    );
   } catch (error) {
     console.warn("[Settings] Snapshot failed:", error);
     return DEFAULT_SETTINGS;
   }
 }
 
-export async function commitSettings(patch: SettingsPatch): Promise<PersistedSettings> {
+export async function commitSettings(
+  patch: SettingsPatch,
+): Promise<PersistedSettings> {
   const normalizedPatch = normalizePatch(patch);
 
   if (!isTauri()) {
@@ -103,7 +111,9 @@ export async function resetSettings(): Promise<PersistedSettings> {
     return DEFAULT_SETTINGS;
   }
 
-  return validateSettings(await invoke<PersistedSettings>("cmd_settings_reset"));
+  return validateSettings(
+    await invoke<PersistedSettings>("cmd_settings_reset"),
+  );
 }
 
 export async function subscribeToSettingsChanges(
@@ -136,7 +146,9 @@ function clearLegacySettingsHandoff(): void {
   }
 }
 
-function isWindowMode(value: unknown): value is PersistedSettings["windowMode"] {
+function isWindowMode(
+  value: unknown,
+): value is PersistedSettings["windowMode"] {
   return (
     typeof value === "string" &&
     WINDOW_MODES.includes(value as PersistedSettings["windowMode"])
@@ -154,7 +166,9 @@ function readIdleTimeout(value: unknown): number {
   return Math.min(5, Math.max(1, Math.round(value)));
 }
 
-export function sanitizeSettingsForTheme(settings: PersistedSettings): PersistedSettings {
+export function sanitizeSettingsForTheme(
+  settings: PersistedSettings,
+): PersistedSettings {
   const next = validateSettings(settings);
   if (next.ambientMode === "off") resetAmbientColors();
   return next;

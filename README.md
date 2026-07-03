@@ -32,7 +32,8 @@ Built with Tauri, Rust, React, and Windows media integration, VinylDeck is desig
 
 - **Works with system media** - reads Windows media sessions from apps such as Spotify, browsers, and VLC.
 - **Cinematic vinyl rendering** - animated record motion, album-art label, physical tonearm, ambient bloom, film grain, and glass/noir shells.
-- **Native desktop feel** - main, fullscreen, and compact mini-player modes with tray lifecycle.
+- **Native desktop feel** - main, fullscreen, and resizable mini-player modes with tray lifecycle.
+- **Mini transparency** - optional Mini-only Windows Acrylic mode lets the desktop blur through behind the vinyl and controls.
 - **Opt-in startup** - launch with Windows when you want VinylDeck ready as a quiet companion.
 - **Real media controls** - play, pause, previous, next, and seek flow through Windows SMTC when supported by the active source.
 - **Persistent settings** - visual and behavior preferences sync across app windows through the Rust backend.

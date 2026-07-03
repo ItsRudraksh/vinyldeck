@@ -76,6 +76,7 @@ npm run tauri build -- --debug
 - CSS vinyl is the active renderer.
 - Do not restore the vinyl center spindle hole.
 - Preserve directional track text: next enters from left; previous enters from right.
+- Mini mode is a separate resizable, transparent-capable Tauri WebView. Keep Mini Transparency scoped to `miniTransparentMode`, `MiniView`, and the Mini window service; do not make main/fullscreen transparent.
 
 ## Documentation Rules
 

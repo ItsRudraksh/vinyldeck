@@ -43,6 +43,10 @@ Check Settings -> Other -> Keyboard Shortcuts.
 
 When shortcuts are disabled, VinylDeck still allows Escape for closing Settings or leaving fullscreen.
 
+## Mini Transparency Does Not Blur The Desktop
+
+Mini Transparency only affects Mini mode and relies on the native Windows Acrylic effect. Check Settings -> Display -> Mini Transparency, then reopen Mini if needed. On systems or Windows builds where Acrylic is unavailable or disabled, the Mini window still works as a normal resizable player.
+
 ## Browser Mode Shows Mock Tracks
 
 Expected. Browser mode cannot access Windows SMTC, so it uses `MockSource`.

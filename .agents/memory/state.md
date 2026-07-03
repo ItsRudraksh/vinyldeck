@@ -208,6 +208,7 @@ Current task track:
 - Icon/distribution follow-up on 2026-06-15: regenerated the complete Tauri icon set from the final Half-Light Disc source so stale Tauri Square/Store/icns/png assets are gone. Windows now has one icon source of truth at `src-tauri/icons/icon.ico`, generated as an installer-safe multi-size ICO with 16/24/32/48/64/128 bitmap frames. Added tracked Tauri Windows installer templates under `src-tauri/installer/` so generated MSI desktop/start-menu/uninstall shortcuts explicitly use `ProductIcon`, NSIS installer/uninstaller use `src-tauri/icons/icon.ico`, and NSIS-created desktop/start-menu shortcuts use the installed app exe as their icon source. NSIS uninstall already includes the app-data/settings removal checkbox; this pass keeps that path and makes install-folder removal recursive. MSI uninstall now removes install-directory loose files through `RemoveFile` plus `RemoveFolder`, but a custom MSI app-data checkbox remains out of scope unless future release work requires custom WiX UI. Build-side extraction from `src-tauri/target/release/vinyldeck.exe` confirmed the associated exe icon is the VinylDeck mark; Explorer showing an old glyph after reinstall indicates Windows icon cache or a cached old shortcut.
 - Mini mode follow-up on 2026-06-15: mini mode suppresses in-app/native tooltips, including vinyl seek, track metadata, playback controls, and the return button native title. The attempted mini/main window-position persistence experiment was reverted because it regressed the expected mini behavior where entering mini hides the main window. Do not reintroduce `miniWindowPosition` or the Tauri `window-state` plugin without a fresh manual proof plan.
 - Mini/release hardening on 2026-06-15: mini mode no longer mounts the custom right-click `AppContextMenu`; keep mini as a quiet companion surface with hover controls and the return button only. Release capability now explicitly denies `core:webview:deny-internal-toggle-devtools`; do not enable devtools or the devtools Cargo feature for public builds.
+- User-implemented Mini resize/transparency pass on 2026-07-03: mini is now freely resizable above a `140x140` minimum, and Settings -> Display includes `Mini Transparency`. The setting persists through Rust-owned settings as `miniTransparentMode`; Rust applies/clears native Tauri `Effect::Acrylic` on the live Mini window, while MiniView scopes transparent `html/body/#root` backgrounds to the Mini WebView via `mini-transparent-active`. User reported this implementation worked on first try.
 
 ## What Is On Disk (Stage 2 — Final)
 
@@ -242,7 +243,7 @@ Current task track:
 
 ### Views
 - `views/MainView.tsx` — Final z-stack (AmbientLayer/vinyl-area/TrackInfo/Controls/ThemePicker/SourceBadge)
-- `views/MiniView.tsx` + `views/MiniView.css` — 280px mini player with centered vinyl and pointer-revealed absolute controls overlay
+- `views/MiniView.tsx` + `views/MiniView.css` — resizable mini player with centered vinyl, pointer-revealed absolute controls overlay, and optional Mini-only Acrylic transparency
 
 ### Entry Points
 - `main.tsx` — CSS imports + data-theme="noir" before first paint

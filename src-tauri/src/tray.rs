@@ -140,7 +140,7 @@ fn should_quit_to_tray(app: &AppHandle) -> bool {
 fn set_tray_window_mode(app: &AppHandle, mode: WindowMode) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
-        if let Err(error) = window::set_window_mode(&app, mode) {
+        if let Err(error) = window::set_window_mode(&app, mode).await {
             eprintln!("[VinylDeck tray] failed to set window mode: {error}");
         }
     });

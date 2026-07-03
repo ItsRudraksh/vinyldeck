@@ -22,6 +22,12 @@ export interface PersistedSettings {
   quitToTray: boolean;
   startWithWindows: boolean;
   windowMode: WindowMode;
+  /**
+   * Mini-only. Applies a native Windows Acrylic blur-through effect on the
+   * Mini window and lets its background go fully transparent so the desktop
+   * shows through behind the vinyl/controls. Has no effect on Main/Fullscreen.
+   */
+  miniTransparentMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: PersistedSettings = {
@@ -39,4 +45,5 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   quitToTray: true,
   startWithWindows: false,
   windowMode: "main",
+  miniTransparentMode: false,
 };

@@ -66,7 +66,9 @@ In-app playback does not use these commands in Tauri mode. Tray playback menu co
 | `cmd_settings_reset` | none | Reset to defaults |
 | `settings-changed` | persisted settings | Backend-approved settings snapshot |
 
-Current persisted settings fields include `theme`, `ambientMode`, `artAmbient`, `vinylWobble`, `filmGrain`, `leanBackMode`, `cursorHide`, `idleTimeoutSeconds`, `alwaysOnTop`, `keyboardShortcutsEnabled`, `quitToTray`, `startWithWindows`, and `windowMode`.
+Current persisted settings fields include `theme`, `ambientMode`, `artAmbient`, `vinylWobble`, `filmGrain`, `leanBackMode`, `cursorHide`, `idleTimeoutSeconds`, `alwaysOnTop`, `keyboardShortcutsEnabled`, `quitToTray`, `startWithWindows`, `windowMode`, and `miniTransparentMode`.
+
+`miniTransparentMode` is Mini-only. When enabled, the Rust window service applies Tauri's native Acrylic window effect to the live Mini window and the Mini WebView removes its opaque background layers so the desktop blurs through behind the vinyl and controls. Main and fullscreen ignore this setting.
 
 The active shell choices are `noir` and `glass`. Legacy theme values `aurora`, `vapor`, and `paper` are migrated into the current shell/ambient model rather than exposed as live choices.
 
@@ -82,3 +84,4 @@ The active shell choices are `noir` and `glass`. Legacy theme values `aurora`, `
 Close button behavior is handled by Rust window events and hides app windows to tray.
 When `quitToTray` is `false`, closing main/mini requests explicit app quit instead.
 When `startWithWindows` changes, the backend syncs the desired state to the Tauri autostart plugin.
+Mini mode creates a separate transparent-capable, frameless, always-on-top WebView window. It is resizable with a minimum inner size of `140x140`; entering main/fullscreen destroys the Mini window.

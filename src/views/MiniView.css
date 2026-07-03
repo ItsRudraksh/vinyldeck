@@ -4,7 +4,11 @@
   height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--ui-accent) 8%, transparent), transparent 54%),
+    radial-gradient(
+      circle at 50% 48%,
+      color-mix(in srgb, var(--ui-accent) 8%, transparent),
+      transparent 54%
+    ),
     var(--bg, #000000);
 }
 
@@ -92,7 +96,7 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.35);
   backdrop-filter: blur(18px) saturate(1.35);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 10px 24px rgba(0, 0, 0, 0.28);
   transition:
     opacity 220ms ease,
@@ -129,4 +133,43 @@
 .mini-view__return > svg {
   position: relative;
   z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Mini Transparency — Mini-only Acrylic blur-through mode.
+   The native blur is applied by the Rust backend (window effects);
+   these rules just get every opaque paint layer out of the way so
+   the desktop behind the window is actually visible, with the
+   vinyl, track text, and controls floating on top of it.
+   ══════════════════════════════════════════════════════════════ */
+
+.mini-view--transparent {
+  background: transparent !important;
+}
+
+.mini-view--transparent .ambient-layer {
+  background: transparent !important;
+}
+
+.mini-view--transparent .ambient-layer__base,
+.mini-view--transparent .ambient-layer__velvet,
+.mini-view--transparent .ambient-layer__vignette {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+.mini-view--transparent .ambient-layer__readability {
+  opacity: 0 !important;
+}
+
+/* Album-art glow orbs stay: they already render as blend-mode gradients
+   with no opaque fill, so they read as color bloom over the desktop blur
+   instead of a solid backdrop. */
+
+.mini-view--transparent .mini-view__track .track-info__title,
+.mini-view--transparent .mini-view__track .track-info__artist,
+.mini-view--transparent .mini-view__track .track-info__album {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 2px 14px rgba(0, 0, 0, 0.45);
 }

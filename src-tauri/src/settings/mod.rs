@@ -5,6 +5,8 @@ use tauri_plugin_autostart::ManagerExt;
 use tauri_plugin_store::StoreExt;
 use tokio::sync::Mutex;
 
+use crate::window::{self, MINI_LABEL};
+
 pub const SETTINGS_CHANGED_EVENT: &str = "settings-changed";
 
 const STORE_FILE: &str = "settings.json";
@@ -34,6 +36,9 @@ pub struct PersistedSettings {
     pub quit_to_tray: bool,
     pub start_with_windows: bool,
     pub window_mode: String,
+    /// Mini-only: applies a native Windows Acrylic blur-through effect on the
+    /// Mini window and lets its own background go fully transparent.
+    pub mini_transparent_mode: bool,
 }
 
 impl Default for PersistedSettings {
@@ -53,6 +58,7 @@ impl Default for PersistedSettings {
             quit_to_tray: true,
             start_with_windows: false,
             window_mode: "main".to_string(),
+            mini_transparent_mode: false,
         }
     }
 }
@@ -73,6 +79,7 @@ pub struct SettingsPatch {
     pub quit_to_tray: Option<bool>,
     pub start_with_windows: Option<bool>,
     pub window_mode: Option<String>,
+    pub mini_transparent_mode: Option<bool>,
 }
 
 pub struct SettingsState {
@@ -125,6 +132,7 @@ pub async fn cmd_settings_update(
     }
     state.replace(settings.clone()).await;
     save_settings(&app, &settings)?;
+    sync_mini_transparency(&app, &settings, &current);
     emit_settings_changed(&app, &settings);
     Ok(settings)
 }
@@ -134,10 +142,12 @@ pub async fn cmd_settings_reset(
     app: AppHandle,
     state: State<'_, SettingsState>,
 ) -> Result<PersistedSettings, String> {
+    let current = state.snapshot().await;
     let settings = PersistedSettings::default();
     sync_start_with_windows(&app, settings.start_with_windows)?;
     state.replace(settings.clone()).await;
     save_settings(&app, &settings)?;
+    sync_mini_transparency(&app, &settings, &current);
     emit_settings_changed(&app, &settings);
     Ok(settings)
 }
@@ -156,6 +166,23 @@ fn save_settings(app: &AppHandle, settings: &PersistedSettings) -> Result<(), St
 
 fn emit_settings_changed(app: &AppHandle, settings: &PersistedSettings) {
     let _ = app.emit(SETTINGS_CHANGED_EVENT, settings);
+}
+
+/// Keeps the live Mini window's Acrylic effect in sync with the persisted
+/// setting. No-op if Mini is not currently open, and only touches the OS
+/// window when the value actually changed.
+fn sync_mini_transparency(
+    app: &AppHandle,
+    settings: &PersistedSettings,
+    previous: &PersistedSettings,
+) {
+    if settings.mini_transparent_mode == previous.mini_transparent_mode {
+        return;
+    }
+
+    if let Some(mini) = app.get_webview_window(MINI_LABEL) {
+        window::apply_mini_transparency(&mini, settings.mini_transparent_mode);
+    }
 }
 
 fn validate_settings(value: Option<Value>) -> PersistedSettings {
@@ -195,6 +222,10 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
         quit_to_tray: read_bool(raw.get("quitToTray"), defaults.quit_to_tray),
         start_with_windows: read_bool(raw.get("startWithWindows"), defaults.start_with_windows),
         window_mode,
+        mini_transparent_mode: read_bool(
+            raw.get("miniTransparentMode"),
+            defaults.mini_transparent_mode,
+        ),
     }
 }
 
@@ -249,6 +280,9 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
         if window_mode != "mini" {
             next.window_mode = window_mode;
         }
+    }
+    if let Some(value) = patch.mini_transparent_mode {
+        next.mini_transparent_mode = value;
     }
 
     next.art_ambient = next.ambient_mode != "off";
@@ -332,7 +366,8 @@ mod tests {
             "keyboardShortcutsEnabled": "no",
             "quitToTray": "no",
             "startWithWindows": "no",
-            "windowMode": "bad"
+            "windowMode": "bad",
+            "miniTransparentMode": "no"
         })));
 
         assert_eq!(settings.theme, "noir");
@@ -345,6 +380,7 @@ mod tests {
         assert!(settings.quit_to_tray);
         assert!(!settings.start_with_windows);
         assert_eq!(settings.window_mode, "main");
+        assert!(!settings.mini_transparent_mode);
         assert_eq!(settings.version, 2);
     }
 
@@ -461,5 +497,21 @@ mod tests {
         assert!(!settings.keyboard_shortcuts_enabled);
         assert!(!settings.quit_to_tray);
         assert!(settings.start_with_windows);
+    }
+
+    #[test]
+    fn patch_toggles_mini_transparent_mode() {
+        let current = PersistedSettings::default();
+        assert!(!current.mini_transparent_mode);
+
+        let settings = apply_patch(
+            &current,
+            SettingsPatch {
+                mini_transparent_mode: Some(true),
+                ..SettingsPatch::default()
+            },
+        );
+
+        assert!(settings.mini_transparent_mode);
     }
 }
