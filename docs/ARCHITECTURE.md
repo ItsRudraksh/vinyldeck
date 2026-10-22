@@ -60,7 +60,11 @@ sequenceDiagram
   loop every 500ms
     Poller->>SMTC: read lightweight timeline/capabilities
     Poller->>SMTC: read metadata/artwork on semantic change
-    Poller-->>Source: media-state-changed
+    alt semantic or artwork change
+      Poller-->>Source: media-state-changed (full snapshot)
+    else 2s position resync
+      Poller-->>Source: media-position-changed (position only)
+    end
     Source-->>UI: PlaybackState
   end
   UI->>Source: play/pause/next/previous/seek intent
