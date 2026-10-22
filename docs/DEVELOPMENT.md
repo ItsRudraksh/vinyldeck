@@ -15,6 +15,28 @@ Use browser mode for visual work that does not need Windows media integration:
 npm run dev
 ```
 
+### Linux
+
+Install the Tauri v2 system packages (same list CI uses):
+
+```bash
+sudo apt-get install -y --no-install-recommends \
+  libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev \
+  libxdo-dev libssl-dev build-essential pkg-config
+```
+
+Then run `npm install` and `npm run tauri dev`. The Linux media backend talks D-Bus (MPRIS) through `zbus`, so no `libdbus` package is needed.
+
+Without root access, unpack the `-dev` packages into a local sysroot instead and point `pkg-config` at it. A checkout-local `.cargo/config.toml` (and `src-tauri/.cargo/config.toml`) can set this for every cargo build:
+
+```toml
+[env]
+PKG_CONFIG_SYSROOT_DIR = { value = "/path/to/tauri-sysroot", force = true }
+PKG_CONFIG_PATH = { value = "/path/to/tauri-sysroot/usr/lib/x86_64-linux-gnu/pkgconfig:/path/to/tauri-sysroot/usr/share/pkgconfig:/path/to/tauri-sysroot/usr/lib/pkgconfig", force = true }
+```
+
+These files hold machine-specific absolute paths and are gitignored, as are local `linux-env.sh` / `run-tauri.sh` helper scripts. In VMs and containers, set `WEBKIT_DISABLE_DMABUF_RENDERER=1` if the WebView renders blank.
+
 ## Runtime Modes
 
 | Runtime | Playback source |
