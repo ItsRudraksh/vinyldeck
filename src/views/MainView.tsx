@@ -58,6 +58,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../components/Tooltip";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useIdleMode } from "../hooks/useIdleMode";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useWindowActivity } from "../hooks/useWindowActivity";
 import { quitApplication } from "../lib/appLifecycle";
 import { commitSettings } from "../lib/settings";
 import {
@@ -159,6 +160,7 @@ export function MainView() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [sleepTimer, setSleepTimer] = useState<SleepTimerSnapshot | null>(null);
   const [parkRequest, setParkRequest] = useState(0);
+  const { isSuspended } = useWindowActivity();
   const contextMenuRef = useRef<AppContextMenuHandle>(null);
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
@@ -502,6 +504,7 @@ export function MainView() {
               <div style={{ position: "relative", zIndex: 2 }}>
                 <VinylRecord
                   isPlaying={isPlaying}
+                  suspended={isSuspended}
                   vinylWobble={settings.vinylWobble}
                   artworkDataUrl={artworkDataUrl}
                   trackTitle={effectivePlayback.track}
