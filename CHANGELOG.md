@@ -15,6 +15,10 @@
 - Window controls: the custom title bar now has close, minimize, and maximize/restore, moved to the top-left so they clear the tonearm pivot and the floating triggers. Fullscreen keeps a hover-revealed bar (top edge) with minimize, exit fullscreen, and close. Mini shows minimize and close top-left on hover.
 - Pausing lifts the tonearm in place instead of swinging it to a fixed angle; track skips re-cue the arm to the start groove.
 
+### Fixed
+
+- Double-clicking the custom title bar no longer maximizes and immediately snaps back; the bar kept a React double-click handler on top of Tauri's built-in drag-region maximize, so both toggled the window. Double-click maximize now runs through Tauri's script alone.
+
 ## 0.1.1 - 2026-07-03
 
 ### Changed
