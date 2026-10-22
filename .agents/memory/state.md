@@ -31,6 +31,12 @@ Current task track:
 - Final Linux verification 2026-10-22: npm build ok, frontend 53 passed, cargo fmt/clippy -D warnings clean, cargo test 53 passed. Not manually verified in live app: tray vs real SMTC/MPRIS, single-instance handoff, focus ring visuals, CSP in WebKitGTK/WebView2.
 - Superseded: Phase 4 B4.3/B4.6 notes below describing tray on mock `MediaState`.
 
+### Next Iteration — Phase 1 (2026-10-22, branch `audit-remediation`)
+- `e43b68d` double-click maximize: removed the React `onDoubleClick`; Tauri's injected `drag.js` (`internal_toggle_maximize` on mousedown detail 2, Windows/Linux) is now the only path. Maximize button unchanged. Main-window size cap ruled out (`window/mod.rs` only caps Mini).
+- `c0805b3` fonts + CSP: Google Fonts `@import` replaced by self-hosted variable woff2 (`public/fonts/{sora,inter,jetbrains-mono,hanken-grotesk,geist}/`) with per-family `OFL.txt`; README third-party note updated. CSP keeps the 1.5 directives and adds `connect-src 'self' ipc: http://ipc.localhost`. Verified on built `dist` + real CSP header in headless Chromium: all five families loaded, zero CSP violations. WebKitGTK/WebView2 visual check still manual.
+- `922d8d8` corners swapped: window controls top-right, floating triggers top-left one row (`left` 24/78/132), brand centered. Below 760px controls stack vertically (horizontal row intersected the tonearm pivot); fullscreen uses compact 20px buttons inside the 64px reveal band. Zero rect intersections at 700x560 / 900x700 / 1920x1080; pre-existing vinyl/tonearm overflow on short windows unchanged. Mini hover controls moved top-right, return top-left.
+- Phase 1 verification: `npm run build`, 53 frontend tests, `git diff --check` clean.
+
 ## Stage 2 Final Status
 - Core visual engine sub-stages 2a–2k implemented and verified.
 - Master Task List visual polish phases 9–11 are complete.
