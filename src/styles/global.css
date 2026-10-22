@@ -265,7 +265,7 @@ img {
 .settings-trigger {
   position: fixed;
   top: 24px;
-  right: 24px;
+  left: 24px;
   z-index: 90;
   width: 42px;
   height: 42px;
@@ -343,9 +343,9 @@ img {
   transform: translateY(0) scale(0.97);
 }
 
-/* Mini player trigger — same floating corner row, left of Settings. */
+/* Mini player trigger — same top-left row, right of Settings. */
 .mini-trigger {
-  right: 78px;
+  left: 78px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
