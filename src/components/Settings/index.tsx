@@ -13,6 +13,15 @@ import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
 import { listMediaPlayers } from "../../lib/media/players";
 import type { MediaPlayer } from "../../lib/media/players";
+import {
+  SLEEP_MINUTE_OPTIONS,
+  cancelSleepTimer,
+  formatSleepTimerStatus,
+  getSleepTimer,
+  startSleepTimer,
+  subscribeToSleepTimer,
+} from "../../lib/sleep";
+import type { SleepTimerMode, SleepTimerSnapshot } from "../../lib/sleep";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import type { WindowMode } from "../../lib/window/types";
@@ -48,6 +57,9 @@ const SHELL_CARD_META: Record<
 export function Settings({ open, onClose, initialTab = "LOOK" }: SettingsProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [players, setPlayers] = useState<MediaPlayer[]>([]);
+  const [sleepTimer, setSleepTimer] = useState<SleepTimerSnapshot | null>(null);
+  const [sleepNow, setSleepNow] = useState(() => Date.now());
+  const [sleepError, setSleepError] = useState<string | null>(null);
   const settings = useVinylDeckStore(selectSettings);
   const currentTheme = useVinylDeckStore((s) => s.theme);
   const ambientMode = useVinylDeckStore((s) => s.ambientMode);
@@ -80,6 +92,49 @@ export function Settings({ open, onClose, initialTab = "LOOK" }: SettingsProps) 
       window.clearInterval(timer);
     };
   }, [open]);
+
+  // Load the active sleep timer on open and follow backend changes.
+  useEffect(() => {
+    if (!open) return;
+
+    let alive = true;
+    let unlisten: (() => void) | undefined;
+    setSleepNow(Date.now());
+    setSleepError(null);
+
+    void subscribeToSleepTimer((snapshot) => {
+      if (!alive) return;
+      setSleepTimer(snapshot);
+      setSleepNow(Date.now());
+    })
+      .then((nextUnlisten) => {
+        if (!alive) {
+          nextUnlisten();
+          return;
+        }
+        unlisten = nextUnlisten;
+        // Snapshot after subscribing so no change can slip between the two.
+        void getSleepTimer().then((snapshot) => {
+          if (alive) setSleepTimer(snapshot);
+        });
+      })
+      .catch((error) => {
+        console.warn("[Settings] Sleep timer subscribe failed:", error);
+      });
+
+    return () => {
+      alive = false;
+      unlisten?.();
+    };
+  }, [open]);
+
+  // Remaining minutes only need a coarse refresh; events carry real changes.
+  useEffect(() => {
+    if (!open || sleepTimer?.mode !== "minutes") return;
+
+    const timer = window.setInterval(() => setSleepNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, [open, sleepTimer]);
 
   function applyCommittedSettings(nextSettings: typeof settings) {
     hydrateSettings(nextSettings);
@@ -136,6 +191,33 @@ export function Settings({ open, onClose, initialTab = "LOOK" }: SettingsProps) 
       playerSourceId: player?.id ?? "",
       playerSourceName: player?.name ?? "",
     });
+  }
+
+  function handleSleepStart(mode: SleepTimerMode, minutes?: number) {
+    setSleepError(null);
+    void startSleepTimer(mode, minutes)
+      .then((snapshot) => {
+        setSleepTimer(snapshot);
+        setSleepNow(Date.now());
+      })
+      .catch((error) => {
+        console.warn("[Settings] Sleep timer failed:", error);
+        setSleepError(
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
+  function handleSleepCancel() {
+    setSleepError(null);
+    void cancelSleepTimer()
+      .then(() => setSleepTimer(null))
+      .catch((error) => {
+        console.warn("[Settings] Sleep timer cancel failed:", error);
+        setSleepError(
+          error instanceof Error ? error.message : String(error),
+        );
+      });
   }
 
   const selectedPlayer = players.find(
@@ -513,6 +595,74 @@ export function Settings({ open, onClose, initialTab = "LOOK" }: SettingsProps) 
                       })
                     }
                   />
+
+                  <div className="settings-sleep">
+                    <div className="settings-look__header">
+                      <h3>Sleep Timer</h3>
+                      <p>
+                        Pause playback after a set time, or when the current
+                        track ends and the needle returns to rest.
+                      </p>
+                    </div>
+                    <div
+                      className="settings-sleep__options"
+                      role="group"
+                      aria-label="Sleep timer"
+                    >
+                      <button
+                        type="button"
+                        className={`settings-sleep__option${sleepTimer ? "" : " settings-sleep__option--active"}`}
+                        aria-pressed={!sleepTimer}
+                        onClick={handleSleepCancel}
+                      >
+                        Off
+                      </button>
+                      {SLEEP_MINUTE_OPTIONS.map((minutes) => (
+                        <button
+                          key={minutes}
+                          type="button"
+                          className="settings-sleep__option"
+                          aria-pressed={false}
+                          onClick={() => handleSleepStart("minutes", minutes)}
+                        >
+                          {minutes} min
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className={`settings-sleep__option${sleepTimer?.mode === "endOfTrack" ? " settings-sleep__option--active" : ""}`}
+                        aria-pressed={sleepTimer?.mode === "endOfTrack"}
+                        onClick={() => handleSleepStart("endOfTrack")}
+                      >
+                        End of track
+                      </button>
+                    </div>
+                    <div
+                      className={`settings-sleep__status${sleepTimer ? " settings-sleep__status--active" : ""}${sleepError ? " settings-sleep__status--error" : ""}`}
+                      aria-live="polite"
+                    >
+                      <span
+                        className="settings-sleep__dot"
+                        aria-hidden="true"
+                      />
+                      <span className="settings-sleep__status-label">
+                        {sleepTimer ? "Active" : "Sleep"}
+                      </span>
+                      <span className="settings-sleep__status-value">
+                        {sleepError ??
+                          formatSleepTimerStatus(sleepTimer, sleepNow)}
+                      </span>
+                      {sleepTimer ? (
+                        <button
+                          type="button"
+                          className="settings-sleep__cancel"
+                          onClick={handleSleepCancel}
+                        >
+                          Cancel
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
               ) : activeTab === "ABOUT" ? (
                 <div className="settings-about">

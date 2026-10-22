@@ -4,6 +4,7 @@
 
 ### Added
 
+- Sleep timer: pause after 15/30/45/60 minutes or at the end of the current track from the right-click menu or Settings -> Other. The timer runs in Rust so it survives Mini/Main switches and window hiding; when it fires, playback pauses through the normal media bridge and the tonearm lifts and returns to its rest. It is not persisted across launches.
 - Shuffle and repeat hardware levers now sit beside the transport pill when the active source supports them. Repeat cycles Off -> All -> One, and the tray menu mirrors both toggles. Linux reads and writes MPRIS `LoopStatus`/`Shuffle`; Windows reads and writes SMTC auto-repeat and shuffle.
 - The Crate gains a search field (artist, album, or pressing name), an A–Z sort alongside recent/plays/rare/press order, and a metadata strip showing total records, total plays, top album, and the current listening streak.
 - Player picker: when several MPRIS players (Linux) or SMTC sessions (Windows) are open, Settings -> Source chooses which one VinylDeck follows. Auto (the default) follows whichever session is playing, then the last playing session, then a paused one. The choice is persisted by the Rust settings authority and also appears in the right-click menu as Player source.

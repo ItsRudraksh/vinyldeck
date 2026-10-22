@@ -1814,3 +1814,216 @@
     transform: none;
   }
 }
+
+/* ── Sleep timer ────────────────────────────────────────────────
+   A small hardware keypad: ghostly at rest, a mechanical spring on
+   press, one accent line for the live timer. Static fills only so the
+   Linux soft-render path keeps the same shape without blur/shadows. */
+.settings-sleep {
+  margin-top: 22px;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--ui-border) 46%, transparent);
+}
+
+.settings-sleep__options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.settings-sleep__option {
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.2;
+  letter-spacing: var(--mono-tracking);
+  text-transform: uppercase;
+  color: var(--ui-text-secondary);
+  background: color-mix(in srgb, var(--ui-bg) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ui-border) 44%, transparent);
+  border-radius: var(--radius-md);
+  opacity: 0.66;
+  transition:
+    opacity 200ms cubic-bezier(0.25, 1, 0.5, 1),
+    color 200ms ease,
+    border-color 200ms ease,
+    background 200ms ease,
+    transform 180ms var(--spring-curve, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.settings-sleep__option:hover,
+.settings-sleep__option:focus-visible {
+  opacity: 1;
+  color: var(--ui-text-primary);
+  border-color: color-mix(in srgb, var(--ui-accent) 34%, transparent);
+  background: color-mix(in srgb, var(--ui-bg) 40%, transparent);
+}
+
+.settings-sleep__option:active {
+  transform: scale(0.97);
+}
+
+.settings-sleep__option--active {
+  opacity: 1;
+  color: var(--ui-text-primary);
+  border-color: color-mix(in srgb, var(--ui-accent) 52%, transparent);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--ui-accent) 9%, transparent),
+      transparent 78%
+    ),
+    color-mix(in srgb, var(--ui-bg) 36%, transparent);
+}
+
+.settings-sleep__status {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.2;
+  letter-spacing: var(--mono-tracking);
+  text-transform: uppercase;
+  color: var(--ui-text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ui-bg) 22%, transparent);
+}
+
+.settings-sleep__status--active {
+  border-color: color-mix(in srgb, var(--ui-accent) 26%, transparent);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--ui-accent) 7%, transparent),
+      transparent 72%
+    ),
+    color-mix(in srgb, var(--ui-bg) 26%, transparent);
+}
+
+.settings-sleep__dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ui-text-secondary) 42%, transparent);
+}
+
+.settings-sleep__status--active .settings-sleep__dot {
+  background: var(--ui-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--ui-accent) 62%, transparent);
+}
+
+.settings-sleep__status-label {
+  flex: 0 0 auto;
+  font-size: 8px;
+  color: color-mix(in srgb, var(--ui-text-secondary) 76%, transparent);
+}
+
+.settings-sleep__status-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--ui-text-primary) 82%, transparent);
+}
+
+.settings-sleep__status--error .settings-sleep__status-value {
+  color: #ff9c9c;
+}
+
+.settings-sleep__cancel {
+  flex: 0 0 auto;
+  margin-left: 4px;
+  padding: 5px 9px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: var(--mono-tracking);
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ui-text-secondary) 88%, transparent);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--ui-border) 52%, transparent);
+  border-radius: 999px;
+  opacity: 0.72;
+  transition:
+    opacity 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms var(--spring-curve, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.settings-sleep__cancel:hover,
+.settings-sleep__cancel:focus-visible {
+  opacity: 1;
+  color: var(--ui-text-primary);
+  border-color: color-mix(in srgb, var(--ui-accent) 38%, transparent);
+}
+
+.settings-sleep__cancel:active {
+  transform: scale(0.95);
+}
+
+[data-theme="glass"] .settings-sleep__option {
+  color: rgba(55, 67, 80, 0.72);
+  border-color: rgba(255, 255, 255, 0.56);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.08)
+  );
+}
+
+[data-theme="glass"] .settings-sleep__option--active {
+  color: rgba(30, 37, 45, 0.9);
+  border-color: rgba(0, 112, 217, 0.42);
+  background:
+    linear-gradient(90deg, rgba(0, 112, 217, 0.1), transparent 78%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
+}
+
+[data-theme="glass"] .settings-sleep__status {
+  color: rgba(55, 67, 80, 0.6);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="glass"] .settings-sleep__status--active {
+  border-color: rgba(0, 112, 217, 0.28);
+  background:
+    linear-gradient(90deg, rgba(0, 112, 217, 0.08), transparent 72%),
+    rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="glass"] .settings-sleep__status-label {
+  color: rgba(55, 67, 80, 0.52);
+}
+
+[data-theme="glass"] .settings-sleep__status-value {
+  color: rgba(30, 37, 45, 0.84);
+}
+
+[data-theme="glass"] .settings-sleep__cancel {
+  color: rgba(55, 67, 80, 0.72);
+  border-color: rgba(55, 67, 80, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-sleep__option,
+  .settings-sleep__cancel {
+    transition: opacity 0ms, color 0ms, border-color 0ms, background 0ms;
+  }
+
+  .settings-sleep__option:active,
+  .settings-sleep__cancel:active {
+    transform: none;
+  }
+}

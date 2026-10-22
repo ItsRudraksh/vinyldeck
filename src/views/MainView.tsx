@@ -65,6 +65,17 @@ import {
   resetAmbientColors,
 } from "../lib/themes/applier";
 import { setNativeWindowMode } from "../lib/window";
+import {
+  cancelSleepTimer,
+  getSleepTimer,
+  startSleepTimer,
+  subscribeToSleepTimer,
+  subscribeToSleepTimerFired,
+} from "../lib/sleep";
+import type {
+  SleepTimerMode,
+  SleepTimerSnapshot,
+} from "../lib/sleep";
 
 const VINYL_SIZE = 420;
 const RING_SIZE = VINYL_SIZE + 28;
@@ -144,6 +155,8 @@ export function MainView() {
   const [needlePreview, setNeedlePreview] = useState<number | null>(null);
   const [isCrateOpen, setIsCrateOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const [sleepTimer, setSleepTimer] = useState<SleepTimerSnapshot | null>(null);
+  const [parkRequest, setParkRequest] = useState(0);
   const contextMenuRef = useRef<AppContextMenuHandle>(null);
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
@@ -163,6 +176,48 @@ export function MainView() {
     isContextMenuOpen,
     onCloseContextMenu: () => contextMenuRef.current?.close(),
   });
+
+  // Sleep timer: read the backend's ephemeral state, then follow its events.
+  // The fired event only parks the tonearm; Rust already sent the pause.
+  useEffect(() => {
+    let alive = true;
+    let unlistenChanged: (() => void) | undefined;
+    let unlistenFired: (() => void) | undefined;
+
+    void subscribeToSleepTimer((snapshot) => {
+      if (alive) setSleepTimer(snapshot);
+    })
+      .then((unlisten) => {
+        if (!alive) {
+          unlisten();
+          return;
+        }
+        unlistenChanged = unlisten;
+        // Snapshot after subscribing so no change can slip between the two.
+        void getSleepTimer().then((snapshot) => {
+          if (alive) setSleepTimer(snapshot);
+        });
+      })
+      .catch((error) => {
+        console.warn("[SleepTimer] Subscribe failed:", error);
+      });
+    void subscribeToSleepTimerFired(() => {
+      if (alive) setParkRequest((request) => request + 1);
+    })
+      .then((unlisten) => {
+        if (alive) unlistenFired = unlisten;
+        else unlisten();
+      })
+      .catch((error) => {
+        console.warn("[SleepTimer] Fired subscribe failed:", error);
+      });
+
+    return () => {
+      alive = false;
+      unlistenChanged?.();
+      unlistenFired?.();
+    };
+  }, []);
 
   // The Crate: press this album into the collection; wear follows play count.
   useCratePressing(effectivePlayback);
@@ -242,6 +297,22 @@ export function MainView() {
       });
   }
 
+  function handleSleepStart(mode: SleepTimerMode, minutes?: number) {
+    void startSleepTimer(mode, minutes)
+      .then((snapshot) => setSleepTimer(snapshot))
+      .catch((error) => {
+        console.warn("[ContextMenu] Sleep timer failed:", error);
+      });
+  }
+
+  function handleSleepCancel() {
+    void cancelSleepTimer()
+      .then(() => setSleepTimer(null))
+      .catch((error) => {
+        console.warn("[ContextMenu] Sleep timer cancel failed:", error);
+      });
+  }
+
   const contextMenuActions = useMemo(
     () => [
       {
@@ -311,6 +382,25 @@ export function MainView() {
         },
       },
       {
+        id: "sleep-30",
+        label: "Sleep 30 min",
+        onSelect: () => handleSleepStart("minutes", 30),
+      },
+      {
+        id: "sleep-track",
+        label: "Sleep after track",
+        onSelect: () => handleSleepStart("endOfTrack"),
+      },
+      ...(sleepTimer
+        ? [
+            {
+              id: "sleep-cancel",
+              label: "Cancel sleep timer",
+              onSelect: handleSleepCancel,
+            },
+          ]
+        : []),
+      {
         id: "quit",
         label: "Quit",
         kbd: "Ctrl Q",
@@ -322,7 +412,13 @@ export function MainView() {
         },
       },
     ],
-    [effectivePlayback, isPlaying, settings.ambientMode, settings.windowMode],
+    [
+      effectivePlayback,
+      isPlaying,
+      settings.ambientMode,
+      settings.windowMode,
+      sleepTimer,
+    ],
   );
 
   // Idle UI style — shared across Controls / TrackInfo / ThemePicker
@@ -424,6 +520,7 @@ export function MainView() {
                 onPlay={handlePlay}
                 onPause={handlePause}
                 onScrubPreview={setNeedlePreview}
+                parkRequest={parkRequest}
               />
             </div>
           </TooltipTrigger>

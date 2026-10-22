@@ -114,14 +114,18 @@ Settings persist across app windows.
 | Vinyl | Vinyl wobble, film grain, album-art ambient lighting |
 | Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout, Mini Transparency |
 | Source | Which media session VinylDeck follows (Auto, or a specific app) |
-| Other | Keyboard Shortcuts, Quit To Tray, Start With Windows |
+| Other | Keyboard Shortcuts, Quit To Tray, Start With Windows, Sleep Timer |
 | About | App identity and build information |
 
 When more than one media app is open, Settings -> Source chooses which session the deck follows. Auto (the default) follows whichever app is playing, then the last one that played, and the choice is remembered between launches.
 
 ## Context Menu
 
-Right-click the player to open the VinylDeck command menu. It includes playback actions, Art Ambient, fullscreen, mini player, Settings, Player source, and Quit. Mini mode keeps only actions that make sense for the compact window.
+Right-click the player to open the VinylDeck command menu. It includes playback actions, Sleep 30 min, Sleep after track, Cancel sleep timer (while one is running), Art Ambient, fullscreen, mini player, Settings, Player source, and Quit. Mini mode keeps only actions that make sense for the compact window.
+
+## Sleep Timer
+
+Settings -> Other offers a Sleep Timer keypad: Off, 15, 30, 45, or 60 minutes, or End of track. The same 30-minute and end-of-track choices are in the right-click menu, with Cancel sleep timer while one is active. The timer runs in the backend, so switching between Main, Mini, and the tray does not reset it. When it fires, playback pauses and the tonearm lifts and parks on its rest. Timers are ephemeral and do not survive a restart.
 
 ## Visual Behavior
 

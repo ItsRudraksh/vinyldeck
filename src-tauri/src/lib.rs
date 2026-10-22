@@ -2,6 +2,7 @@ mod app_lifecycle;
 mod collection;
 mod media;
 mod settings;
+mod sleep;
 mod tray;
 mod window;
 
@@ -28,6 +29,7 @@ pub fn run() {
             window::focus_existing(app);
         }))
         .manage(media::authority::PlaybackAuthority::new())
+        .manage(sleep::SleepTimerState::new())
         .manage(settings::SettingsState::new())
         .manage(collection::CollectionState::new())
         .plugin(tauri_plugin_autostart::init(
@@ -47,6 +49,9 @@ pub fn run() {
             media::commands::cmd_smtc_seek,
             media::commands::cmd_media_set_repeat,
             media::commands::cmd_media_set_shuffle,
+            sleep::cmd_sleep_timer_start,
+            sleep::cmd_sleep_timer_cancel,
+            sleep::cmd_sleep_timer_snapshot,
             settings::cmd_settings_snapshot,
             settings::cmd_settings_update,
             settings::cmd_settings_reset,
