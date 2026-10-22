@@ -37,6 +37,12 @@ Current task track:
 - `922d8d8` corners swapped: window controls top-right, floating triggers top-left one row (`left` 24/78/132), brand centered. Below 760px controls stack vertically (horizontal row intersected the tonearm pivot); fullscreen uses compact 20px buttons inside the 64px reveal band. Zero rect intersections at 700x560 / 900x700 / 1920x1080; pre-existing vinyl/tonearm overflow on short windows unchanged. Mini hover controls moved top-right, return top-left.
 - Phase 1 verification: `npm run build`, 53 frontend tests, `git diff --check` clean.
 
+### Next Iteration — Phase 2 (2026-10-22)
+- `276922a` Settings visible close: 32px glass circle top-right of `.settings-panel` (16px inset, z 9), 0.5px hairline, resting opacity 0.5, spring press; Crate close geometry reused; `useFocusTrap` and the scrim close path unchanged. Verified geometry at 900x700 and 700x560 (no collision with section label).
+- `e6f28cf` Linux installer: new `scripts/install-linux.sh` (user-level, idempotent, `VINYLDECK_INSTALL_ROOT` override, `SKIP_BUILD=1`, `npm run tauri build -- --no-bundle`) installs binary to `~/.local/bin/vinyldeck`, icon into hicolor 256, and a stable `.desktop` entry pointing at the installed binary; `install:linux` npm script and `docs/DEVELOPMENT.md` section. Tested twice in `/tmp/opencode/install-test`; real launcher install deferred to Phase 4.
+- `61a623b` context-menu shortcut scope: `isGlobalShortcutSuppressed(isContextMenuOpen, event)` blocks every global action except Escape while the menu is open, so Left/Right no longer skip tracks. Menu ArrowUp/Down/Enter/Space and the single Escape owner unchanged. 56 frontend tests pass.
+- Phase 2 verification: `npm run build`, `npm run test:frontend` (56), `git diff --check` clean.
+
 ## Stage 2 Final Status
 - Core visual engine sub-stages 2a–2k implemented and verified.
 - Master Task List visual polish phases 9–11 are complete.
