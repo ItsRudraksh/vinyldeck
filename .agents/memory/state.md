@@ -43,6 +43,16 @@ Current task track:
 - `61a623b` context-menu shortcut scope: `isGlobalShortcutSuppressed(isContextMenuOpen, event)` blocks every global action except Escape while the menu is open, so Left/Right no longer skip tracks. Menu ArrowUp/Down/Enter/Space and the single Escape owner unchanged. 56 frontend tests pass.
 - Phase 2 verification: `npm run build`, `npm run test:frontend` (56), `git diff --check` clean.
 
+### Next Iteration — Phase 3 (2026-10-22)
+- `d067a64` player picker: Rust settings v3 (`player_source_id` / `player_source_name`, "" = Auto) mirrored into `PlaybackAuthority`; `cmd_media_players` enumerates MPRIS bus names / SMTC `GetSessions()`. Resolution: explicit source, else playing, else poller's last playing source, else paused (Windows also tries `GetCurrentSession` first). Settings gained a SOURCE tab; the context menu opens it. Windows compile is CI-only; live MPRIS picker not exercised in the Tauri window (browser-mock screenshots only).
+- `94aba98` shuffle/repeat: `MediaSnapshot` gained `canRepeat`/`canShuffle`/`repeatMode`/`shuffle`; MPRIS `LoopStatus`/`Shuffle`, SMTC `AutoRepeatMode`/`IsShuffleEnabled`; new `cmd_media_set_repeat`/`cmd_media_set_shuffle`; tray check items. UI is a pair of 36x20 brushed-metal levers flanking the transport pill (fold to a row under it below 660px height, hidden in Mini); hidden per capability.
+- `6ff92bb` Crate: search (artist/album/pressing), A–Z sort, metadata strip (records/plays/top album/streak). Export **deferred**: no save-dialog/fs plugin is installed and adding one is disallowed. Streak is derived from distinct calendar days of `lastPlayedAt` (approximate history; no per-play day log yet).
+- `d4c3794` sleep timer: new `sleep.rs` generation-guarded Rust timer, minutes (5–240) or end-of-track; emits `sleep-timer-changed`/`sleep-timer-fired`, pauses through the platform bridge, and bumps `NeedleArm parkRequest` so the arm lifts and parks. Not persisted; no tray entry.
+- `adc0088` shortcut sheet: `src/lib/shortcuts.ts` is the shared definition list; `?` opens a glass overlay (shortcuts > context menu > Crate > Settings > fullscreen Escape order); ignored in Mini; README sync enforced by a unit test.
+- `0245bf7` audio-reactivity spike in `backend-research.md`: feasible but needs dependency approval (PipeWire/libpulse dev headers or windows WASAPI features + FFT); no code.
+- `902cacf` idle perf: `useWindowActivity` (visibility + Tauri minimize) suspends the vinyl rAF without resetting angle; 30s paused backstop. Linux release measurements (30s): visible playing WebKit ~100% before/after, minimized 0.13% both (WebKitGTK already throttles iconified windows), paused visible 2.27% → 1.2% web. Main process 2.1% → 2.0% playing, 0.8% → 0.55% paused.
+- Phase 3 verification: `npm run build`, 96 frontend tests, fmt/clippy `-D warnings` clean, 72 cargo tests, `git diff --check` clean. Live Tauri verification pending (Phase 4 smoke).
+
 ## Stage 2 Final Status
 - Core visual engine sub-stages 2a–2k implemented and verified.
 - Master Task List visual polish phases 9–11 are complete.

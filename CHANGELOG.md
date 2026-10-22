@@ -16,7 +16,9 @@
 
 ### Changed
 
-- Security: bundled builds now ship a Content Security Policy (`default-src 'self'`, images from `self`/`data:`/`blob:`) instead of none.
+- Security: bundled builds now ship a Content Security Policy (`default-src 'self'`, images from `self`/`data:`/`blob:`) instead of none. Tauri IPC is explicitly allowed through `connect-src 'self' ipc: http://ipc.localhost`, so release builds no longer fall back to postMessage.
+- Brand typography is now self-hosted under `public/fonts/` (Sora, Inter, JetBrains Mono, Hanken Grotesk, Geist), so release builds load the intended typefaces under the CSP instead of falling back to system fonts. Each family ships with its OFL license.
+- Linux can install VinylDeck for the current user with `npm run install:linux`: it builds the release binary, installs it to `~/.local/bin/vinyldeck`, registers the icon, and writes a `.desktop` entry that keeps pointing at the installed copy when the build tree is rebuilt.
 - Crate play counting: a play now counts after half the track or 120 s of listening, whichever comes first (was half the track, capped at 4 minutes).
 - Window controls: close, minimize, and maximize/restore now sit at the top-right, and the floating Settings, Crate, and Mini triggers moved to a single top-left row. This reverses the earlier top-left placement; the 40px titlebar strip was re-measured at 700x560, 900x700, and maximized so neither the controls nor the triggers intersect the tonearm pivot or counterweight (narrow windows stack the controls down the right edge instead of crossing the arm). Fullscreen keeps the hover-revealed top-edge bar with the controls on the same side, and Mini shows its hover controls top-right with the return control top-left.
 - Pausing lifts the tonearm in place instead of swinging it to a fixed angle; track skips re-cue the arm to the start groove.
