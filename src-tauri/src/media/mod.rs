@@ -3,8 +3,11 @@ use tokio::sync::Mutex;
 
 pub mod artwork;
 pub mod commands;
+#[cfg(target_os = "linux")]
+pub mod linux;
 mod mock;
 pub mod model;
+pub mod platform;
 pub mod poller;
 pub mod smtc;
 

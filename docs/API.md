@@ -72,6 +72,18 @@ Current persisted settings fields include `theme`, `ambientMode`, `artAmbient`, 
 
 The active shell choices are `noir` and `glass`. Legacy theme values `aurora`, `vapor`, and `paper` are migrated into the current shell/ambient model rather than exposed as live choices.
 
+## Collection (The Crate) Commands And Events
+
+| Command/Event | Args/Payload | Meaning |
+| --- | --- | --- |
+| `cmd_collection_snapshot` | none | All collected records |
+| `cmd_collection_press` | `{ input: PressInput }` | Upsert the album's pressing; returns `{ record, newlyPressed }` |
+| `collection-changed` | one `CollectedRecord` | A record was pressed or played |
+
+`PressInput` is `{ artist, album, recipe, pressingType, pressingName, colors: { primary, secondary, accent }, thumbnail }`. `album` falls back to the track title for singles; the record key is `lowercase(artist) + "|" + lowercase(album)`. Pressing is idempotent: the first press assigns `pressingNumber` and `firstPressedAt`, later presses only fill a missing thumbnail. `thumbnail` must be a `data:image/` URL of at most 48 KB.
+
+`CollectedRecord` adds `key`, `pressingNumber`, `firstPressedAt`, `lastPlayedAt` (epoch ms), and `playCount`. Play counts are owned by the backend media poller (half the track or 120 s, whichever comes first, of playing wall-clock time; tracks under 30 s never count). A play can arrive before the pressing; that record has `recipe: null` until the frontend presses it, and then `newlyPressed` is still `true`.
+
 ## Window And Lifecycle Commands
 
 | Command | Args | Meaning |

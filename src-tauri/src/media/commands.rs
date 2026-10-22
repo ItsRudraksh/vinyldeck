@@ -60,14 +60,14 @@ pub async fn cmd_media_seek(
 
 #[tauri::command]
 pub async fn cmd_smtc_snapshot() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::current_media_snapshot_with_metadata()
+    super::platform::current_media_snapshot_with_metadata()
         .await
         .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
 pub async fn cmd_smtc_play() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::play()
+    super::platform::play()
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
@@ -75,7 +75,7 @@ pub async fn cmd_smtc_play() -> Result<Option<MediaSnapshot>, String> {
 
 #[tauri::command]
 pub async fn cmd_smtc_pause() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::pause()
+    super::platform::pause()
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
@@ -83,7 +83,7 @@ pub async fn cmd_smtc_pause() -> Result<Option<MediaSnapshot>, String> {
 
 #[tauri::command]
 pub async fn cmd_smtc_toggle_play_pause() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::toggle_play_pause()
+    super::platform::toggle_play_pause()
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
@@ -91,7 +91,7 @@ pub async fn cmd_smtc_toggle_play_pause() -> Result<Option<MediaSnapshot>, Strin
 
 #[tauri::command]
 pub async fn cmd_smtc_next() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::next()
+    super::platform::next()
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
@@ -99,7 +99,7 @@ pub async fn cmd_smtc_next() -> Result<Option<MediaSnapshot>, String> {
 
 #[tauri::command]
 pub async fn cmd_smtc_previous() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::previous()
+    super::platform::previous()
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
@@ -107,7 +107,7 @@ pub async fn cmd_smtc_previous() -> Result<Option<MediaSnapshot>, String> {
 
 #[tauri::command]
 pub async fn cmd_smtc_seek(seconds: f64) -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::seek(seconds)
+    super::platform::seek(seconds)
         .await
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot().await
