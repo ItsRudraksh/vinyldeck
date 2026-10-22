@@ -108,12 +108,15 @@ Settings persist across app windows.
 | Look | Noir and Glass visual shells |
 | Vinyl | Vinyl wobble, film grain, album-art ambient lighting |
 | Display | Main/fullscreen/mini, always-on-top, lean-back, cursor behavior, idle timeout, Mini Transparency |
+| Source | Which media session VinylDeck follows (Auto, or a specific app) |
 | Other | Keyboard Shortcuts, Quit To Tray, Start With Windows |
 | About | App identity and build information |
 
+When more than one media app is open, Settings -> Source chooses which session the deck follows. Auto (the default) follows whichever app is playing, then the last one that played, and the choice is remembered between launches.
+
 ## Context Menu
 
-Right-click the player to open the VinylDeck command menu. It includes playback actions, Art Ambient, fullscreen, mini player, Settings, and Quit. Mini mode keeps only actions that make sense for the compact window.
+Right-click the player to open the VinylDeck command menu. It includes playback actions, Art Ambient, fullscreen, mini player, Settings, Player source, and Quit. Mini mode keeps only actions that make sense for the compact window.
 
 ## Visual Behavior
 

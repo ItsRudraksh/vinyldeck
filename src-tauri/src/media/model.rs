@@ -22,6 +22,38 @@ pub struct MediaSnapshot {
     pub can_control: bool,
 }
 
+/// One selectable media session. `id` is the stable platform handle (MPRIS bus
+/// name on Linux, AUMID on Windows); `name` is the display fallback.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MediaPlayer {
+    pub id: String,
+    pub name: String,
+    pub is_playing: bool,
+}
+
+/// Removes duplicate ids and orders players the way the picker shows them:
+/// playing first, then by display name.
+#[allow(dead_code)]
+pub(crate) fn order_players(players: Vec<MediaPlayer>) -> Vec<MediaPlayer> {
+    let mut unique: Vec<MediaPlayer> = Vec::with_capacity(players.len());
+    for player in players {
+        if unique.iter().any(|existing| existing.id == player.id) {
+            continue;
+        }
+        unique.push(player);
+    }
+
+    unique.sort_by(|left, right| {
+        right
+            .is_playing
+            .cmp(&left.is_playing)
+            .then_with(|| left.name.to_lowercase().cmp(&right.name.to_lowercase()))
+            .then_with(|| left.id.cmp(&right.id))
+    });
+    unique
+}
+
 impl Default for MediaSnapshot {
     fn default() -> Self {
         Self {
@@ -146,7 +178,9 @@ fn seconds_to_millis(seconds: f64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{friendly_source_name, ticks_to_seconds, MediaSnapshot};
+    use super::{
+        friendly_source_name, order_players, ticks_to_seconds, MediaPlayer, MediaSnapshot,
+    };
 
     #[test]
     fn empty_snapshot_matches_frontend_empty_contract() {
@@ -231,6 +265,37 @@ mod tests {
 
         assert_ne!(base.semantic_key(), next_track.semantic_key());
         assert_ne!(base.semantic_key(), no_seek.semantic_key());
+    }
+
+    #[test]
+    fn players_are_deduped_and_playing_sessions_sort_first() {
+        let players = order_players(vec![
+            MediaPlayer {
+                id: "vlc".to_string(),
+                name: "VLC".to_string(),
+                is_playing: false,
+            },
+            MediaPlayer {
+                id: "spotify".to_string(),
+                name: "Spotify".to_string(),
+                is_playing: true,
+            },
+            MediaPlayer {
+                id: "spotify".to_string(),
+                name: "Spotify duplicate".to_string(),
+                is_playing: false,
+            },
+            MediaPlayer {
+                id: "chrome".to_string(),
+                name: "Chrome".to_string(),
+                is_playing: false,
+            },
+        ]);
+
+        assert_eq!(players.len(), 3);
+        assert_eq!(players[0].id, "spotify");
+        assert_eq!(players[1].id, "chrome");
+        assert_eq!(players[2].id, "vlc");
     }
 
     #[test]

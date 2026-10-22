@@ -4,6 +4,7 @@
 
 ### Added
 
+- Player picker: when several MPRIS players (Linux) or SMTC sessions (Windows) are open, Settings -> Source chooses which one VinylDeck follows. Auto (the default) follows whichever session is playing, then the last playing session, then a paused one. The choice is persisted by the Rust settings authority and also appears in the right-click menu as Player source.
 - The Crate: every album played is pressed into a persistent collection (`collection.json`, backend-owned) with a pressing number, first-pressed date, play count, rarity tier, and label thumbnail. Plays are counted by the backend poller after half the track or 2 minutes of real listening, whichever comes first. Records visibly wear with plays. New bottom-left pressing stamp, crate overlay (`C`, top-left button, context menu), and `cmd_collection_snapshot` / `cmd_collection_press` / `collection-changed` API.
 - Needle Drop: the tonearm tracks playback progress across the grooves. Drag the headshell onto the record to seek (and resume if paused) with a live time preview on the progress ring, or off the record to pause.
 - Single instance: launching VinylDeck while it is already running focuses the existing window instead of starting a second copy.

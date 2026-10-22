@@ -41,6 +41,7 @@ import { Controls } from "../components/Controls";
 import { ThemePicker } from "../components/ThemePicker";
 import { SourceBadge } from "../components/SourceBadge";
 import { Settings } from "../components/Settings";
+import type { SettingsTab } from "../components/Settings";
 import { AppContextMenu } from "../components/AppContextMenu";
 import type { AppContextMenuHandle } from "../components/AppContextMenu";
 import { Crate } from "../components/Crate";
@@ -134,6 +135,7 @@ export function MainView() {
   );
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("LOOK");
   const [needlePreview, setNeedlePreview] = useState<number | null>(null);
   const [isCrateOpen, setIsCrateOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
@@ -146,7 +148,10 @@ export function MainView() {
     renderMode: "main",
     isSettingsOpen,
     onCloseSettings: () => setIsSettingsOpen(false),
-    onOpenSettings: () => setIsSettingsOpen(true),
+    onOpenSettings: () => {
+      setSettingsTab("LOOK");
+      setIsSettingsOpen(true);
+    },
     isCrateOpen,
     onCloseCrate: () => setIsCrateOpen(false),
     onToggleCrate: () => setIsCrateOpen((open) => !open),
@@ -279,7 +284,18 @@ export function MainView() {
       {
         id: "settings",
         label: "Settings",
-        onSelect: () => setIsSettingsOpen(true),
+        onSelect: () => {
+          setSettingsTab("LOOK");
+          setIsSettingsOpen(true);
+        },
+      },
+      {
+        id: "player-source",
+        label: "Player source\u2026",
+        onSelect: () => {
+          setSettingsTab("SOURCE");
+          setIsSettingsOpen(true);
+        },
       },
       {
         id: "quit",
@@ -558,6 +574,7 @@ export function MainView() {
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
+              setSettingsTab("LOOK");
               setIsSettingsOpen(true);
             }}
           >
@@ -643,6 +660,7 @@ export function MainView() {
       {/* z:40 — Settings overlay */}
       <Settings
         open={isSettingsOpen}
+        initialTab={settingsTab}
         onClose={() => setIsSettingsOpen(false)}
       />
     </>

@@ -50,9 +50,9 @@ pub fn setup_tray(app: &mut App) -> tauri::Result<()> {
         .on_menu_event(|app, event| match event.id().as_ref() {
             MENU_OPEN => set_tray_window_mode(app, WindowMode::Main),
             MENU_MINI => set_tray_window_mode(app, WindowMode::Mini),
-            MENU_PLAY_PAUSE => control_media_from_tray(TrayMediaAction::TogglePlayPause),
-            MENU_PREVIOUS => control_media_from_tray(TrayMediaAction::Previous),
-            MENU_NEXT => control_media_from_tray(TrayMediaAction::Next),
+            MENU_PLAY_PAUSE => control_media_from_tray(app, TrayMediaAction::TogglePlayPause),
+            MENU_PREVIOUS => control_media_from_tray(app, TrayMediaAction::Previous),
+            MENU_NEXT => control_media_from_tray(app, TrayMediaAction::Next),
             MENU_QUIT => app_lifecycle::quit(app),
             _ => {}
         })
@@ -151,14 +151,21 @@ enum TrayMediaAction {
     Next,
 }
 
-fn control_media_from_tray(action: TrayMediaAction) {
+fn control_media_from_tray(app: &AppHandle, action: TrayMediaAction) {
     // The poller picks up the new state and feeds PlaybackAuthority, which
-    // refreshes the tray and the frontend.
+    // refreshes the tray and the frontend. Transport commands target the
+    // explicit player choice, or the current snapshot's source for Auto.
+    let app = app.clone();
     tauri::async_runtime::spawn(async move {
+        let source_id = app
+            .try_state::<PlaybackAuthority>()
+            .and_then(|authority| authority.selected_source_id());
         let result = match action {
-            TrayMediaAction::TogglePlayPause => platform::toggle_play_pause().await,
-            TrayMediaAction::Previous => platform::previous().await,
-            TrayMediaAction::Next => platform::next().await,
+            TrayMediaAction::TogglePlayPause => {
+                platform::toggle_play_pause(source_id.as_deref()).await
+            }
+            TrayMediaAction::Previous => platform::previous(source_id.as_deref()).await,
+            TrayMediaAction::Next => platform::next(source_id.as_deref()).await,
         };
         if let Err(error) = result {
             eprintln!("[VinylDeck tray] media control failed: {error}");

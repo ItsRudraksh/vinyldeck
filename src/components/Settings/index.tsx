@@ -11,6 +11,8 @@ import {
 import type { ThemeId } from "../../lib/themes/applier";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
+import { listMediaPlayers } from "../../lib/media/players";
+import type { MediaPlayer } from "../../lib/media/players";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
 import { useFocusTrap } from "../../hooks/useFocusTrap";
 import type { WindowMode } from "../../lib/window/types";
@@ -19,10 +21,11 @@ import "./Settings.css";
 interface SettingsProps {
   open: boolean;
   onClose: () => void;
+  initialTab?: SettingsTab;
 }
 
-const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "OTHER", "ABOUT"] as const;
-type SettingsTab = (typeof SETTINGS_TABS)[number];
+const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "SOURCE", "OTHER", "ABOUT"] as const;
+export type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 const SHELL_CARD_META: Record<
   ThemeId,
@@ -42,8 +45,9 @@ const SHELL_CARD_META: Record<
   },
 };
 
-export function Settings({ open, onClose }: SettingsProps) {
-  const [activeTab, setActiveTab] = useState<SettingsTab>("LOOK");
+export function Settings({ open, onClose, initialTab = "LOOK" }: SettingsProps) {
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
+  const [players, setPlayers] = useState<MediaPlayer[]>([]);
   const settings = useVinylDeckStore(selectSettings);
   const currentTheme = useVinylDeckStore((s) => s.theme);
   const ambientMode = useVinylDeckStore((s) => s.ambientMode);
@@ -53,6 +57,29 @@ export function Settings({ open, onClose }: SettingsProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
   // Escape is owned by useKeyboardShortcuts (topmost surface wins).
   useFocusTrap(overlayRef, open);
+
+  useEffect(() => {
+    if (open) setActiveTab(initialTab);
+  }, [open, initialTab]);
+
+  // Refresh the session list on open and while Settings stays open.
+  useEffect(() => {
+    if (!open) return;
+
+    let alive = true;
+    const refresh = () => {
+      void listMediaPlayers().then((next) => {
+        if (alive) setPlayers(next);
+      });
+    };
+
+    refresh();
+    const timer = window.setInterval(refresh, 5_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [open]);
 
   function applyCommittedSettings(nextSettings: typeof settings) {
     hydrateSettings(nextSettings);
@@ -103,6 +130,19 @@ export function Settings({ open, onClose }: SettingsProps) {
         console.warn("[Window] Always-on-top change failed:", error);
       });
   }
+
+  function handlePlayerSelect(player: MediaPlayer | null) {
+    updateBackendSettings({
+      playerSourceId: player?.id ?? "",
+      playerSourceName: player?.name ?? "",
+    });
+  }
+
+  const selectedPlayer = players.find(
+    (player) => player.id === settings.playerSourceId,
+  );
+  const savedPlayerMissing =
+    settings.playerSourceId.length > 0 && !selectedPlayer;
 
   return (
     <AnimatePresence>
@@ -394,6 +434,52 @@ export function Settings({ open, onClose }: SettingsProps) {
                     />
                   </div>
                 </div>
+              ) : activeTab === "SOURCE" ? (
+                <div className="settings-source">
+                  <div className="settings-look__header">
+                    <h3>Player Source</h3>
+                    <p>
+                      Choose which media session the deck follows. Auto
+                      follows whichever app starts or resumes playback.
+                    </p>
+                  </div>
+                  <div
+                    className="settings-source__list"
+                    role="radiogroup"
+                    aria-label="Media player source"
+                  >
+                    <SourcePlayerRow
+                      label="Auto (most recently playing)"
+                      note="Follows the session that starts or resumes"
+                      selected={settings.playerSourceId.length === 0}
+                      onSelect={() => handlePlayerSelect(null)}
+                    />
+                    {savedPlayerMissing ? (
+                      <SourcePlayerRow
+                        label={settings.playerSourceName || settings.playerSourceId}
+                        note="Saved source - not running"
+                        selected
+                        missing
+                        onSelect={() => {}}
+                      />
+                    ) : null}
+                    {players.map((player) => (
+                      <SourcePlayerRow
+                        key={player.id}
+                        label={player.name}
+                        note={player.id}
+                        selected={player.id === settings.playerSourceId}
+                        playing={player.isPlaying}
+                        onSelect={() => handlePlayerSelect(player)}
+                      />
+                    ))}
+                  </div>
+                  {players.length === 0 ? (
+                    <p className="settings-source__empty">
+                      No media sessions found
+                    </p>
+                  ) : null}
+                </div>
               ) : activeTab === "OTHER" ? (
                 <div className="settings-toggle-list">
                   <SettingsToggle
@@ -468,6 +554,52 @@ export function Settings({ open, onClose }: SettingsProps) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+interface SourcePlayerRowProps {
+  label: string;
+  note: string;
+  selected: boolean;
+  playing?: boolean;
+  missing?: boolean;
+  onSelect: () => void;
+}
+
+function SourcePlayerRow({
+  label,
+  note,
+  selected,
+  playing = false,
+  missing = false,
+  onSelect,
+}: SourcePlayerRowProps) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      className={`settings-source__row${selected ? " settings-source__row--active" : ""}${missing ? " settings-source__row--missing" : ""}`}
+      disabled={missing}
+      onClick={onSelect}
+    >
+      <span className="settings-source__radio" aria-hidden="true" />
+      <span className="settings-source__copy">
+        <span className="settings-source__name">{label}</span>
+        <span className="settings-source__note">{note}</span>
+      </span>
+      {playing ? (
+        <span className="settings-source__playing">
+          <span className="settings-source__dot" aria-hidden="true" />
+          Playing
+        </span>
+      ) : null}
+      {missing ? (
+        <span className="settings-source__playing settings-source__playing--idle">
+          Not running
+        </span>
+      ) : null}
+    </button>
   );
 }
 

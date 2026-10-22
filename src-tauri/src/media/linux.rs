@@ -2,7 +2,7 @@
 // D-Bus. Mirrors the Windows SMTC surface so the rest of the app (poller,
 // commands, frontend contract) stays platform-agnostic.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use std::time::Duration;
 
@@ -11,7 +11,7 @@ use zbus::blocking::{Connection, Proxy};
 use zbus::zvariant::{OwnedObjectPath, OwnedValue};
 
 use super::artwork::bytes_to_data_url;
-use super::model::MediaSnapshot;
+use super::model::{order_players, MediaPlayer, MediaSnapshot};
 
 const MPRIS_PREFIX: &str = "org.mpris.MediaPlayer2.";
 const MPRIS_ROOT_IFACE: &str = "org.mpris.MediaPlayer2";
@@ -21,6 +21,7 @@ const MICROS_PER_SECOND: f64 = 1_000_000.0;
 const MAX_ARTWORK_BYTES: u64 = 5 * 1024 * 1024;
 const ARTWORK_TIMEOUT: Duration = Duration::from_secs(6);
 
+#[derive(Debug, Clone)]
 struct PlayerSession {
     bus_name: String,
     identity: String,
@@ -83,12 +84,55 @@ fn identity_for(connection: &Connection, bus_name: &str) -> String {
         })
 }
 
-/// Picks the session we should treat as "the deck": the one that is playing,
-/// else the one that is paused, else nothing.
-fn active_session(connection: &Connection) -> Result<Option<PlayerSession>> {
-    let mut paused: Option<PlayerSession> = None;
+/// Picks the session we should treat as "the deck". An explicit selection wins
+/// when its bus name is still on the bus; otherwise Auto follows the playing
+/// session, then the poller's last playing session, then the first paused one.
+fn active_session(
+    connection: &Connection,
+    selected: Option<&str>,
+    fallback: Option<&str>,
+) -> Result<Option<PlayerSession>> {
+    let sessions = sessions_with_status(connection)?;
+
+    if let Some(selected) = selected.map(str::trim).filter(|value| !value.is_empty()) {
+        if let Some((session, _)) = sessions
+            .iter()
+            .find(|(session, _)| session.bus_name == selected)
+        {
+            return Ok(Some(session.clone()));
+        }
+    }
+
+    if let Some((session, _)) = sessions
+        .iter()
+        .find(|(_, status)| status.as_str() == "Playing")
+    {
+        return Ok(Some(session.clone()));
+    }
+
+    if let Some(fallback) = fallback.map(str::trim).filter(|value| !value.is_empty()) {
+        if let Some((session, _)) = sessions
+            .iter()
+            .find(|(session, _)| session.bus_name == fallback)
+        {
+            return Ok(Some(session.clone()));
+        }
+    }
+
+    Ok(sessions
+        .into_iter()
+        .find(|(_, status)| status.as_str() == "Paused")
+        .map(|(session, _)| session))
+}
+
+fn sessions_with_status(connection: &Connection) -> Result<Vec<(PlayerSession, String)>> {
+    let mut sessions = Vec::new();
+    let mut seen = HashSet::new();
 
     for bus_name in bus_names(connection)? {
+        if !seen.insert(bus_name.clone()) {
+            continue;
+        }
         let status = {
             let Ok(proxy) = player_proxy(connection, &bus_name) else {
                 continue;
@@ -96,16 +140,28 @@ fn active_session(connection: &Connection) -> Result<Option<PlayerSession>> {
             playback_status(&proxy)
         };
         let identity = identity_for(connection, &bus_name);
-        let session = PlayerSession { bus_name, identity };
-
-        match status.as_str() {
-            "Playing" => return Ok(Some(session)),
-            "Paused" if paused.is_none() => paused = Some(session),
-            _ => {}
-        }
+        sessions.push((PlayerSession { bus_name, identity }, status));
     }
 
-    Ok(paused)
+    Ok(sessions)
+}
+
+/// Enumerates every live MPRIS player for the Settings picker.
+pub(crate) async fn list_players() -> Result<Vec<MediaPlayer>> {
+    tokio::task::spawn_blocking(|| {
+        let connection = session_bus()?;
+        let players = sessions_with_status(&connection)?
+            .into_iter()
+            .map(|(session, status)| MediaPlayer {
+                id: session.bus_name,
+                name: session.identity,
+                is_playing: status == "Playing",
+            })
+            .collect();
+
+        Ok(order_players(players))
+    })
+    .await?
 }
 
 fn micros_to_seconds(micros: i64) -> f64 {
@@ -239,10 +295,14 @@ fn percent_decode(value: &str) -> String {
     String::from_utf8_lossy(&out).into_owned()
 }
 
-pub(crate) async fn current_media_snapshot_with_metadata() -> Result<Option<MediaSnapshot>> {
-    tokio::task::spawn_blocking(|| {
+pub(crate) async fn current_media_snapshot_with_metadata(
+    selected: Option<String>,
+    fallback: Option<String>,
+) -> Result<Option<MediaSnapshot>> {
+    tokio::task::spawn_blocking(move || {
         let connection = session_bus()?;
-        let Some(session) = active_session(&connection)? else {
+        let Some(session) = active_session(&connection, selected.as_deref(), fallback.as_deref())?
+        else {
             return Ok(None);
         };
         let proxy = player_proxy(&connection, &session.bus_name)?;
@@ -252,10 +312,14 @@ pub(crate) async fn current_media_snapshot_with_metadata() -> Result<Option<Medi
     .await?
 }
 
-pub(crate) async fn current_media_snapshot_with_artwork() -> Result<Option<MediaSnapshot>> {
-    tokio::task::spawn_blocking(|| {
+pub(crate) async fn current_media_snapshot_with_artwork(
+    selected: Option<String>,
+    fallback: Option<String>,
+) -> Result<Option<MediaSnapshot>> {
+    tokio::task::spawn_blocking(move || {
         let connection = session_bus()?;
-        let Some(session) = active_session(&connection)? else {
+        let Some(session) = active_session(&connection, selected.as_deref(), fallback.as_deref())?
+        else {
             return Ok(None);
         };
         let proxy = player_proxy(&connection, &session.bus_name)?;
@@ -276,9 +340,10 @@ pub(crate) async fn current_media_snapshot_with_artwork() -> Result<Option<Media
 fn call_player_method(
     method: &str,
     body: &(impl serde::Serialize + zbus::zvariant::DynamicType),
+    source_id: Option<&str>,
 ) -> Result<()> {
     let connection = session_bus()?;
-    let Some(session) = active_session(&connection)? else {
+    let Some(session) = active_session(&connection, source_id, None)? else {
         return Err(anyhow!("no active MPRIS media session"));
     };
     let proxy = player_proxy(&connection, &session.bus_name)?;
@@ -289,34 +354,45 @@ fn call_player_method(
     Ok(())
 }
 
-pub(crate) async fn play() -> Result<()> {
-    tokio::task::spawn_blocking(|| call_player_method("Play", &())).await?
+pub(crate) async fn play(source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+    tokio::task::spawn_blocking(move || call_player_method("Play", &(), source_id.as_deref()))
+        .await?
 }
 
-pub(crate) async fn pause() -> Result<()> {
-    tokio::task::spawn_blocking(|| call_player_method("Pause", &())).await?
+pub(crate) async fn pause(source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+    tokio::task::spawn_blocking(move || call_player_method("Pause", &(), source_id.as_deref()))
+        .await?
 }
 
-pub(crate) async fn toggle_play_pause() -> Result<()> {
-    tokio::task::spawn_blocking(|| call_player_method("PlayPause", &())).await?
+pub(crate) async fn toggle_play_pause(source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+    tokio::task::spawn_blocking(move || call_player_method("PlayPause", &(), source_id.as_deref()))
+        .await?
 }
 
-pub(crate) async fn next() -> Result<()> {
-    tokio::task::spawn_blocking(|| call_player_method("Next", &())).await?
+pub(crate) async fn next(source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+    tokio::task::spawn_blocking(move || call_player_method("Next", &(), source_id.as_deref()))
+        .await?
 }
 
-pub(crate) async fn previous() -> Result<()> {
-    tokio::task::spawn_blocking(|| call_player_method("Previous", &())).await?
+pub(crate) async fn previous(source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+    tokio::task::spawn_blocking(move || call_player_method("Previous", &(), source_id.as_deref()))
+        .await?
 }
 
-pub(crate) async fn seek(seconds: f64) -> Result<()> {
+pub(crate) async fn seek(seconds: f64, source_id: Option<&str>) -> Result<()> {
     if !seconds.is_finite() || seconds < 0.0 {
         return Err(anyhow!("invalid seek target: {seconds}"));
     }
 
+    let source_id = source_id.map(str::to_string);
     tokio::task::spawn_blocking(move || {
         let connection = session_bus()?;
-        let Some(session) = active_session(&connection)? else {
+        let Some(session) = active_session(&connection, source_id.as_deref(), None)? else {
             return Err(anyhow!("no active MPRIS media session"));
         };
         let proxy = player_proxy(&connection, &session.bus_name)?;
