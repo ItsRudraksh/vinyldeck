@@ -96,7 +96,8 @@ impl SmtcPoller {
     }
 
     async fn snapshot_for_poll(&mut self) -> anyhow::Result<Option<MediaSnapshot>> {
-        let Some(metadata_snapshot) = super::platform::current_media_snapshot_with_metadata().await?
+        let Some(metadata_snapshot) =
+            super::platform::current_media_snapshot_with_metadata().await?
         else {
             self.cached_media = None;
             return Ok(None);
@@ -114,7 +115,8 @@ impl SmtcPoller {
             )));
         }
 
-        let Some(full_snapshot) = super::platform::current_media_snapshot_with_artwork().await? else {
+        let Some(full_snapshot) = super::platform::current_media_snapshot_with_artwork().await?
+        else {
             self.cached_media = None;
             return Ok(Some(metadata_snapshot));
         };

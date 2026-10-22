@@ -8,7 +8,10 @@ pub mod linux;
 pub mod model;
 pub mod platform;
 pub mod poller;
+#[cfg(windows)]
 pub mod smtc;
+#[cfg(not(any(windows, target_os = "linux")))]
+pub mod unsupported;
 
 use model::MediaSnapshot;
 
