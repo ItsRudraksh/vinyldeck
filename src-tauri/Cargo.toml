@@ -3,6 +3,7 @@ name = "vinyldeck"
 version = "0.1.1"
 description = "A cinematic vinyl experience for everything playing on your computer."
 authors = ["VinylDeck"]
+license = "MIT"
 edition = "2021"
 
 [lib]
