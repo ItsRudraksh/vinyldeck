@@ -21,6 +21,12 @@ Current task track:
 - User confirmed visual satisfaction and authorized backend planning.
 - Backend plan is approved and ready to build.
 
+## Audit Remediation (branch `audit-remediation`, 2026-10-22)
+- Baseline `4a98926` snapshots prior uncommitted WIP.
+- Phase 1 done: `3f80ba3` PlaybackAuthority (`media/authority.rs`, RwLock + watch; poller writes every poll), `81fa15c` tray rewired to authority + platform, mock `MediaState`/`mock.rs`/`cmd_media_*` deleted, `b0ad864` `#[cfg(windows)] mod smtc` + `media/unsupported.rs` stub for non-Windows/non-Linux, crate formatted; `51a9400` + follow-up CI (`.github/workflows/ci.yml`: ubuntu full lint/test, windows check+test+debug build, landing).
+- Linux verified: fmt --check clean, clippy --all-targets -D warnings clean, cargo test 47 passed (smtc tests now Windows-only). Windows/macOS typecheck not verified locally (targets not installed); CI covers Windows only.
+- Superseded: Phase 4 B4.3/B4.6 notes below describing tray on mock `MediaState`.
+
 ## Stage 2 Final Status
 - Core visual engine sub-stages 2a–2k implemented and verified.
 - Master Task List visual polish phases 9–11 are complete.
@@ -50,7 +56,7 @@ Current task track:
 
 ## Known Limitations / Deferred
 - Phase 11 Windows distribution smoke validation passed for release installers and installed-app behavior. Remaining release polish: WebView2 bootstrapper validation, settings location note, player compatibility matrix, bundle identifier cleanup, and code signing.
-- In-app playback controls use real `cmd_smtc_*` commands. Tray playback menu code still references the older backend media command path and should be unified/revalidated before distribution.
+- In-app playback controls use real `cmd_smtc_*` commands. Tray reads `PlaybackAuthority` (subscribe) and dispatches to `platform::*`; backend mock `MediaState`/`cmd_media_*` deleted 2026-10-22. Live tray check vs real SMTC/MPRIS still pending manual approval.
 - Debug build currently emits a non-blocking Tauri warning that identifier `com.vinyldeck.app` ends with `.app`; handle during Phase 11 distribution cleanup.
 - Mini mode async creation fix is implemented; no current mini white-window blocker is active in the V1 baseline.
 
