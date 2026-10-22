@@ -7,6 +7,7 @@
 - The Crate: every album played is pressed into a persistent collection (`collection.json`, backend-owned) with a pressing number, first-pressed date, play count, rarity tier, and label thumbnail. Plays are counted by the backend poller after half the track or 2 minutes of real listening, whichever comes first. Records visibly wear with plays. New bottom-left pressing stamp, crate overlay (`C`, top-left button, context menu), and `cmd_collection_snapshot` / `cmd_collection_press` / `collection-changed` API.
 - Needle Drop: the tonearm tracks playback progress across the grooves. Drag the headshell onto the record to seek (and resume if paused) with a live time preview on the progress ring, or off the record to pause.
 - Single instance: launching VinylDeck while it is already running focuses the existing window instead of starting a second copy.
+- Settings now shows a visible close button at the top-right of the panel; Escape and clicking outside still close it too.
 
 ### Changed
 
