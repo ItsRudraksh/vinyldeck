@@ -66,6 +66,22 @@ npm run tauri build -- --debug
 | `src-tauri/src/tray.rs` | Tray menu and close/quit lifecycle |
 | `.agents/memory/` | Internal project memory for future agent sessions |
 
+## Content Security Policy
+
+`src-tauri/tauri.conf.json` sets `app.security.csp` to:
+
+```text
+default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'
+```
+
+- Artwork arrives as `data:` URLs from the backend, so `img-src` allows `data:` and `blob:`. Inline `style` attributes (motion/react, CSS variables) rely on `'unsafe-inline'` in `style-src`.
+- Tauri appends hashes for its own injected scripts to `script-src` at build time; do not add inline `<script>` tags to `index.html`.
+- Known gaps under this exact policy (tracked, not yet relaxed):
+  - Google Fonts `@import` in `src/styles/global.css` is refused (`style-src`), and `fonts.gstatic.com` would be refused by `font-src` falling back to `default-src`. Brand fonts fall back to system fonts until fonts are self-hosted under `public/` or the policy adds `https://fonts.googleapis.com` to `style-src` and `font-src https://fonts.gstatic.com`.
+  - No `connect-src`, so Tauri's custom-protocol IPC (`ipc://localhost` on Linux/macOS, `http://ipc.localhost` on Windows) is refused on first call; Tauri logs a warning and falls back to the `postMessage` IPC for the session. Adding `connect-src 'self' ipc: http://ipc.localhost` restores the faster path.
+- Desktop `tauri dev` loads `devUrl` directly from Vite, so the policy only applies to bundled builds. Check CSP changes against `npm run build` output, not just dev.
+- Never set `csp` back to `null`.
+
 ## Architecture Rules
 
 - Keep React platform-neutral. Components consume `PlaybackState`, not Windows APIs.

@@ -10,6 +10,7 @@
 
 ### Changed
 
+- Security: bundled builds now ship a Content Security Policy (`default-src 'self'`, images from `self`/`data:`/`blob:`) instead of none.
 - Crate play counting: a play now counts after half the track or 120 s of listening, whichever comes first (was half the track, capped at 4 minutes).
 - Window controls: the custom title bar now has close, minimize, and maximize/restore, moved to the top-left so they clear the tonearm pivot and the floating triggers. Fullscreen keeps a hover-revealed bar (top edge) with minimize, exit fullscreen, and close. Mini shows minimize and close top-left on hover.
 - Pausing lifts the tonearm in place instead of swinging it to a fixed angle; track skips re-cue the arm to the start groove.
