@@ -30,6 +30,11 @@ import {
   canUseSkipControls,
   canUseTransportControls,
 } from "../lib/playback/capabilities";
+import {
+  nextRepeatMode,
+  setRepeatMode,
+  setShuffle,
+} from "../lib/media/controls";
 
 import { AmbientLayer } from "../components/AmbientLayer";
 import { VaporGrid } from "../components/VaporGrid";
@@ -191,6 +196,14 @@ export function MainView() {
   function handlePrevious() {
     markTrackChangeIntent("previous");
     source?.previous();
+  }
+  function handleToggleShuffle() {
+    if (!effectivePlayback.canShuffle) return;
+    void setShuffle(!effectivePlayback.shuffle);
+  }
+  function handleToggleRepeat() {
+    if (!effectivePlayback.canRepeat) return;
+    void setRepeatMode(nextRepeatMode(effectivePlayback.repeatMode));
   }
 
   // Phase 8: Seek handler — delegates to source
@@ -437,6 +450,12 @@ export function MainView() {
             onPause={handlePause}
             onNext={handleNext}
             onPrevious={handlePrevious}
+            canRepeat={effectivePlayback.canRepeat}
+            canShuffle={effectivePlayback.canShuffle}
+            repeatMode={effectivePlayback.repeatMode}
+            shuffle={effectivePlayback.shuffle}
+            onToggleRepeat={handleToggleRepeat}
+            onToggleShuffle={handleToggleShuffle}
           />
         </div>
 

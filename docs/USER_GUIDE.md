@@ -27,10 +27,15 @@ The main view combines:
 - track title, artist, and album
 - progress ring and seek support when the source allows it
 - play/pause, previous, and next controls
+- shuffle and repeat levers when the source supports them
 - shell picker
 - source badge
 
 Controls automatically disable when the active media source does not support that action.
+
+### Shuffle and Repeat
+
+Two small metal levers sit beside the transport pill. Shuffle flips on and off. Repeat cycles Off -> All -> One -> Off, and the tiny `1` engraved on the lever marks repeat-one. If the active source does not report shuffle or repeat support, its lever is hidden. The same states are available from the tray menu while VinylDeck is minimized to the tray.
 
 ### Needle Drop
 

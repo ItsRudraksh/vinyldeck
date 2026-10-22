@@ -5,7 +5,9 @@ pub(crate) struct SmtcSessionMetadata {
     pub source_name: String,
 }
 
-use super::model::{order_players, MediaPlayer, MediaSnapshot};
+use super::model::{
+    order_players, repeat_mode_from_smtc_code, smtc_auto_repeat_code, MediaPlayer, MediaSnapshot,
+};
 
 const TICKS_PER_SECOND: f64 = 10_000_000.0;
 const WINDOWS_UNIX_EPOCH_DIFF_SECONDS: u64 = 11_644_473_600;
@@ -271,6 +273,19 @@ fn current_lightweight_snapshot_from_session(
             snapshot.can_control = controls.IsPlayEnabled().unwrap_or(false)
                 || controls.IsPauseEnabled().unwrap_or(false);
         }
+
+        // Playback info is the SMTC capability surface for these two modes:
+        // a readable repeat/shuffle value means the session exposes it.
+        if let Ok(repeat_mode) = playback_info.AutoRepeatMode() {
+            snapshot.can_repeat = true;
+            if let Ok(mode) = repeat_mode.Value() {
+                snapshot.repeat_mode = repeat_mode_from_smtc_code(mode.0).to_string();
+            }
+        }
+        if let Ok(shuffle) = playback_info.IsShuffleActive() {
+            snapshot.can_shuffle = true;
+            snapshot.shuffle = shuffle.Value().unwrap_or(false);
+        }
     }
 
     if let Ok(timeline) = session.GetTimelineProperties() {
@@ -337,6 +352,30 @@ pub(crate) async fn seek(position_seconds: f64, source_id: Option<&str>) -> anyh
     require_command_accepted(
         session.TryChangePlaybackPositionAsync(ticks)?.await?,
         "seek",
+    )
+}
+
+#[allow(dead_code)]
+pub(crate) async fn set_repeat(mode: &str, source_id: Option<&str>) -> anyhow::Result<()> {
+    use windows::Media::MediaPlaybackAutoRepeatMode;
+
+    let code = smtc_auto_repeat_code(mode)
+        .ok_or_else(|| anyhow::anyhow!("invalid repeat mode: {mode}; expected off, all, or one"))?;
+    let session = current_session_for_command(source_id).await?;
+    require_command_accepted(
+        session
+            .TryChangeAutoRepeatModeAsync(MediaPlaybackAutoRepeatMode(code))?
+            .await?,
+        "repeat",
+    )
+}
+
+#[allow(dead_code)]
+pub(crate) async fn set_shuffle(enabled: bool, source_id: Option<&str>) -> anyhow::Result<()> {
+    let session = current_session_for_command(source_id).await?;
+    require_command_accepted(
+        session.TryChangeShuffleActiveAsync(enabled)?.await?,
+        "shuffle",
     )
 }
 

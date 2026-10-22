@@ -220,6 +220,7 @@ export function MiniView() {
           onNext={handleNext}
           onPrevious={handlePrevious}
           showTooltips={false}
+          showModes={false}
         />
       </div>
 

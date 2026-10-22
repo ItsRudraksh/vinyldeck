@@ -11,7 +11,10 @@ use zbus::blocking::{Connection, Proxy};
 use zbus::zvariant::{OwnedObjectPath, OwnedValue};
 
 use super::artwork::bytes_to_data_url;
-use super::model::{order_players, MediaPlayer, MediaSnapshot};
+use super::model::{
+    mpris_loop_status, order_players, repeat_mode_from_mpris, MediaPlayer, MediaSnapshot,
+    REPEAT_MODE_OFF,
+};
 
 const MPRIS_PREFIX: &str = "org.mpris.MediaPlayer2.";
 const MPRIS_ROOT_IFACE: &str = "org.mpris.MediaPlayer2";
@@ -227,6 +230,15 @@ fn snapshot_from(proxy: &Proxy<'_>, session: &PlayerSession) -> Option<MediaSnap
     let can_next = proxy.get_property::<bool>("CanGoNext").unwrap_or(false);
     let can_previous = proxy.get_property::<bool>("CanGoPrevious").unwrap_or(false);
 
+    // LoopStatus/Shuffle are readable on most MPRIS players. Readability plus
+    // CanControl is our capability signal; CanControl false forces both off.
+    let loop_status = proxy.get_property::<String>("LoopStatus").ok();
+    let shuffle = proxy.get_property::<bool>("Shuffle").ok();
+    let repeat_mode = loop_status
+        .as_deref()
+        .map(repeat_mode_from_mpris)
+        .unwrap_or(REPEAT_MODE_OFF);
+
     Some(MediaSnapshot {
         track: metadata_string(&metadata, "xesam:title").unwrap_or_default(),
         artist: metadata_string_list(&metadata, "xesam:artist").join(", "),
@@ -243,6 +255,10 @@ fn snapshot_from(proxy: &Proxy<'_>, session: &PlayerSession) -> Option<MediaSnap
         can_seek,
         can_skip: can_next || can_previous,
         can_control,
+        can_repeat: can_control && loop_status.is_some(),
+        can_shuffle: can_control && shuffle.is_some(),
+        repeat_mode: repeat_mode.to_string(),
+        shuffle: shuffle.unwrap_or(false),
     })
 }
 
@@ -406,6 +422,48 @@ pub(crate) async fn seek(seconds: f64, source_id: Option<&str>) -> Result<()> {
             .map_err(|error| anyhow!("MPRIS SetPosition failed: {error}"))?;
 
         Ok(())
+    })
+    .await?
+}
+
+/// Writes MPRIS `LoopStatus`. Accepts only `off`, `all`, or `one`; any other
+/// value is rejected before touching D-Bus.
+pub(crate) async fn set_repeat(mode: &str, source_id: Option<&str>) -> Result<()> {
+    let loop_status = mpris_loop_status(mode)
+        .ok_or_else(|| anyhow!("invalid repeat mode: {mode}; expected off, all, or one"))?;
+    let source_id = source_id.map(str::to_string);
+
+    tokio::task::spawn_blocking(move || {
+        let connection = session_bus()?;
+        let Some(session) = active_session(&connection, source_id.as_deref(), None)? else {
+            return Err(anyhow!("no active MPRIS media session"));
+        };
+        let proxy = player_proxy(&connection, &session.bus_name)?;
+        proxy
+            .set_property("LoopStatus", loop_status)
+            .map_err(|error| {
+                anyhow!(
+                    "MPRIS LoopStatus set failed for {}: {error}",
+                    session.bus_name
+                )
+            })
+    })
+    .await?
+}
+
+/// Writes MPRIS `Shuffle`.
+pub(crate) async fn set_shuffle(enabled: bool, source_id: Option<&str>) -> Result<()> {
+    let source_id = source_id.map(str::to_string);
+
+    tokio::task::spawn_blocking(move || {
+        let connection = session_bus()?;
+        let Some(session) = active_session(&connection, source_id.as_deref(), None)? else {
+            return Err(anyhow!("no active MPRIS media session"));
+        };
+        let proxy = player_proxy(&connection, &session.bus_name)?;
+        proxy
+            .set_property("Shuffle", enabled)
+            .map_err(|error| anyhow!("MPRIS Shuffle set failed for {}: {error}", session.bus_name))
     })
     .await?
 }

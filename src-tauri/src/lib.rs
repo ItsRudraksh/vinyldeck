@@ -45,6 +45,8 @@ pub fn run() {
             media::commands::cmd_smtc_next,
             media::commands::cmd_smtc_previous,
             media::commands::cmd_smtc_seek,
+            media::commands::cmd_media_set_repeat,
+            media::commands::cmd_media_set_shuffle,
             settings::cmd_settings_snapshot,
             settings::cmd_settings_update,
             settings::cmd_settings_reset,

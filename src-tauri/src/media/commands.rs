@@ -95,3 +95,27 @@ pub async fn cmd_smtc_seek(
         .map_err(|error| error.to_string())?;
     cmd_smtc_snapshot(authority).await
 }
+
+#[tauri::command]
+pub async fn cmd_media_set_repeat(
+    authority: State<'_, PlaybackAuthority>,
+    mode: String,
+) -> Result<Option<MediaSnapshot>, String> {
+    let source_id = authority.selected_source_id();
+    super::platform::set_repeat(&mode, source_id.as_deref())
+        .await
+        .map_err(|error| error.to_string())?;
+    cmd_smtc_snapshot(authority).await
+}
+
+#[tauri::command]
+pub async fn cmd_media_set_shuffle(
+    authority: State<'_, PlaybackAuthority>,
+    enabled: bool,
+) -> Result<Option<MediaSnapshot>, String> {
+    let source_id = authority.selected_source_id();
+    super::platform::set_shuffle(enabled, source_id.as_deref())
+        .await
+        .map_err(|error| error.to_string())?;
+    cmd_smtc_snapshot(authority).await
+}
