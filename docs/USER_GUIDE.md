@@ -91,10 +91,11 @@ Shortcuts work while a VinylDeck window is focused.
 | Settings | `S` |
 | Toggle Art Ambient | `A` |
 | The Crate | `C` |
+| Show keyboard shortcuts | `?` |
 | Close the topmost menu, crate, or settings / leave fullscreen | `Escape` |
 | Quit | `Ctrl+Q` |
 
-Disable shortcuts in Settings -> Other. Escape remains available for closing menus, the crate, Settings, and leaving fullscreen.
+Disable shortcuts in Settings -> Other. Escape remains available for closing the cheat sheet, menus, the crate, Settings, and leaving fullscreen. Press `?` in Main or Fullscreen to open the cheat sheet; Mini ignores it. Escape closes the topmost surface in this order: keyboard shortcuts, context menu, The Crate, Settings, fullscreen.
 
 The progress ring around the record is a keyboard slider: `Tab` to it, then use `Left` / `Right` (with or without `Shift`) to seek 5 seconds, or `Home` to restart the track. While Settings or the crate is open, `Tab` stays inside it and focus returns to where you were when it closes.
 

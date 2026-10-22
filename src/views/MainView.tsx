@@ -51,6 +51,7 @@ import { AppContextMenu } from "../components/AppContextMenu";
 import type { AppContextMenuHandle } from "../components/AppContextMenu";
 import { Crate } from "../components/Crate";
 import { CrateStamp } from "../components/Crate/CrateStamp";
+import { ShortcutSheet } from "../components/ShortcutSheet";
 import { useCratePressing, useCurrentRecord } from "../hooks/useCrate";
 import { Kbd } from "../components/Kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/Tooltip";
@@ -155,6 +156,7 @@ export function MainView() {
   const [needlePreview, setNeedlePreview] = useState<number | null>(null);
   const [isCrateOpen, setIsCrateOpen] = useState(false);
   const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [sleepTimer, setSleepTimer] = useState<SleepTimerSnapshot | null>(null);
   const [parkRequest, setParkRequest] = useState(0);
   const contextMenuRef = useRef<AppContextMenuHandle>(null);
@@ -175,6 +177,10 @@ export function MainView() {
     onToggleCrate: () => setIsCrateOpen((open) => !open),
     isContextMenuOpen,
     onCloseContextMenu: () => contextMenuRef.current?.close(),
+    isShortcutsOpen,
+    onOpenShortcuts: () => setIsShortcutsOpen(true),
+    onCloseShortcuts: () => setIsShortcutsOpen(false),
+    onToggleShortcuts: () => setIsShortcutsOpen((open) => !open),
   });
 
   // Sleep timer: read the backend's ephemeral state, then follow its events.
@@ -771,6 +777,12 @@ export function MainView() {
         open={isCrateOpen}
         onClose={() => setIsCrateOpen(false)}
         focusKey={currentRecord.record?.key ?? null}
+      />
+
+      {/* z:93 — Keyboard shortcuts cheat sheet (above Crate, below title bar) */}
+      <ShortcutSheet
+        open={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
       />
 
       {/* z:40 — Settings overlay */}
