@@ -43,19 +43,9 @@ These commands are used by `TauriSource` in desktop mode.
 
 Command responses are not the UI source of truth. The frontend sends intent, then accepts poller events as canonical state.
 
-## Legacy Backend Media Commands
+## Backend Playback Authority
 
-The older backend media authority remains registered:
-
-- `cmd_media_snapshot`
-- `cmd_media_play`
-- `cmd_media_pause`
-- `cmd_media_toggle_play_pause`
-- `cmd_media_next`
-- `cmd_media_previous`
-- `cmd_media_seek`
-
-In-app playback does not use these commands in Tauri mode. Tray playback menu code still references this path and should be unified with SMTC before distribution validation.
+`PlaybackAuthority` (Rust managed state) holds the last real platform snapshot written by the poller. The tray subscribes to it for its tooltip and Play/Pause/Previous/Next state, and dispatches controls through the same platform bridge as `cmd_smtc_*`. The legacy mock-backed `cmd_media_*` commands were removed.
 
 ## Settings Commands And Events
 

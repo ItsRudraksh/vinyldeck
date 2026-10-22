@@ -67,8 +67,8 @@
 
 - `media::authority::PlaybackAuthority` (Tauri managed state) is the single backend holder of the last **real** playback snapshot: `RwLock<Option<MediaSnapshot>>` plus a `tokio::sync::watch` channel (`subscribe()`), notified only on value change.
 - The poller is the only writer: every poll result from `platform::*` (SMTC on Windows, MPRIS on Linux) goes through `authority.update(..)` before emit logic. `None` means no active session.
-- Backend readers (tray, future consumers) read the authority; they must not call the mock `media::MediaState`.
-- `cmd_media_*` and `media_*` helpers (mock-backed) are `#[deprecated]` and kept only until the tray is rewired; then they are removed and the mock is gated to dev builds.
+- Backend readers (tray, future consumers) read or subscribe to the authority; tray controls dispatch through `platform::*`.
+- The mock `media::MediaState`, `mock.rs`, and the `cmd_media_*` commands were removed once the tray moved to the authority (2026-10-22).
 - Commands that control playback go to `platform::*` (`cmd_smtc_*`).
 
 ## Architectural Principles

@@ -16,15 +16,12 @@ fn apply_linux_window_theme() {
     }
 }
 
-// Legacy cmd_media_* stay registered until the tray moves to PlaybackAuthority.
-#[allow(deprecated)]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(target_os = "linux")]
     apply_linux_window_theme();
 
     tauri::Builder::default()
-        .manage(media::MediaState::new())
         .manage(media::authority::PlaybackAuthority::new())
         .manage(settings::SettingsState::new())
         .manage(collection::CollectionState::new())
@@ -35,13 +32,6 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .on_window_event(tray::handle_window_close)
         .invoke_handler(tauri::generate_handler![
-            media::commands::cmd_media_snapshot,
-            media::commands::cmd_media_play,
-            media::commands::cmd_media_pause,
-            media::commands::cmd_media_toggle_play_pause,
-            media::commands::cmd_media_next,
-            media::commands::cmd_media_previous,
-            media::commands::cmd_media_seek,
             media::commands::cmd_smtc_snapshot,
             media::commands::cmd_smtc_play,
             media::commands::cmd_smtc_pause,

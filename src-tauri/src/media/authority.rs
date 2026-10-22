@@ -3,7 +3,7 @@
 // Holds the last real snapshot read from the platform bridge (SMTC on
 // Windows, MPRIS on Linux). The poller is the only writer; tray, commands,
 // and any future reader take the value from here instead of asking the
-// platform again or falling back to the mock `MediaState`.
+// platform again.
 use std::sync::RwLock;
 
 use tokio::sync::watch;
@@ -25,7 +25,7 @@ impl PlaybackAuthority {
     }
 
     /// Last real snapshot, or `None` when no media session is active.
-    // Readers (tray) land in the follow-up rewire.
+    // One-shot read API; current readers (tray) use `subscribe`.
     #[allow(dead_code)]
     pub fn snapshot(&self) -> Option<MediaSnapshot> {
         self.current
@@ -51,7 +51,6 @@ impl PlaybackAuthority {
         true
     }
 
-    #[allow(dead_code)]
     pub fn subscribe(&self) -> watch::Receiver<Option<MediaSnapshot>> {
         self.notifier.subscribe()
     }
