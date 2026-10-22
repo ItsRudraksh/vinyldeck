@@ -153,6 +153,8 @@ enum TrayMediaAction {
     Next,
 }
 
+// Still on the mock MediaState; rewired to PlaybackAuthority in a follow-up.
+#[allow(deprecated)]
 fn control_media_from_tray(app: &AppHandle, action: TrayMediaAction) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {

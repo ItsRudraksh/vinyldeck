@@ -4,9 +4,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use super::{
+    authority::PlaybackAuthority,
     emit_media_snapshot,
     model::{MediaSemanticKey, MediaSnapshot},
 };
@@ -52,6 +53,9 @@ pub fn start_smtc_poller(app: AppHandle) {
 
 async fn poll_once(app: &AppHandle, poller: &mut SmtcPoller) -> anyhow::Result<()> {
     let snapshot = poller.snapshot_for_poll().await?;
+    if let Some(authority) = app.try_state::<PlaybackAuthority>() {
+        authority.update(snapshot.clone());
+    }
     let now = Instant::now();
     if let Some(play) = poller.listens.observe(snapshot.as_ref(), now) {
         collection::record_play(app, &play.artist, &play.album, &play.track).await;

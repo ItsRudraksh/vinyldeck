@@ -16,6 +16,8 @@ fn apply_linux_window_theme() {
     }
 }
 
+// Legacy cmd_media_* stay registered until the tray moves to PlaybackAuthority.
+#[allow(deprecated)]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     #[cfg(target_os = "linux")]
@@ -23,6 +25,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .manage(media::MediaState::new())
+        .manage(media::authority::PlaybackAuthority::new())
         .manage(settings::SettingsState::new())
         .manage(collection::CollectionState::new())
         .plugin(tauri_plugin_autostart::init(
