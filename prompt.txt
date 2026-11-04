@@ -1,0 +1,180 @@
+# Implementação da integração com a API do Discogs no VinylDeck
+
+Quero que você modifique o projeto existente **VinylDeck**, disponível em:
+
+https://github.com/ItsRudraksh/vinyldeck.git
+
+O objetivo é integrar a API do **Discogs** (https://www.discogs.com/developers) para buscar e exibir imagens de capas e discos de vinil dos álbuns, tornando a experiência visual do aplicativo mais realista e personalizada.
+
+## 1. Análise inicial do projeto
+
+Antes de começar a programar:
+
+- Analise toda a estrutura e arquitetura atual do projeto.
+- Identifique como o aplicativo busca e reproduz músicas.
+- Identifique onde a interface exibe o disco de vinil durante a reprodução.
+- Identifique como são armazenadas as informações das músicas, álbuns e artistas.
+- Entenda como funciona a imagem padrão atualmente utilizada.
+- Identifique a melhor maneira de integrar a API do Discogs sem prejudicar a arquitetura existente.
+
+Não recrie o projeto do zero. Trabalhe sobre o código atual e preserve todas as funcionalidades existentes.
+
+## 2. Integração com a API do Discogs
+
+Utilize a API oficial do Discogs para pesquisar os lançamentos musicais e obter as imagens correspondentes aos álbuns e discos.
+
+Documentação:
+https://www.discogs.com/developers
+
+A integração deverá:
+
+- Pesquisar o álbum utilizando o nome do artista e o título do álbum.
+- Utilizar os resultados da API para localizar as imagens disponíveis.
+- Obter as imagens de cada lançamento encontrado.
+- Priorizar resultados que correspondam corretamente ao artista e ao álbum.
+- Evitar resultados incorretos ou de álbuns com nomes semelhantes.
+- Tratar corretamente erros de conexão, ausência de resultados e limites de requisições da API.
+
+**Importante:** utilize autenticação conforme as exigências atuais do Discogs. Não exponha tokens ou credenciais no frontend. Armazene as credenciais em variáveis de ambiente e utilize o mecanismo de backend adequado à arquitetura do projeto.
+
+## 3. Exibição da imagem do vinil durante a reprodução
+
+Essa é a principal funcionalidade que quero implementar.
+
+Quando uma música estiver tocando, o VinylDeck deverá buscar no Discogs as imagens correspondentes ao álbum daquela música.
+
+O objetivo é que o disco de vinil exibido na interface utilize uma imagem real obtida da API, em vez de depender exclusivamente da imagem genérica atual.
+
+O comportamento esperado:
+
+1. O usuário começa a reproduzir uma música.
+2. O aplicativo identifica o artista e o álbum da música.
+3. O sistema pesquisa esse álbum na API do Discogs.
+4. O aplicativo obtém as imagens disponíveis.
+5. A interface atualiza o disco de vinil com a imagem selecionada.
+6. A imagem deve acompanhar o álbum da música que está tocando.
+
+A implementação deve respeitar o design e as animações atuais do VinylDeck.
+
+Não quero que a imagem seja simplesmente exibida como uma capa quadrada sobre o disco. Quero que ela seja integrada visualmente ao próprio vinil, respeitando o posicionamento, as dimensões e o estilo visual do disco já existente.
+
+## 4. Seleção de imagens disponíveis
+
+Quero também uma funcionalidade para escolher manualmente qual imagem será utilizada.
+
+O funcionamento deverá ser:
+
+- Quando o álbum for identificado pela primeira vez, o aplicativo selecionará automaticamente uma imagem padrão da API.
+- Caso o Discogs disponibilize mais de uma imagem, o usuário poderá escolher entre elas.
+- Deve existir uma opção visual para abrir um seletor de imagens.
+- O seletor deverá apresentar miniaturas de todas as imagens disponíveis.
+- Ao clicar em uma miniatura, o disco de vinil deverá atualizar imediatamente para a imagem escolhida.
+- A escolha deverá permanecer salva para aquele álbum, inclusive depois de fechar e abrir o aplicativo novamente.
+
+Se houver somente uma imagem disponível, não é necessário mostrar uma opção de seleção.
+
+Se não houver imagens disponíveis, utilize a imagem padrão original do VinylDeck.
+
+## 5. Interface e experiência do usuário
+
+Mantenha a identidade visual original do VinylDeck.
+
+A nova funcionalidade deve parecer parte nativa do aplicativo, e não um recurso adicionado posteriormente.
+
+Requisitos:
+
+- Criar um botão ou ícone discreto para selecionar as imagens.
+- Criar uma janela, modal ou painel para visualizar as opções disponíveis.
+- Exibir miniaturas com boa qualidade.
+- Destacar visualmente a imagem atualmente selecionada.
+- Permitir trocar a imagem sem interromper a reprodução da música.
+- Utilizar transições suaves na troca das imagens.
+- Manter a animação de rotação do disco funcionando normalmente.
+
+## 6. Cache e desempenho
+
+Não quero que o aplicativo faça uma nova requisição à API toda vez que uma música começar a tocar.
+
+Implemente um sistema de cache para:
+
+- Armazenar os resultados das pesquisas.
+- Armazenar as URLs das imagens encontradas.
+- Salvar a imagem escolhida pelo usuário.
+- Reutilizar os resultados quando outra música do mesmo álbum for reproduzida.
+
+Considere o artista e o álbum como identificadores da pesquisa, evitando misturar imagens de álbuns diferentes.
+
+O sistema também deve lidar corretamente com carregamento de imagens, evitando que a interface fique travada enquanto aguarda a resposta da API.
+
+## 7. Tratamento de situações especiais
+
+Implemente os seguintes comportamentos:
+
+- Sem conexão com a internet: utilizar a última imagem armazenada em cache.
+- Álbum não encontrado: utilizar a imagem padrão do aplicativo.
+- Álbum sem imagens: utilizar a imagem padrão.
+- Erro na API: não interromper a reprodução.
+- Várias versões do mesmo álbum: apresentar resultados relevantes e priorizar a correspondência correta.
+- Mais de uma imagem no lançamento: permitir seleção manual.
+- Troca de música: atualizar a imagem de acordo com o novo álbum, sem apresentar imagens antigas incorretamente.
+
+## 8. Requisitos técnicos
+
+- Respeite a arquitetura e as tecnologias já utilizadas pelo projeto.
+- Utilize boas práticas de programação.
+- Separe a lógica de comunicação com o Discogs da interface gráfica.
+- Não coloque tokens de autenticação diretamente no código.
+- Evite requisições duplicadas.
+- Implemente tratamento de erros.
+- Preserve compatibilidade com as funcionalidades atuais.
+- Não remova recursos existentes para implementar essa funcionalidade.
+
+Consulte a documentação oficial do Discogs para garantir que os endpoints, parâmetros, autenticação e utilização das imagens estejam corretos.
+
+## 9. Resultado esperado
+
+Quero que o VinylDeck funcione da seguinte maneira:
+
+**Exemplo de utilização:**
+
+Estou ouvindo uma música do álbum "Random Access Memories", do Daft Punk.
+
+O VinylDeck identifica o álbum e pesquisa no Discogs.
+
+O aplicativo encontra as imagens disponíveis para esse lançamento e escolhe automaticamente uma imagem inicial.
+
+O disco de vinil exibido na tela passa a utilizar a imagem real obtida do Discogs.
+
+Se existirem outras imagens disponíveis, posso clicar no botão de seleção e escolher outra imagem para utilizar no disco.
+
+Minha escolha fica salva e será utilizada novamente quando eu reproduzir outra música do mesmo álbum.
+
+Tudo isso deve acontecer sem interromper a música e sem prejudicar as animações do disco.
+
+## 10. Execução e entrega
+
+Não quero apenas uma explicação ou um exemplo de código.
+
+Quero que você implemente efetivamente essa funcionalidade no repositório existente.
+
+Siga estas etapas:
+
+1. Analise o projeto.
+2. Apresente brevemente o plano de implementação.
+3. Implemente a integração com o Discogs.
+4. Implemente a seleção de imagens.
+5. Implemente o cache e a persistência das escolhas.
+6. Integre tudo à interface atual.
+7. Execute os testes disponíveis.
+8. Corrija eventuais problemas encontrados.
+
+Ao terminar, apresente:
+
+- Arquivos criados e modificados.
+- Como funciona a integração.
+- Quais variáveis de ambiente precisam ser configuradas.
+- Como configurar a autenticação do Discogs.
+- Como testar a funcionalidade.
+- Quais limitações ainda existem.
+
+**Prioridade máxima:** manter o visual original do VinylDeck e fazer com que o disco de vinil exibido durante a reprodução utilize imagens reais dos lançamentos encontrados no Discogs, com possibilidade de seleção manual entre as imagens disponíveis.

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- Discogs album artwork on the vinyl label, matched by artist and album, with a fallback to the player's artwork.
+- Vinyl artwork picker in the main window, with alternate covers from an album's other versions and photos in separate sections. The choice is saved per album and followed by the Mini player.
+- Per-album disk cache, so repeat plays make no Discogs requests and saved artwork works offline.
+- White margins around artwork are removed before it reaches the vinyl label.
+- A photo of the record itself now becomes the whole disc by default, such as a pink pressing, instead of being squeezed into the center label.
+- Choose whether each image goes on the center or the whole disc, and adjust its zoom and position to fit. The choice is saved per image and followed by the Mini player.
+- Browse every edition of an album from Discogs, filtered by format, with names such as "Glow In The Dark", and use any image from any of them.
+- Optional Vinyl Crackle: synthesized surface noise with its own volume that plays while a track plays. Off by default.
+
 ## 0.1.1 - 2026-07-03
 
 ### Changed

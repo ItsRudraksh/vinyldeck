@@ -40,13 +40,18 @@ import { TrackInfo } from "../components/TrackInfo";
 import { Controls } from "../components/Controls";
 import { ThemePicker } from "../components/ThemePicker";
 import { SourceBadge } from "../components/SourceBadge";
+import { ArtworkPicker } from "../components/ArtworkPicker";
 import { Settings } from "../components/Settings";
 import { AppContextMenu } from "../components/AppContextMenu";
 import { Kbd } from "../components/Kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/Tooltip";
+import { DEFAULT_ART_PLACEMENT } from "../lib/discogs/types";
+import { useAlbumArtwork } from "../hooks/useAlbumArtwork";
 import { useColorExtraction } from "../hooks/useColorExtraction";
+import { usePreparedArtwork } from "../hooks/usePreparedArtwork";
 import { useIdleMode } from "../hooks/useIdleMode";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useVinylNoise } from "../hooks/useVinylNoise";
 import { quitApplication } from "../lib/appLifecycle";
 import { commitSettings } from "../lib/settings";
 import {
@@ -128,7 +133,20 @@ export function MainView() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
-  const artworkDataUrl = devForceEmpty ? null : rawArtworkDataUrl;
+  const { artworkDataUrl: albumArtworkDataUrl, art: albumArt } = useAlbumArtwork(
+    effectivePlayback.artist,
+    effectivePlayback.album,
+    rawArtworkDataUrl,
+  );
+  // A placement belongs to a Discogs image, never to the player's own artwork.
+  const artworkPlacement = albumArt?.artworkDataUrl
+    ? albumArt.placement
+    : DEFAULT_ART_PLACEMENT;
+  const placedArtwork = usePreparedArtwork(
+    devForceEmpty ? null : albumArtworkDataUrl,
+    artworkPlacement.mode,
+  );
+  const artworkDataUrl = placedArtwork?.src ?? null;
 
   useKeyboardShortcuts({
     renderMode: "main",
@@ -143,6 +161,8 @@ export function MainView() {
     ambientEnabled: settings.ambientMode !== "off",
     seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
   });
+
+  useVinylNoise(settings.vinylNoise && isPlaying, settings.vinylNoiseVolume);
 
   // Phase 7: Idle detection — only when playing
   const isIdle = useIdleMode(isPlaying, {
@@ -356,6 +376,9 @@ export function MainView() {
                   isPlaying={isPlaying}
                   vinylWobble={settings.vinylWobble}
                   artworkDataUrl={artworkDataUrl}
+                  wholeDisc={placedArtwork?.wholeDisc ?? false}
+                  discLabelRatio={placedArtwork?.discLabelRatio ?? null}
+                  artworkPlacement={artworkPlacement}
                   trackTitle={effectivePlayback.track}
                   size={VINYL_SIZE}
                   trackChangeDirection={trackChangeDirection}
@@ -496,6 +519,18 @@ export function MainView() {
           Settings <Kbd>S</Kbd>
         </TooltipContent>
       </Tooltip>
+
+      {/* z:85 — Vinyl artwork picker; hides with the rest of the UI on idle */}
+      {!isSettingsOpen && (
+        <div style={idleHideStyle}>
+          <ArtworkPicker
+            art={albumArt}
+            album={effectivePlayback.album}
+            artworkSrc={artworkDataUrl}
+            wholeDisc={placedArtwork?.wholeDisc ?? false}
+          />
+        </div>
+      )}
 
       {/* z:40 — Settings overlay */}
       <Settings

@@ -639,3 +639,48 @@
   mix-blend-mode: screen;
   opacity: 0.86;
 }
+
+/* Artwork covering the whole disc.
+   Last in this file so it outranks every pressing above. The artwork is the wax and
+   the label now, so the generated ones step aside. Grooves, sheen, and rim depth stay
+   so it still reads as a physical object, but stop at the label area. */
+.vinyl-wrapper--art-disc .vinyl-disc {
+  background: #0c0c0c;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.vinyl-wrapper--art-disc .vinyl-disc::before,
+.vinyl-wrapper--art-disc .vinyl-translucent-ghost,
+.vinyl-wrapper--art-disc .vinyl-pressing-base,
+.vinyl-wrapper--art-disc .vinyl-pressing-texture,
+.vinyl-wrapper--art-disc .vinyl-label-ring,
+.vinyl-wrapper--art-disc .vinyl-label {
+  opacity: 0;
+}
+
+.vinyl-wrapper--art-disc .vinyl-pressing-depth {
+  background: radial-gradient(
+    circle at center,
+    transparent 0 86%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.22);
+  opacity: 1;
+}
+
+.vinyl-wrapper--art-disc .vinyl-grooves {
+  -webkit-mask-image: radial-gradient(
+    circle closest-side at center,
+    transparent 0 var(--art-label-radius, 33%),
+    #000 calc(var(--art-label-radius, 33%) + 1.5%)
+  );
+  mask-image: radial-gradient(
+    circle closest-side at center,
+    transparent 0 var(--art-label-radius, 33%),
+    #000 calc(var(--art-label-radius, 33%) + 1.5%)
+  );
+  box-shadow: none;
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}

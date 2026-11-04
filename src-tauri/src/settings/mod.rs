@@ -39,6 +39,10 @@ pub struct PersistedSettings {
     /// Mini-only: applies a native Windows Acrylic blur-through effect on the
     /// Mini window and lets its own background go fully transparent.
     pub mini_transparent_mode: bool,
+    /// Synthesized surface noise played while a track plays. Opt-in.
+    pub vinyl_noise: bool,
+    /// Surface noise level, 0-100.
+    pub vinyl_noise_volume: u8,
 }
 
 impl Default for PersistedSettings {
@@ -59,6 +63,8 @@ impl Default for PersistedSettings {
             start_with_windows: false,
             window_mode: "main".to_string(),
             mini_transparent_mode: false,
+            vinyl_noise: false,
+            vinyl_noise_volume: 40,
         }
     }
 }
@@ -80,6 +86,8 @@ pub struct SettingsPatch {
     pub start_with_windows: Option<bool>,
     pub window_mode: Option<String>,
     pub mini_transparent_mode: Option<bool>,
+    pub vinyl_noise: Option<bool>,
+    pub vinyl_noise_volume: Option<u8>,
 }
 
 pub struct SettingsState {
@@ -226,6 +234,8 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
             raw.get("miniTransparentMode"),
             defaults.mini_transparent_mode,
         ),
+        vinyl_noise: read_bool(raw.get("vinylNoise"), defaults.vinyl_noise),
+        vinyl_noise_volume: read_volume(raw.get("vinylNoiseVolume"), defaults.vinyl_noise_volume),
     }
 }
 
@@ -283,6 +293,12 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
     }
     if let Some(value) = patch.mini_transparent_mode {
         next.mini_transparent_mode = value;
+    }
+    if let Some(value) = patch.vinyl_noise {
+        next.vinyl_noise = value;
+    }
+    if let Some(value) = patch.vinyl_noise_volume {
+        next.vinyl_noise_volume = value.min(100);
     }
 
     next.art_ambient = next.ambient_mode != "off";
@@ -342,6 +358,13 @@ fn read_idle_timeout(value: Option<&Value>) -> u8 {
         .and_then(Value::as_u64)
         .map(|value| value.clamp(1, 5) as u8)
         .unwrap_or(PersistedSettings::default().idle_timeout_seconds)
+}
+
+fn read_volume(value: Option<&Value>, fallback: u8) -> u8 {
+    value
+        .and_then(Value::as_u64)
+        .map(|value| value.min(100) as u8)
+        .unwrap_or(fallback)
 }
 
 #[cfg(test)]
@@ -513,5 +536,45 @@ mod tests {
         );
 
         assert!(settings.mini_transparent_mode);
+    }
+
+    #[test]
+    fn vinyl_noise_is_off_by_default_including_for_existing_settings_files() {
+        let defaults = PersistedSettings::default();
+        assert!(!defaults.vinyl_noise);
+
+        let existing_file = validate_settings(Some(json!({ "theme": "glass" })));
+        assert!(!existing_file.vinyl_noise);
+        assert_eq!(
+            existing_file.vinyl_noise_volume,
+            defaults.vinyl_noise_volume
+        );
+    }
+
+    #[test]
+    fn vinyl_noise_volume_is_clamped_and_validated() {
+        let saved = validate_settings(Some(json!({
+            "vinylNoise": true,
+            "vinylNoiseVolume": 900
+        })));
+        assert!(saved.vinyl_noise);
+        assert_eq!(saved.vinyl_noise_volume, 100);
+
+        let invalid = validate_settings(Some(json!({ "vinylNoiseVolume": "loud" })));
+        assert_eq!(
+            invalid.vinyl_noise_volume,
+            PersistedSettings::default().vinyl_noise_volume
+        );
+
+        let patched = apply_patch(
+            &PersistedSettings::default(),
+            SettingsPatch {
+                vinyl_noise: Some(true),
+                vinyl_noise_volume: Some(200),
+                ..SettingsPatch::default()
+            },
+        );
+        assert!(patched.vinyl_noise);
+        assert_eq!(patched.vinyl_noise_volume, 100);
     }
 }

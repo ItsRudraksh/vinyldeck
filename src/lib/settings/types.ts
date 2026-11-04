@@ -28,6 +28,10 @@ export interface PersistedSettings {
    * shows through behind the vinyl/controls. Has no effect on Main/Fullscreen.
    */
   miniTransparentMode: boolean;
+  /** Synthesized surface noise played while a track plays. Opt-in. */
+  vinylNoise: boolean;
+  /** Surface noise level, 0-100. */
+  vinylNoiseVolume: number;
 }
 
 export const DEFAULT_SETTINGS: PersistedSettings = {
@@ -46,4 +50,6 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   startWithWindows: false,
   windowMode: "main",
   miniTransparentMode: false,
+  vinylNoise: false,
+  vinylNoiseVolume: 40,
 };

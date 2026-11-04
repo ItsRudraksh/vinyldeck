@@ -30,6 +30,21 @@ $env:VITE_FORCE_MOCK_SOURCE='true'
 npm run tauri dev
 ```
 
+## Discogs Credentials
+
+The Rust backend reads credentials from the environment. They never reach a WebView.
+
+| Variable | Meaning |
+| --- | --- |
+| `DISCOGS_TOKEN` | Personal access token. Takes priority when set. |
+| `DISCOGS_CONSUMER_KEY` + `DISCOGS_CONSUMER_SECRET` | Alternative: an application's key and secret. Both are required. |
+
+For `npm run tauri dev`, copy `.env.example` to `.env` (ignored by git). Debug builds load it at startup; release builds never read `.env` files. Never use a `VITE_` prefix for these values, because Vite would embed them in the frontend bundle.
+
+Without credentials the app makes no Discogs requests and logs one startup notice.
+
+`cargo test --manifest-path src-tauri/Cargo.toml` runs the service against a local fake server. To exercise the real API anonymously, add `discogs::tests::live_ -- --ignored`.
+
 ## Verification
 
 Run the smallest useful check for the files you touched, then run the broader gate before committing integration work.
