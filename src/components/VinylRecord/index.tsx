@@ -5,6 +5,7 @@
 //   2: vinyl-counter-b (fixed-light conic reflection — outside disc)
 //   3: vinyl-disc (rotates via RAF)
 //       3a: vinyl-translucent-ghost blurred artwork visible through clear/smoke pressings
+//       3a': vinyl-art-surface      artwork covering the whole disc, when it goes there
 //       3b: vinyl-pressing-base     album-derived colored wax material
 //       3c: vinyl-pressing-texture  marble / splatter / translucent / split personality
 //       3d: vinyl-pressing-depth    edge thickness + inner physical depth
@@ -12,12 +13,15 @@
 //       3f: vinyl-sheen             mouse-driven specular highlight
 //       3g: vinyl-reflection        static studio-light reflection
 //       3h: vinyl-label-ring        softened print boundary
-//       3i: vinyl-label             album art or fallback
+//       3i: vinyl-label             artwork on the center (crossfades) or fallback
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useVinylRotation } from "../../hooks/useVinylRotation";
+import { DEFAULT_ART_PLACEMENT } from "../../lib/discogs/types";
+import type { ArtPlacement } from "../../lib/discogs/types";
 import type { TrackChangeDirection } from "../../lib/trackTransition/types";
+import { ArtworkFit } from "./ArtworkFit";
 import { VinylShaderCanvas } from "./VinylShaderCanvas";
 import type { VinylShaderHandle } from "./VinylShaderCanvas";
 import "./VinylRecord.css";
@@ -32,6 +36,11 @@ interface VinylRecordProps {
   isPlaying: boolean;
   vinylWobble?: boolean;
   artworkDataUrl: string | null;
+  /** Artwork covers the whole disc instead of the center label. */
+  wholeDisc?: boolean;
+  /** Set when the artwork is a photo of the record: see PreparedArtwork. */
+  discLabelRatio?: number | null;
+  artworkPlacement?: ArtPlacement;
   trackTitle: string;
   size?: number; // px, default 420
   trackChangeDirection?: TrackChangeDirection;
@@ -42,6 +51,9 @@ export function VinylRecord({
   isPlaying,
   vinylWobble = true,
   artworkDataUrl,
+  wholeDisc = false,
+  discLabelRatio = null,
+  artworkPlacement = DEFAULT_ART_PLACEMENT,
   trackTitle,
   size = 420,
   trackChangeDirection = "unknown",
@@ -52,6 +64,18 @@ export function VinylRecord({
   const mouseFrameRef = useRef<number | null>(null);
   const latestMouseRef = useRef<{ x: number; y: number } | null>(null);
   const [shaderReady, setShaderReady] = useState(false);
+  const isWholeDisc = wholeDisc && artworkDataUrl !== null;
+  // Each surface keeps its last image while fading out, instead of cutting to nothing.
+  const lastSurfaceRef = useRef<string | null>(null);
+  const lastLabelRef = useRef<string | null>(null);
+  if (artworkDataUrl) {
+    if (isWholeDisc) lastSurfaceRef.current = artworkDataUrl;
+    else lastLabelRef.current = artworkDataUrl;
+  } else {
+    lastSurfaceRef.current = null;
+    lastLabelRef.current = null;
+  }
+  const labelSrc = isWholeDisc ? lastLabelRef.current : artworkDataUrl;
 
   // Single RAF loop drives CSS rotation and feeds WebGL uniforms.
   useVinylRotation({
@@ -113,6 +137,15 @@ export function VinylRecord({
   const ghostArtworkStyle = artworkDataUrl
     ? ({ backgroundImage: `url(${artworkDataUrl})` } as CSSProperties)
     : undefined;
+  const wrapperStyle = {
+    "--vinyl-size": `${size}px`,
+    // The photographed label grows and shrinks with the zoom; the grooves stop at it.
+    ...(isWholeDisc && discLabelRatio !== null
+      ? {
+          "--art-label-radius": `${(discLabelRatio * artworkPlacement.zoomPercent).toFixed(2)}%`,
+        }
+      : {}),
+  } as CSSProperties;
   const fallbackLabel = trackTitle
     ? trackTitle.charAt(0).toUpperCase()
     : "VINYLDECK";
@@ -120,8 +153,8 @@ export function VinylRecord({
 
   return (
     <div
-      className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}${ENABLE_WEBGL_VINYL && shaderReady ? " vinyl-wrapper--shader-ready" : " vinyl-wrapper--css-renderer"}`}
-      style={{ "--vinyl-size": `${size}px` } as CSSProperties}
+      className={`vinyl-wrapper${isPlaying && vinylWobble ? " vinyl-wrapper--playing" : ""}${ENABLE_WEBGL_VINYL && shaderReady ? " vinyl-wrapper--shader-ready" : " vinyl-wrapper--css-renderer"}${isWholeDisc ? " vinyl-wrapper--art-disc" : ""}`}
+      style={wrapperStyle}
       data-renderer={ENABLE_WEBGL_VINYL && shaderReady ? "webgl" : "css"}
     >
       {/* SVG turbulence is static; CSS chooses when to use it for organic marble/wax texture. */}
@@ -199,6 +232,15 @@ export function VinylRecord({
             onReadyChange={setShaderReady}
           />
         )}
+        {lastSurfaceRef.current && (
+          <div className="vinyl-art-surface">
+            <ArtworkFit
+              src={lastSurfaceRef.current}
+              alt={trackTitle}
+              placement={artworkPlacement}
+            />
+          </div>
+        )}
         <div className="vinyl-pressing-base" />
         <div className="vinyl-pressing-texture" />
         <div className="vinyl-pressing-depth" />
@@ -208,9 +250,13 @@ export function VinylRecord({
         <div className="vinyl-label-ring" />
 
         <div className="vinyl-label">
-          {artworkDataUrl ? (
-            <img src={artworkDataUrl} alt={trackTitle} draggable={false} />
-          ) : (
+          {labelSrc ? (
+            <ArtworkFit
+              src={labelSrc}
+              alt={trackTitle}
+              placement={artworkPlacement}
+            />
+          ) : isWholeDisc ? null : (
             <div
               className={`vinyl-label-fallback${isEmptyLabel ? " vinyl-label-fallback--empty" : ""}`}
             >

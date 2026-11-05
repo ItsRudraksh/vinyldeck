@@ -11,7 +11,10 @@ import { Controls } from "../components/Controls";
 import { TrackInfo } from "../components/TrackInfo";
 import { VinylRecord } from "../components/VinylRecord";
 import { VaporGrid } from "../components/VaporGrid";
+import { DEFAULT_ART_PLACEMENT } from "../lib/discogs/types";
+import { useAlbumArtwork } from "../hooks/useAlbumArtwork";
 import { useColorExtraction } from "../hooks/useColorExtraction";
+import { usePreparedArtwork } from "../hooks/usePreparedArtwork";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { setNativeWindowMode } from "../lib/window";
 import {
@@ -59,7 +62,20 @@ export function MiniView() {
 
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
-  const artworkDataUrl = devForceEmpty ? null : rawArtworkDataUrl;
+  const { artworkDataUrl: albumArtworkDataUrl, art: albumArt } = useAlbumArtwork(
+    effectivePlayback.artist,
+    effectivePlayback.album,
+    rawArtworkDataUrl,
+  );
+  // A placement belongs to a Discogs image, never to the player's own artwork.
+  const artworkPlacement = albumArt?.artworkDataUrl
+    ? albumArt.placement
+    : DEFAULT_ART_PLACEMENT;
+  const placedArtwork = usePreparedArtwork(
+    devForceEmpty ? null : albumArtworkDataUrl,
+    artworkPlacement.mode,
+  );
+  const artworkDataUrl = placedArtwork?.src ?? null;
   const [controlsVisible, setControlsVisible] = useState(false);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const miniMetrics = useMiniResizeMetrics();
@@ -168,6 +184,9 @@ export function MiniView() {
           isPlaying={isPlaying}
           vinylWobble={settings.vinylWobble}
           artworkDataUrl={artworkDataUrl}
+          wholeDisc={placedArtwork?.wholeDisc ?? false}
+          discLabelRatio={placedArtwork?.discLabelRatio ?? null}
+          artworkPlacement={artworkPlacement}
           trackTitle={effectivePlayback.track}
           size={miniMetrics.vinylSize}
           trackChangeDirection={trackChangeDirection}

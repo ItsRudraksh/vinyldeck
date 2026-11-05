@@ -83,6 +83,18 @@ Run browser-only visual development with mock playback:
 npm run dev
 ```
 
+## Discogs Artwork
+
+VinylDeck can press real release images from [Discogs](https://www.discogs.com) onto the record. Set a personal access token from [Discogs developer settings](https://www.discogs.com/settings/developers) as a user environment variable, then restart VinylDeck:
+
+```powershell
+setx DISCOGS_TOKEN "your-token"
+```
+
+Without a token, VinylDeck keeps using the artwork your player provides. See the [User Guide](docs/USER_GUIDE.md#discogs-artwork) for details.
+
+This application uses Discogs' API but is not affiliated with, sponsored or endorsed by Discogs.
+
 ## Controls
 
 | Action | Shortcut |

@@ -67,6 +67,8 @@ export function validateSettings(value: unknown): PersistedSettings {
       raw.miniTransparentMode,
       DEFAULT_SETTINGS.miniTransparentMode,
     ),
+    vinylNoise: readBoolean(raw.vinylNoise, DEFAULT_SETTINGS.vinylNoise),
+    vinylNoiseVolume: readVolume(raw.vinylNoiseVolume),
   };
 }
 
@@ -164,6 +166,13 @@ function readIdleTimeout(value: unknown): number {
     return DEFAULT_SETTINGS.idleTimeoutSeconds;
   }
   return Math.min(5, Math.max(1, Math.round(value)));
+}
+
+function readVolume(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_SETTINGS.vinylNoiseVolume;
+  }
+  return Math.min(100, Math.max(0, Math.round(value)));
 }
 
 export function sanitizeSettingsForTheme(

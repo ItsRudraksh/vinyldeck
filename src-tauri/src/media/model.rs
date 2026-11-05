@@ -113,6 +113,23 @@ pub(crate) fn friendly_source_name(app_id: &str) -> String {
         .to_string()
 }
 
+/// Apple Music for Windows reports "Artist — Album" as the artist and leaves the
+/// album empty. Limited to that app: other sources may use the dash in real names.
+pub(crate) fn split_apple_music_artist_album(snapshot: &mut MediaSnapshot) {
+    let is_apple_music = snapshot.source_id.to_lowercase().contains("applemusicwin");
+    if !is_apple_music || !snapshot.album.trim().is_empty() {
+        return;
+    }
+
+    if let Some((artist, album)) = snapshot.artist.split_once(" \u{2014} ") {
+        let (artist, album) = (artist.trim().to_string(), album.trim().to_string());
+        if !artist.is_empty() && !album.is_empty() {
+            snapshot.artist = artist;
+            snapshot.album = album;
+        }
+    }
+}
+
 #[allow(dead_code)]
 fn seconds_to_millis(seconds: f64) -> u64 {
     if !seconds.is_finite() || seconds <= 0.0 {
@@ -124,7 +141,49 @@ fn seconds_to_millis(seconds: f64) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use super::{friendly_source_name, ticks_to_seconds, MediaSnapshot};
+    use super::{
+        friendly_source_name, split_apple_music_artist_album, ticks_to_seconds, MediaSnapshot,
+    };
+
+    fn split_metadata(source_id: &str, artist: &str, album: &str) -> (String, String) {
+        let mut snapshot = MediaSnapshot {
+            source_id: source_id.to_string(),
+            artist: artist.to_string(),
+            album: album.to_string(),
+            ..MediaSnapshot::default()
+        };
+        split_apple_music_artist_album(&mut snapshot);
+        (snapshot.artist, snapshot.album)
+    }
+
+    #[test]
+    fn splits_apple_music_combined_artist_and_album() {
+        const APPLE: &str = "AppleInc.AppleMusicWin_nzyj5cx40ttqa!App";
+        let expected = |artist: &str, album: &str| (artist.to_string(), album.to_string());
+
+        assert_eq!(
+            split_metadata(APPLE, "Ariana Grande \u{2014} petal", ""),
+            expected("Ariana Grande", "petal")
+        );
+        assert_eq!(
+            split_metadata(APPLE, "Band \u{2014} Part \u{2014} Two", ""),
+            expected("Band", "Part \u{2014} Two")
+        );
+        // Nothing to split, or an album already reported: left as the player sent it.
+        assert_eq!(split_metadata(APPLE, "Artist", ""), expected("Artist", ""));
+        assert_eq!(
+            split_metadata(APPLE, "A \u{2014} B", "Album"),
+            expected("A \u{2014} B", "Album")
+        );
+    }
+
+    #[test]
+    fn keeps_dashes_from_other_players() {
+        assert_eq!(
+            split_metadata("Spotify.exe", "Artist \u{2014} Name", ""),
+            ("Artist \u{2014} Name".to_string(), String::new())
+        );
+    }
 
     #[test]
     fn empty_snapshot_matches_frontend_empty_contract() {

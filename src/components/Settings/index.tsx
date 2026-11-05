@@ -243,6 +243,42 @@ export function Settings({ open, onClose }: SettingsProps) {
                       updateBackendSettings({ filmGrain: !settings.filmGrain })
                     }
                   />
+                  <SettingsToggle
+                    label="Vinyl Crackle"
+                    description="Surface noise over your music while a track plays."
+                    checked={settings.vinylNoise}
+                    onToggle={() =>
+                      updateBackendSettings({ vinylNoise: !settings.vinylNoise })
+                    }
+                  />
+                  {settings.vinylNoise && (
+                    <div className="settings-slider-row">
+                      <div className="settings-slider-row__header">
+                        <span className="settings-toggle-row__copy">
+                          <span className="settings-toggle-row__label">
+                            Crackle Volume
+                          </span>
+                        </span>
+                        <span className="settings-slider-row__value">
+                          {settings.vinylNoiseVolume}%
+                        </span>
+                      </div>
+                      <input
+                        className="settings-slider"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        aria-label="Crackle volume"
+                        value={settings.vinylNoiseVolume}
+                        onChange={(event) =>
+                          updateBackendSettings({
+                            vinylNoiseVolume: Number(event.currentTarget.value),
+                          })
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
               ) : activeTab === "DISPLAY" ? (
                 <div className="settings-toggle-list settings-display">
@@ -430,6 +466,8 @@ export function Settings({ open, onClose }: SettingsProps) {
                     <strong>Main, fullscreen, mini</strong>
                     <span>Visuals</span>
                     <strong>Noir, Glass, Art Ambient</strong>
+                    <span>Artwork</span>
+                    <strong>Your player, Discogs</strong>
                   </div>
                   <div className="settings-about__qa">
                     <SettingsToggle

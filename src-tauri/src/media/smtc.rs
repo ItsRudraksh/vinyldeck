@@ -41,6 +41,7 @@ pub(crate) async fn current_media_snapshot_with_metadata(
             .AlbumTitle()
             .map(|value| value.to_string())
             .unwrap_or_default();
+        super::model::split_apple_music_artist_album(&mut snapshot);
     }
 
     Ok(Some(snapshot))
@@ -68,6 +69,7 @@ pub(crate) async fn current_media_snapshot_with_artwork(
             .AlbumTitle()
             .map(|value| value.to_string())
             .unwrap_or_default();
+        super::model::split_apple_music_artist_album(&mut snapshot);
 
         if let Ok(thumbnail) = properties.Thumbnail() {
             snapshot.artwork_data_url = super::artwork::thumbnail_to_data_url(thumbnail).await?;

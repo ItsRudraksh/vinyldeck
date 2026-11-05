@@ -1,4 +1,5 @@
 mod app_lifecycle;
+mod discogs;
 mod media;
 mod settings;
 mod tray;
@@ -30,6 +31,13 @@ pub fn run() {
             media::commands::cmd_smtc_next,
             media::commands::cmd_smtc_previous,
             media::commands::cmd_smtc_seek,
+            discogs::cmd_discogs_resolve,
+            discogs::cmd_discogs_select,
+            discogs::cmd_discogs_set_placement,
+            discogs::cmd_discogs_editions,
+            discogs::cmd_discogs_edition_details,
+            discogs::cmd_discogs_edition_thumbnail,
+            discogs::cmd_discogs_thumbnail,
             settings::cmd_settings_snapshot,
             settings::cmd_settings_update,
             settings::cmd_settings_reset,
@@ -40,6 +48,7 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle().clone();
             tauri::async_runtime::block_on(settings::initialize_settings(app_handle))?;
+            discogs::initialize(app.handle());
             media::poller::start_smtc_poller(app.handle().clone());
             tray::setup_tray(app)?;
             Ok(())

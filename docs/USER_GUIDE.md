@@ -32,6 +32,37 @@ The main view combines:
 
 Controls automatically disable when the active media source does not support that action.
 
+## Discogs Artwork
+
+When a token is configured, VinylDeck looks up the playing album on Discogs and presses its image onto the record label. Tracks from the same album share one lookup.
+
+1. Create a personal access token in [Discogs developer settings](https://www.discogs.com/settings/developers).
+2. Run `setx DISCOGS_TOKEN "your-token"` in a terminal.
+3. Quit VinylDeck from the tray and open it again. If it still reports no token, sign out of Windows and back in.
+
+If Discogs has an image for the album, a record button appears under Settings in the main window. It lists the covers of the album's different versions, then other photos such as the back cover and the disc label. Click a thumbnail to change the image without interrupting playback.
+
+Use **Center** or **Whole disc** to choose where the image goes. By default, a photo of the record itself fills the whole disc and any other image goes on the center. Use **Adjust image** to drag the image into position and set its zoom. **Fit** shows the whole image inside the circle, and **Reset** undoes the adjustment. Changing between Center and Whole disc also resets it.
+
+Use **All editions of this album** to see every edition listed on Discogs, such as each vinyl pressing, CD, and cassette, with a filter by format. Open one to see its own images, including photos of that record, and click any of them to use it. An edition's name, such as "Glow In The Dark", appears shortly after its row comes into view. If it takes longer, VinylDeck is waiting to stay within the Discogs request limit.
+
+VinylDeck remembers these choices for each image of the album, including in the Mini player. They apply to Discogs images, so artwork that comes only from the player can't be adjusted.
+
+The record falls back to your player's artwork when:
+
+- no token is set
+- the player does not report both an artist and an album
+- Discogs has no confident match or no images
+- Discogs is unreachable and nothing is saved for that album
+
+Artwork you have already seen on the record stays available offline.
+
+## Vinyl Crackle
+
+Turn on **Settings > Vinyl > Vinyl Crackle** to hear soft hiss and occasional pops while a track plays, and set the level with **Crackle Volume**. It is off by default.
+
+The noise plays over your music and does not change the music itself. It has its own level, so your player's volume does not affect it. It keeps playing in Mini and when VinylDeck is in the tray, and stops when playback pauses or you quit.
+
 ## Window Modes
 
 | Mode | What it does |
