@@ -308,12 +308,15 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
 
 fn sync_start_with_windows(app: &AppHandle, enabled: bool) -> Result<(), String> {
     let autostart = app.autolaunch();
-    if enabled {
+    let result = if enabled {
         autostart.enable()
-    } else {
+    } else if autostart.is_enabled().map_err(|error| error.to_string())? {
         autostart.disable()
-    }
-    .map_err(|error| error.to_string())
+    } else {
+        // Disabling an entry that was never registered fails with "file not found".
+        Ok(())
+    };
+    result.map_err(|error| error.to_string())
 }
 
 fn shell_from_legacy_theme(theme: &str) -> &'static str {
