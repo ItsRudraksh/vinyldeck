@@ -195,6 +195,7 @@ export function createMockSource(): PlaybackSource {
     seekTo(seconds: number) {
       const track = getTrack();
       position = Math.min(Math.max(seconds, 0), track.duration);
+      lastTickTime = Date.now();
       emit();
     },
 

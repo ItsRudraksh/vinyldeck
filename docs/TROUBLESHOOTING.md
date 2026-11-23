@@ -8,6 +8,16 @@
 - Check that the media app appears in Windows media controls.
 - Browser mode (`npm run dev`) always uses mock playback.
 
+## Lyrics Hide Automatically On Some Tracks
+
+Expected for instrumental tracks or tracks with no indexed lyrics. VinylDeck glides back to centered Pure Vinyl without turning off your lyrics setting—the next vocal track will reopen lyrics automatically. Hover the top-right lyrics icon to see the current status or click to retry when no lyrics were found.
+
+## Romanized Or Translated Lyrics Do Not Appear
+
+- **Romanized (`Rom` / `R`)**: Replaces primary lyrics in-place when the track contains non-Latin script characters (Korean Hangul, Japanese Kana/Kanji, Hindi Devanagari, Punjabi Gurmukhi, Chinese, Arabic, Cyrillic, etc.). Apple Music TTML tracks use native syllable-timed transliterations when embedded; Korean Hangul, Japanese Kana, Punjabi Gurmukhi, and Hindi Devanagari romanize instantly offline; other scripts resolve per-line via the backend. Auto-Romanize can be toggled in **Settings -> Lyrics** (translations remain strictly manual). Already-Latin tracks skip redundant romanization automatically.
+- **Translated (`Tr` / `Shift+T`)**: Displays translated subtitles beneath each line and skips duplicates automatically when the track is already in your chosen target language (configured in **Settings -> Lyrics -> Translation Language**).
+- **Offline / network rate-limit**: Primary realtime lyrics (and offline romanization) continue uninterrupted if network enrichment cannot be reached.
+
 ## Controls Are Disabled
 
 VinylDeck follows the capabilities reported by Windows SMTC. Some sources support play/pause but not previous, next, or seek.
@@ -72,3 +82,7 @@ Expected for unsigned local builds. Windows UAC shows `Publisher: Unknown` until
 ## Tray Playback Menu Differs From Main Controls
 
 The main in-app controls use the current SMTC command path. Tray playback controls should be revalidated before treating tray playback as release-grade.
+
+### Clearing the On-Disk Lyrics Cache (v2.3.0+)
+
+VinylDeck persists up to 250 fetched lyric tracks and enrichments in `%APPDATA%\com.vinyldeck.app\lyrics_cache_v1.json` (your Tauri `app_data_dir()`). If a song's upstream lyrics were corrected and you want to force a fresh fetch, either click **Retry** on an error state, delete `lyrics_cache_v1.json`, or invoke `cmd_lyrics_clear_cache`.

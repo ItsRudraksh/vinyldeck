@@ -24,20 +24,21 @@
   <img alt="Rust" src="https://img.shields.io/badge/backend-Rust-b7410e">
 </p>
 
-VinylDeck turns the track already playing on your system into a living turntable. Album art becomes the record label, extracted colors bloom through the scene, the needle breathes with the music state, and every control feels like part of a physical deck.
+VinylDeck turns the track already playing on your system into a living turntable. Album art becomes the record label, extracted colors bloom through the scene, the needle breathes with the music state, realtime word-by-word lyrics glide alongside the platter, and every control feels like part of a physical deck.
 
 Built with Tauri, Rust, React, and Windows media integration, VinylDeck is designed to feel native, lightweight, and quietly dramatic.
 
 ## Highlights
 
 - **Works with system media** - reads Windows media sessions from apps such as Spotify, browsers, and VLC.
-- **Cinematic vinyl rendering** - animated record motion, album-art label, physical tonearm, ambient bloom, film grain, and glass/noir shells.
-- **Native desktop feel** - main, fullscreen, and resizable mini-player modes with tray lifecycle.
+- **Cinematic vinyl rendering** - animated record motion, album-art label, physical tonearm, ambient bloom, film grain, and Glass/Noir shells.
+- **Realtime synced lyrics** - zero-flicker 60fps word-by-word karaoke sweep, 3-dot instrumental gap interludes, tucked background vocals, damped-spring line scrolling in Split View or Compact Strip, click-to-seek, automatic hide on instrumentals, and customizable font styles/sizes, left/right Split View side, Auto-Romanize for foreign scripts (with native Apple Music TTML syllable-timed romaji), and manual Translated subtitles (12 languages).
+- **Native desktop feel** - main, fullscreen, and resizable mini-player modes with Lean-Back idle choreography and tray lifecycle.
 - **Mini transparency** - optional Mini-only Windows Acrylic mode lets the desktop blur through behind the vinyl and controls.
 - **Opt-in startup** - launch with Windows when you want VinylDeck ready as a quiet companion.
 - **Real media controls** - play, pause, previous, next, and seek flow through Windows SMTC when supported by the active source.
-- **Persistent settings** - visual and behavior preferences sync across app windows through the Rust backend.
-- **Keyboard-first polish** - focused shortcuts, keycap hints, custom tooltips, and a right-click command menu.
+- **Persistent settings** - visual, lyrics, and behavior preferences sync across app windows through the Rust backend.
+- **Keyboard-first polish** - focused shortcuts, keycap hints, custom tooltips, and a slim right-click command menu.
 
 ## Preview
 
@@ -58,7 +59,7 @@ VinylDeck is a desktop-first visual player, not a streaming service. Start music
 flowchart LR
   Music["Spotify / Browser / VLC"] --> Windows["Windows media session"]
   Windows --> VinylDeck["VinylDeck"]
-  VinylDeck --> Scene["Animated vinyl deck"]
+  VinylDeck --> Scene["Animated vinyl deck + realtime lyrics"]
 ```
 
 ## Quick Start
@@ -89,6 +90,10 @@ npm run dev
 | --- | --- |
 | Play / pause | `Space` |
 | Previous / next | `Left` / `Right` |
+| Toggle lyrics | `L` |
+| Switch lyrics layout (Split / Strip) | `Shift+L` |
+| Toggle romanized lyrics | `R` |
+| Toggle translated lyrics | `Shift+T` |
 | Fullscreen | `F` |
 | Mini player | `M` |
 | Cycle shell | `T` |
@@ -100,11 +105,11 @@ Shortcuts can be turned off in Settings. Escape remains available for closing Se
 
 ## Documentation
 
-- [User Guide](./docs/USER_GUIDE.md) - controls, window modes, settings, and daily use.
+- [User Guide](./docs/USER_GUIDE.md) - controls, realtime lyrics, window modes, settings, and daily use.
 - [Development Guide](./docs/DEVELOPMENT.md) - setup, commands, verification, and contribution workflow.
-- [Architecture](./docs/ARCHITECTURE.md) - React visual engine, Rust backend, SMTC flow, and state ownership.
+- [Architecture](./docs/ARCHITECTURE.md) - React visual engine, lyrics pipeline, Rust backend, SMTC flow, and state ownership.
 - [Tauri API Reference](./docs/API.md) - command and event contracts between frontend and backend.
-- [Troubleshooting](./docs/TROUBLESHOOTING.md) - common runtime and media-session issues.
+- [Troubleshooting](./docs/TROUBLESHOOTING.md) - common runtime, lyrics, and media-session issues.
 - [Release Notes](./docs/RELEASE_V1.md) - version notes and distribution checklist.
 - [Changelog](./CHANGELOG.md) - notable project changes.
 
@@ -124,7 +129,7 @@ Shortcuts can be turned off in Settings. Escape remains available for closing Se
 ## Tech Stack
 
 - Tauri v2 desktop shell
-- Rust backend for Windows media, settings, tray, and window lifecycle
+- Rust backend for Windows media, lyrics fetch/enrichment, settings, tray, and window lifecycle
 - React 19 + TypeScript visual engine
 - Zustand v5 state cache
 - `motion/react` v12 animation
@@ -133,8 +138,10 @@ Shortcuts can be turned off in Settings. Escape remains available for closing Se
 
 ## Project Status
 
-VinylDeck is actively developed for Windows. The current version is `0.1.1`. Ready-to-use installers are available on the GitHub Releases page.
+VinylDeck is actively developed for Windows. The current version is `2.3.2`. Ready-to-use installers are available on the GitHub Releases page.
 
 ## License
 
 No license file is currently published.
+
+- **v2.3.0**: On-disk Rust LRU lyrics cache (`0ms` reload across restarts), subtle depth-of-field lyric focus blur, zero-shift karaoke wrapping for overlapping background vocals, high-contrast Glass & Noir Settings modal, and unified System Tray + Windows SMTC controls.

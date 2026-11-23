@@ -10,7 +10,6 @@ import { AmbientLayer } from "../components/AmbientLayer";
 import { Controls } from "../components/Controls";
 import { TrackInfo } from "../components/TrackInfo";
 import { VinylRecord } from "../components/VinylRecord";
-import { VaporGrid } from "../components/VaporGrid";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { setNativeWindowMode } from "../lib/window";
@@ -161,7 +160,6 @@ export function MiniView() {
         mode={settings.ambientMode}
         theme={theme}
       />
-      <VaporGrid />
 
       <section className="mini-view__centerpiece" aria-label="Mini player">
         <VinylRecord

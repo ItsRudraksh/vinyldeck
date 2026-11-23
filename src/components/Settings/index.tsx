@@ -9,6 +9,16 @@ import {
   resetAmbientColors,
 } from "../../lib/themes/applier";
 import type { ThemeId } from "../../lib/themes/applier";
+import {
+  LYRICS_FONT_FAMILIES,
+  LYRICS_FONT_FAMILY_META,
+  LYRICS_FONT_SIZES,
+  LYRICS_FONT_SIZE_LABELS,
+  LYRICS_SIDES,
+  LYRICS_TARGET_LANG_LABELS,
+  LYRICS_TARGET_LANGS,
+  type LyricsTargetLang,
+} from "../../lib/lyrics/types";
 import { selectSettings, useVinylDeckStore } from "../../lib/playback/store";
 import { commitSettings } from "../../lib/settings";
 import { setNativeAlwaysOnTop, setNativeWindowMode } from "../../lib/window";
@@ -20,7 +30,14 @@ interface SettingsProps {
   onClose: () => void;
 }
 
-const SETTINGS_TABS = ["LOOK", "VINYL", "DISPLAY", "OTHER", "ABOUT"] as const;
+const SETTINGS_TABS = [
+  "LOOK",
+  "VINYL",
+  "LYRICS",
+  "DISPLAY",
+  "OTHER",
+  "ABOUT",
+] as const;
 type SettingsTab = (typeof SETTINGS_TABS)[number];
 
 const SHELL_CARD_META: Record<
@@ -244,6 +261,230 @@ export function Settings({ open, onClose }: SettingsProps) {
                     }
                   />
                 </div>
+              ) : activeTab === "LYRICS" ? (
+                <div className="settings-toggle-list settings-lyrics">
+                  <div className="settings-toggle-list settings-toggle-list--compact">
+                    <SettingsToggle
+                      label="Show Lyrics"
+                      description="Stream synced word-by-word karaoke lyrics in Main and Fullscreen modes, with auto-hide on instrumentals. Shortcut: L."
+                      checked={settings.lyricsEnabled}
+                      onToggle={() =>
+                        updateBackendSettings({
+                          lyricsEnabled: !settings.lyricsEnabled,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="settings-slider-row">
+                    <div className="settings-slider-row__header">
+                      <span className="settings-toggle-row__copy">
+                        <span className="settings-toggle-row__label">
+                          Stage Layout & Side
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Choose Split View or Compact Strip (Shift+L), and which side lyrics appear on in Split View.
+                        </span>
+                      </span>
+                    </div>
+                    <div
+                      className="settings-lyrics-layout-grid"
+                      role="group"
+                      aria-label="Lyrics layout"
+                    >
+                      {(["split", "strip"] as const).map((layoutMode) => {
+                        const active = settings.lyricsLayout === layoutMode;
+                        return (
+                          <button
+                            key={layoutMode}
+                            type="button"
+                            className={`settings-theme-card settings-window-mode-card${active ? " settings-theme-card--active" : ""}`}
+                            onClick={() =>
+                              updateBackendSettings({
+                                lyricsEnabled: true,
+                                lyricsLayout: layoutMode,
+                              })
+                            }
+                          >
+                            <span className="settings-theme-card__copy">
+                              <span className="settings-theme-card__name">
+                                {layoutMode === "split"
+                                  ? "Split View"
+                                  : "Compact Strip"}
+                              </span>
+                              <span className="settings-theme-card__note">
+                                {layoutMode === "split"
+                                  ? "Vinyl beside lyrics"
+                                  : "3-line focus below disc"}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div
+                      className="settings-lyrics-layout-grid"
+                      role="group"
+                      aria-label="Split View lyrics side"
+                      style={{ marginTop: "10px" }}
+                    >
+                      {LYRICS_SIDES.map((side) => {
+                        const active = settings.lyricsSide === side;
+                        return (
+                          <button
+                            key={side}
+                            type="button"
+                            className={`settings-size-chip${active ? " settings-size-chip--active" : ""}`}
+                            onClick={() =>
+                              updateBackendSettings({ lyricsSide: side })
+                            }
+                          >
+                            {side === "right"
+                              ? "Lyrics Right (Default)"
+                              : "Lyrics Left"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="settings-slider-row">
+                    <div className="settings-slider-row__header">
+                      <span className="settings-toggle-row__copy">
+                        <span className="settings-toggle-row__label">
+                          Typography
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Customize lyrics font style and scale across Split View and Compact Strip.
+                        </span>
+                      </span>
+                    </div>
+                    <div
+                      className="settings-lyrics-font-grid"
+                      role="group"
+                      aria-label="Lyrics font family"
+                    >
+                      {LYRICS_FONT_FAMILIES.map((family) => {
+                        const active = settings.lyricsFontFamily === family;
+                        const meta = LYRICS_FONT_FAMILY_META[family];
+                        return (
+                          <button
+                            key={family}
+                            type="button"
+                            className={`settings-theme-card settings-window-mode-card${active ? " settings-theme-card--active" : ""}`}
+                            onClick={() =>
+                              updateBackendSettings({ lyricsFontFamily: family })
+                            }
+                          >
+                            <span className="settings-theme-card__copy">
+                              <span
+                                className="settings-theme-card__name"
+                                style={{ fontFamily: meta.stack }}
+                              >
+                                {meta.label}
+                              </span>
+                              <span className="settings-theme-card__note">
+                                {meta.note}
+                              </span>
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div
+                      className="settings-lyrics-size-row"
+                      role="group"
+                      aria-label="Lyrics text size"
+                      style={{ marginTop: "10px" }}
+                    >
+                      {LYRICS_FONT_SIZES.map((size) => {
+                        const active = settings.lyricsFontSize === size;
+                        return (
+                          <button
+                            key={size}
+                            type="button"
+                            className={`settings-size-chip${active ? " settings-size-chip--active" : ""}`}
+                            onClick={() =>
+                              updateBackendSettings({ lyricsFontSize: size })
+                            }
+                          >
+                            {LYRICS_FONT_SIZE_LABELS[size]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="settings-slider-row">
+                    <div className="settings-slider-row__header">
+                      <span className="settings-toggle-row__copy">
+                        <span className="settings-toggle-row__label">
+                          Language Aids
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Free, zero-key phonetic romanization (replaces main lyrics with karaoke sweep) and manual translations below.
+                        </span>
+                      </span>
+                    </div>
+                    <div className="settings-toggle-list settings-toggle-list--compact">
+                      <SettingsToggle
+                        label="Auto-Romanize Foreign Scripts"
+                        description="Automatically romanize Japanese, Korean, Punjabi, Hindi, Chinese, Russian, and other non-Latin songs. Never auto-translates."
+                        checked={settings.lyricsAutoRomanize}
+                        onToggle={() =>
+                          updateBackendSettings({
+                            lyricsAutoRomanize: !settings.lyricsAutoRomanize,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="settings-display__switch-grid settings-lyrics-subgrid">
+                      <SettingsToggle
+                        label="Romanized Lyrics"
+                        description="Default romanization when Auto-Romanize is off. Shortcut: R."
+                        checked={settings.lyricsRomanized}
+                        onToggle={() =>
+                          updateBackendSettings({
+                            lyricsRomanized: !settings.lyricsRomanized,
+                          })
+                        }
+                      />
+                      <SettingsToggle
+                        label="Translated Lyrics"
+                        description="Manual only — show translated subtitles beneath each line. Shortcut: Shift+T."
+                        checked={settings.lyricsTranslated}
+                        onToggle={() =>
+                          updateBackendSettings({
+                            lyricsTranslated: !settings.lyricsTranslated,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="settings-select-row">
+                      <span className="settings-toggle-row__copy">
+                        <span className="settings-toggle-row__label">
+                          Translation Language
+                        </span>
+                        <span className="settings-toggle-row__description">
+                          Target language for manual translated subtitles. Tracks already in this language skip duplicates automatically.
+                        </span>
+                      </span>
+                      <SettingsSelect
+                        ariaLabel="Translation language"
+                        value={settings.lyricsTargetLang}
+                        options={LYRICS_TARGET_LANGS.map((code) => ({
+                          value: code,
+                          label: LYRICS_TARGET_LANG_LABELS[code],
+                        }))}
+                        onChange={(nextLang) =>
+                          updateBackendSettings({
+                            lyricsTargetLang: nextLang as LyricsTargetLang,
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
               ) : activeTab === "DISPLAY" ? (
                 <div className="settings-toggle-list settings-display">
                   <div className="settings-slider-row">
@@ -415,15 +656,16 @@ export function Settings({ open, onClose }: SettingsProps) {
                   </h3>
                   <p className="settings-about__body">
                     VinylDeck follows your system media session, reacts to album
-                    art, and keeps a beautiful record-player view close by
-                    without taking over your workspace.
+                    art, streams realtime synced lyrics, and keeps a beautiful
+                    record-player view close by without taking over your
+                    workspace.
                   </p>
                   <div
                     className="settings-about__grid"
                     aria-label="App details"
                   >
                     <span>Version</span>
-                    <strong>0.1.0</strong>
+                    <strong>2.3.2</strong>
                     <span>Playback</span>
                     <strong>System media</strong>
                     <span>Windows</span>
@@ -446,6 +688,129 @@ export function Settings({ open, onClose }: SettingsProps) {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+
+interface SettingsSelectOption {
+  value: string;
+  label: string;
+}
+
+interface SettingsSelectProps {
+  ariaLabel: string;
+  value: string;
+  options: SettingsSelectOption[];
+  onChange: (value: string) => void;
+}
+
+function SettingsSelect({
+  ariaLabel,
+  value,
+  options,
+  onChange,
+}: SettingsSelectProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const activeOption = options.find((opt) => opt.value === value) ?? options[0];
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(event: PointerEvent) {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        setOpen(false);
+      }
+    }
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [open]);
+
+  return (
+    <div className="settings-custom-select" ref={rootRef}>
+      <button
+        type="button"
+        className="settings-custom-select__trigger"
+        aria-label={ariaLabel}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <span>{activeOption?.label ?? value}</span>
+        <svg
+          className="settings-custom-select__chevron"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M6 9l6 6 6-6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="settings-custom-select__menu"
+            role="listbox"
+            aria-label={ariaLabel}
+            initial={{ opacity: 0, y: 6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.97 }}
+            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {options.map((option) => {
+              const selected = option.value === value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  className={`settings-custom-select__option${selected ? " settings-custom-select__option--active" : ""}`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setOpen(false);
+                  }}
+                >
+                  <span>{option.label}</span>
+                  {selected && (
+                    <svg
+                      className="settings-custom-select__check"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M5 12.5l4.5 4.5L19 7.5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

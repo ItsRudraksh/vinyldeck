@@ -5,7 +5,7 @@
 
 /* ── Google Fonts ────────────────────────────────────────── */
 /* All 5 themes + shared system. Load all weights upfront.   */
-@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Hanken+Grotesk:wght@200;300;400;600;700&family=Geist:wght@300;400;500;600&family=Anybody:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Work+Sans:wght@400;500;600&family=Manrope:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap");
 
 /* ── Box-sizing reset ────────────────────────────────────── */
 *,
@@ -66,6 +66,7 @@ pre {
 /* ── Reset interactive elements ──────────────────────────── */
 button {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -252,6 +253,7 @@ img {
 }
 
 .settings-trigger::before,
+.lyrics-trigger::before,
 .source-badge::before,
 .mini-view__return::before {
   content: "";
@@ -273,6 +275,7 @@ img {
 }
 
 .settings-trigger::after,
+.lyrics-trigger::after,
 .source-badge::after,
 .mini-view__return::after {
   content: "";
@@ -355,6 +358,7 @@ img {
    ═══════════════════════════════════════════════════════════════ */
 
 [data-theme="noir"] .settings-trigger::before,
+[data-theme="noir"] .lyrics-trigger::before,
 [data-theme="noir"] .source-badge::before,
 [data-theme="noir"] .mini-view__return::before {
   opacity: 0 !important;
@@ -362,6 +366,7 @@ img {
 }
 
 [data-theme="noir"] .settings-trigger,
+[data-theme="noir"] .lyrics-trigger,
 [data-theme="noir"] .source-badge,
 [data-theme="noir"] .mini-view__return {
   background: linear-gradient(
@@ -379,6 +384,7 @@ img {
 }
 
 [data-theme="glass"] .settings-trigger::before,
+[data-theme="glass"] .lyrics-trigger::before,
 [data-theme="glass"] .source-badge::before,
 [data-theme="glass"] .mini-view__return::before {
   opacity: 0.88;
@@ -418,7 +424,7 @@ img {
 }
 
 .theme-picker__shell--glass {
-  border-radius: 13px;
+  border-radius: 50%;
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.82),

@@ -18,9 +18,9 @@ const cards = [
     className: ''
   },
   {
-    eyebrow: '03 / Album glow',
-    title: 'The room borrows color from the track.',
-    text: 'Album art becomes restrained ambient light, so the interface reacts without turning into a visualizer cliché.',
+    eyebrow: '03 / Album glow & lyrics',
+    title: 'Color and lyrics move with the track.',
+    text: 'Album art becomes restrained ambient light while damped-spring realtime lyrics glide in sync—with 3-dot instrumental interludes, customizable typography, Auto-Romanize for foreign scripts, manual Translations, and automatic collapse on instrumentals.',
     image: img.spotifySource,
     alt: 'VinylDeck showing album-art ambient color and source information',
     className: ''
@@ -35,7 +35,7 @@ export function ProductDeepDive() {
           <p className="mono section-eyebrow">Motion language</p>
           <h2>The deck moves like the music is physical.</h2>
           <p>
-            VinylDeck keeps motion restrained: steady rotation, slow album bloom, a needle with intent and glass that behaves like material.
+            VinylDeck keeps motion restrained: steady rotation, slow album bloom, damped-spring lyric glides, a needle with intent and glass that behaves like material.
           </p>
         </div>
         <div className="deep-grid">

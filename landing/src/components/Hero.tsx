@@ -1,12 +1,19 @@
-import { img, video } from '../content/assets';
-import { release } from '../content/downloads';
-import { ProductFrame } from './ProductFrame';
+import { img, video } from "../content/assets";
+import { release } from "../content/downloads";
+import { ProductFrame } from "./ProductFrame";
 
 export function Hero() {
   return (
     <section className="hero section-shell" id="top">
       <div className="hero-atmosphere" aria-hidden="true">
-        <video src={video.hero} poster={img.heroNoirPoster} muted autoPlay loop playsInline />
+        <video
+          src={video.hero}
+          poster={img.heroNoirPoster}
+          muted
+          autoPlay
+          loop
+          playsInline
+        />
         <div className="hero-noise" />
       </div>
 
@@ -17,20 +24,30 @@ export function Hero() {
           <span>into a living vinyl deck.</span>
         </h1>
         <p className="hero-lede">
-          VinylDeck watches compatible Windows media sessions and gives the track you are already playing a physical record, tonearm, ambient glow and compact mini deck.
+          VinylDeck watches compatible Windows media sessions and gives the
+          track you are already playing a physical record, tonearm, realtime
+          synced lyrics, ambient glow and compact mini deck.
         </p>
         <div className="hero-actions">
-          <a className="button button-primary" href={release.exeUrl}>Download for Windows</a>
-          <a className="button button-ghost" href="#experience">See how it works</a>
+          <a className="button button-primary" href={release.exeUrl}>
+            Download for Windows
+          </a>
+          <a className="button button-ghost" href="#experience">
+            See how it works
+          </a>
         </div>
         <div className="hero-meta" aria-label="Product highlights">
           <span>Compatible system media</span>
+          <span>Realtime lyrics · Rom &amp; Tr</span>
           <span>Main · Mini · Fullscreen</span>
           <span>v{release.version}</span>
         </div>
       </div>
 
-      <div className="hero-stage reveal-up reveal-delay-1" aria-label="VinylDeck product preview">
+      <div
+        className="hero-stage reveal-up reveal-delay-1"
+        aria-label="VinylDeck product preview"
+      >
         <div className="hero-glow hero-glow--red" aria-hidden="true" />
         <div className="hero-glow hero-glow--blue" aria-hidden="true" />
         <ProductFrame

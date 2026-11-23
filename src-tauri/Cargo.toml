@@ -1,6 +1,6 @@
 [package]
 name = "vinyldeck"
-version = "0.1.1"
+version = "2.3.2"
 description = "A cinematic vinyl experience for everything playing on your computer."
 authors = ["VinylDeck"]
 edition = "2021"
@@ -24,6 +24,7 @@ tokio = { version = "1", features = ["rt", "sync", "macros", "time"] }
 base64 = "0.22"
 anyhow = "1"
 tauri-plugin-autostart = "2"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 # Windows-specific WinRT bindings for SMTC
 [target.'cfg(windows)'.dependencies]

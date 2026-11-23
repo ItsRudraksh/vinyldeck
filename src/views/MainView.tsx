@@ -1,19 +1,11 @@
 // src/views/MainView.tsx
-// Final z-stack layout for Stage 2.
-// Hierarchy:
-//   z:0  AmbientLayer (fixed, behind all)
-//   z:0  VaporGrid (fixed, Vapor theme only)
-//   z:1  Content container (flex column, centered)
-//         vinyl-area (relative) → ProgressRing + VinylRecord + NeedleArm
-//         TrackInfo    ← fades on idle
-//         Controls     ← fades on idle
-//         ThemePicker  ← fades on idle
-//   z:2  SourceBadge (fixed, bottom-right)
-//
-// Phase 7: useIdleMode — 3s inactivity → TrackInfo/Controls/ThemePicker fade out
-// Phase 8: ProgressRing receives onSeek for scrub-to-seek
+// Final z-stack layout for Main and Fullscreen modes.
+// Supports Pure Vinyl, Split View (left or right lyrics side), and Compact Strip,
+// viewport-responsive Idle turntable scaling, Auto-Romanize for foreign scripts
+// (never auto-translating), and a slim essential-only custom context menu.
 
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   EMPTY_PLAYBACK,
   useVinylDeckStore,
@@ -30,9 +22,10 @@ import {
   canUseSkipControls,
   canUseTransportControls,
 } from "../lib/playback/capabilities";
+import { shouldDisplayLyricsStage } from "../lib/lyrics/parsers";
+import type { LyricsLayout } from "../lib/lyrics/types";
 
 import { AmbientLayer } from "../components/AmbientLayer";
-import { VaporGrid } from "../components/VaporGrid";
 import { VinylRecord } from "../components/VinylRecord";
 import { NeedleArm } from "../components/NeedleArm";
 import { ProgressRing } from "../components/ProgressRing";
@@ -42,11 +35,13 @@ import { ThemePicker } from "../components/ThemePicker";
 import { SourceBadge } from "../components/SourceBadge";
 import { Settings } from "../components/Settings";
 import { AppContextMenu } from "../components/AppContextMenu";
+import { LyricsStage } from "../components/LyricsStage";
 import { Kbd } from "../components/Kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../components/Tooltip";
 import { useColorExtraction } from "../hooks/useColorExtraction";
 import { useIdleMode } from "../hooks/useIdleMode";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useLyrics } from "../hooks/useLyrics";
 import { quitApplication } from "../lib/appLifecycle";
 import { commitSettings } from "../lib/settings";
 import {
@@ -55,16 +50,18 @@ import {
   resetAmbientColors,
 } from "../lib/themes/applier";
 import { setNativeWindowMode } from "../lib/window";
+import "./MainView.css";
 
-const VINYL_SIZE = 420;
-const RING_SIZE = VINYL_SIZE + 28;
+// Fixed base geometry so VinylRecord & NeedleArm never unmount or reset spin angle
+const BASE_VINYL_SIZE = 420;
+const RING_OFFSET = 28;
+const BASE_RING_SIZE = BASE_VINYL_SIZE + RING_OFFSET;
 
-// Shared transition for idle fade in/out
+// Shared easing & choreography curves
+const STAGE_EASE = [0.16, 1, 0.3, 1] as const;
 const IDLE_TRANSITION =
-  "opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), pointer-events 0ms";
-const IDLE_RETURN_TRANSITION = "opacity 400ms cubic-bezier(0.16, 1, 0.3, 1)";
-const IDLE_CENTERPIECE_TRANSITION =
-  "transform 900ms cubic-bezier(0.16, 1, 0.3, 1)";
+  "opacity 560ms cubic-bezier(0.16, 1, 0.3, 1), pointer-events 0ms";
+const IDLE_RETURN_TRANSITION = "opacity 360ms cubic-bezier(0.16, 1, 0.3, 1)";
 
 interface PlaybackProgressRingProps {
   duration: number;
@@ -111,6 +108,10 @@ function PlaybackProgressRing({
   );
 }
 
+function clampScale(value: number, min: number, max: number): number {
+  return Math.round(Math.min(max, Math.max(min, value)) * 100) / 100;
+}
+
 export function MainView() {
   const playback = useVinylDeckStore(selectPlayback);
   const rawIsPlaying = useVinylDeckStore(selectIsPlaying);
@@ -126,25 +127,96 @@ export function MainView() {
   );
   const devForceEmpty = useVinylDeckStore((s) => s.devForceEmpty);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // Per-track manual override when Auto-Romanize is enabled so pressing Rom / R
+  // still lets you toggle back to original script on the current song.
+  const [trackRomOverride, setTrackRomOverride] = useState<{
+    trackKey: string;
+    value: boolean;
+  } | null>(null);
+
+  // Track viewport size for commanding, clip-free Idle turntable scaling
+  const [viewport, setViewport] = useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 1280,
+    height: typeof window !== "undefined" ? window.innerHeight : 720,
+  }));
+
+  useEffect(() => {
+    function handleResize() {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const effectivePlayback = devForceEmpty ? EMPTY_PLAYBACK : playback;
   const isPlaying = devForceEmpty ? false : rawIsPlaying;
   const artworkDataUrl = devForceEmpty ? null : rawArtworkDataUrl;
+
+  const hasTrack = Boolean(effectivePlayback.track.trim());
+  const lyricsLayout: LyricsLayout = settings.lyricsLayout;
+
+  // Auto-Romanize activates romanization automatically on foreign-script tracks
+  // without ever auto-translating (lyricsTranslated remains strictly manual).
+  const currentTrackIdentity = `${effectivePlayback.artist}::${effectivePlayback.track}`;
+  const effectiveShowRomanized =
+    trackRomOverride && trackRomOverride.trackKey === currentTrackIdentity
+      ? trackRomOverride.value
+      : settings.lyricsAutoRomanize || settings.lyricsRomanized;
+
+  const lyrics = useLyrics(
+    {
+      track: effectivePlayback.track,
+      artist: effectivePlayback.artist,
+      album: effectivePlayback.album,
+      duration: effectivePlayback.duration,
+      sourceName: effectivePlayback.sourceName,
+    },
+    {
+      enabled: settings.lyricsEnabled && hasTrack,
+      romanized: effectiveShowRomanized,
+      translated: settings.lyricsTranslated,
+      targetLang: settings.lyricsTargetLang,
+    },
+  );
+
+  // Clear per-track romanization override when track changes
+  useEffect(() => {
+    setTrackRomOverride(null);
+  }, [currentTrackIdentity]);
+
+  const effectiveShowLyrics = shouldDisplayLyricsStage(
+    settings.lyricsEnabled,
+    hasTrack,
+    lyrics.status,
+    lyrics.document,
+  );
+
+  const isAutoHiddenInstrumental =
+    settings.lyricsEnabled &&
+    hasTrack &&
+    lyrics.status === "ready" &&
+    lyrics.document?.kind === "instrumental";
+
+  const isAutoHiddenNotFound =
+    settings.lyricsEnabled &&
+    hasTrack &&
+    lyrics.status === "ready" &&
+    lyrics.document?.kind === "not_found";
 
   useKeyboardShortcuts({
     renderMode: "main",
     isSettingsOpen,
     onCloseSettings: () => setIsSettingsOpen(false),
     onOpenSettings: () => setIsSettingsOpen(true),
+    onToggleRomanized: handleToggleRomanized,
   });
 
-  // Album art extraction now drives the vinyl pressing on every theme.
-  // Ambient tinting is gated by the Art Ambient toggle in both shells.
   useColorExtraction(artworkDataUrl, {
     ambientEnabled: settings.ambientMode !== "off",
     seed: `${effectivePlayback.album || effectivePlayback.track || "Unknown Album"}|${effectivePlayback.artist || "Unknown Artist"}`,
   });
 
-  // Phase 7: Idle detection — only when playing
   const isIdle = useIdleMode(isPlaying, {
     enabled: settings.leanBackMode,
     hideCursor: settings.cursorHide,
@@ -162,7 +234,6 @@ export function MainView() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSettingsOpen]);
 
-  // Controls handlers — delegate to source
   function handlePlay() {
     source?.play();
   }
@@ -178,7 +249,6 @@ export function MainView() {
     source?.previous();
   }
 
-  // Phase 8: Seek handler — delegates to source
   function handleSeek(positionSeconds: number) {
     beginPendingSeek(positionSeconds);
     source?.seekTo(positionSeconds);
@@ -214,6 +284,53 @@ export function MainView() {
       });
   }
 
+  function handleLyricsTriggerClick() {
+    if (isAutoHiddenNotFound) {
+      lyrics.retry();
+      return;
+    }
+    handleLyricsToggle();
+  }
+
+  function handleLyricsToggle() {
+    void commitSettings({ lyricsEnabled: !settings.lyricsEnabled })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Lyrics] Toggle failed:", error);
+      });
+  }
+
+  function handleLyricsLayoutChange(nextLayout: LyricsLayout) {
+    void commitSettings({ lyricsEnabled: true, lyricsLayout: nextLayout })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Lyrics] Layout change failed:", error);
+      });
+  }
+
+  function handleToggleRomanized() {
+    if (settings.lyricsAutoRomanize) {
+      setTrackRomOverride({
+        trackKey: currentTrackIdentity,
+        value: !effectiveShowRomanized,
+      });
+      return;
+    }
+    void commitSettings({ lyricsRomanized: !settings.lyricsRomanized })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Lyrics] Romanized toggle failed:", error);
+      });
+  }
+
+  function handleToggleTranslated() {
+    void commitSettings({ lyricsTranslated: !settings.lyricsTranslated })
+      .then(applyCommittedSettings)
+      .catch((error) => {
+        console.warn("[Lyrics] Translated toggle failed:", error);
+      });
+  }
+
   const contextMenuActions = useMemo(
     () => [
       {
@@ -236,6 +353,12 @@ export function MainView() {
         kbd: "Right",
         disabled: !canUseSkipControls(effectivePlayback),
         onSelect: handleNext,
+      },
+      {
+        id: "lyrics-toggle",
+        label: settings.lyricsEnabled ? "Hide Lyrics" : "Show Lyrics",
+        kbd: "L",
+        onSelect: handleLyricsToggle,
       },
       {
         id: "art-ambient",
@@ -263,6 +386,7 @@ export function MainView() {
       {
         id: "settings",
         label: "Settings",
+        kbd: "S",
         onSelect: () => setIsSettingsOpen(true),
       },
       {
@@ -277,24 +401,105 @@ export function MainView() {
         },
       },
     ],
-    [effectivePlayback, isPlaying, settings.ambientMode, settings.windowMode],
+    [
+      effectivePlayback,
+      isPlaying,
+      settings.ambientMode,
+      settings.lyricsEnabled,
+      settings.windowMode,
+    ],
   );
 
-  // Idle UI style — shared across Controls / TrackInfo / ThemePicker
-  const idleHideStyle = {
+  // Viewport-responsive GPU turntable scale across all 6 states (Pure/Split/Strip × Active/Idle)
+  // Scales generously in Idle/Fullscreen while guaranteeing zero viewport clipping.
+  const vinylScale = useMemo(() => {
+    const vh = viewport.height;
+    const vw = viewport.width;
+    if (!effectiveShowLyrics) {
+      if (isIdle) {
+        const fit = Math.min((vh * 0.72) / BASE_RING_SIZE, (vw * 0.72) / BASE_RING_SIZE);
+        return clampScale(fit, 1.05, 1.56);
+      }
+      const fit = Math.min((vh * 0.56) / BASE_RING_SIZE, (vw * 0.62) / BASE_RING_SIZE);
+      return clampScale(fit, 0.82, 1.06);
+    }
+
+    if (lyricsLayout === "split") {
+      if (isIdle) {
+        const fit = Math.min((vh * 0.64) / BASE_RING_SIZE, (vw * 0.42) / BASE_RING_SIZE);
+        return clampScale(fit, 0.96, 1.34);
+      }
+      const fit = Math.min((vh * 0.52) / BASE_RING_SIZE, (vw * 0.38) / BASE_RING_SIZE);
+      return clampScale(fit, 0.78, 0.94);
+    }
+
+    // Compact Strip
+    if (isIdle) {
+      const fit = Math.min((vh * 0.56) / BASE_RING_SIZE, (vw * 0.62) / BASE_RING_SIZE);
+      return clampScale(fit, 0.96, 1.24);
+    }
+    const fit = Math.min((vh * 0.44) / BASE_RING_SIZE, (vw * 0.54) / BASE_RING_SIZE);
+    return clampScale(fit, 0.68, 0.8);
+  }, [effectiveShowLyrics, isIdle, lyricsLayout, viewport.height, viewport.width]);
+
+  const vinylSlotSize = Math.round(BASE_RING_SIZE * vinylScale);
+
+  const idleFadeStyle = {
     opacity: isIdle ? 0 : 1,
     pointerEvents: isIdle ? ("none" as const) : ("auto" as const),
     transition: isIdle ? IDLE_TRANSITION : IDLE_RETURN_TRANSITION,
   };
 
-  const idleVinylAreaStyle = {
-    transform: isIdle
-      ? "translate3d(0, clamp(72px, 8.8vh, 96px), 0) scale(1.22)"
-      : "translate3d(0, 0, 0) scale(1)",
-    transformOrigin: "center center",
-    transition: IDLE_CENTERPIECE_TRANSITION,
-    willChange: isPlaying ? ("transform" as const) : undefined,
-  };
+  const cornerChromeClass = `main-chrome-corner${isIdle ? " main-chrome-corner--idle" : ""}`;
+
+  const stageClass = [
+    "main-stage",
+    effectiveShowLyrics ? `main-stage--${lyricsLayout}` : "main-stage--pure",
+    effectiveShowLyrics && lyricsLayout === "split" && settings.lyricsSide === "left"
+      ? "main-stage--split-left"
+      : "",
+    isIdle ? "main-stage--idle" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const lyricsStageNode = (
+    <LyricsStage
+      layout={lyricsLayout}
+      fontFamily={settings.lyricsFontFamily}
+      fontSize={settings.lyricsFontSize}
+      status={lyrics.status}
+      document={lyrics.document}
+      isPlaying={isPlaying}
+      isIdle={isIdle}
+      canSeek={canUseSeekControl(effectivePlayback)}
+      duration={effectivePlayback.duration}
+      showRomanized={effectiveShowRomanized}
+      showTranslated={settings.lyricsTranslated}
+      targetLang={settings.lyricsTargetLang}
+      hasNonLatin={lyrics.hasNonLatin}
+      isSameAsTargetLang={lyrics.isSameAsTargetLang}
+      isEnriching={lyrics.isEnriching}
+      enrichmentNonce={lyrics.enrichmentNonce}
+      onSeek={handleSeek}
+      onLayoutChange={handleLyricsLayoutChange}
+      onToggleRomanized={handleToggleRomanized}
+      onToggleTranslated={handleToggleTranslated}
+      onRetry={lyrics.retry}
+    />
+  );
+
+  const lyricsTriggerTooltip = isAutoHiddenInstrumental ? (
+    <>
+      Instrumental · Lyrics auto-hidden <Kbd>L</Kbd>
+    </>
+  ) : isAutoHiddenNotFound ? (
+    <>No lyrics found · Click to retry</>
+  ) : (
+    <>
+      {settings.lyricsEnabled ? "Hide lyrics" : "Show lyrics"} <Kbd>L</Kbd>
+    </>
+  );
 
   return (
     <>
@@ -306,198 +511,317 @@ export function MainView() {
       />
 
       {/* z:0 — Vapor grid floor */}
-      <VaporGrid />
 
-      {/* z:1 — Main content */}
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "28px",
-          padding: "40px 24px",
-        }}
+      {/* z:1 — Unified choreographed stage */}
+      <main
+        className={stageClass}
+        data-lyrics-mode={effectiveShowLyrics ? lyricsLayout : "off"}
+        data-lyrics-side={settings.lyricsSide}
+        data-idle={isIdle ? "true" : "false"}
       >
-        {/* Vinyl area */}
-        <Tooltip maxVisibleMs={1800}>
-          <TooltipTrigger>
-            <div
-              style={{
-                position: "relative",
-                width: `${RING_SIZE}px`,
-                height: `${RING_SIZE}px`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                ...idleVinylAreaStyle,
-              }}
-            >
-              {/* Progress ring — Phase 8: receives onSeek */}
-              {/* Phase 7: ring fades with rest of UI on idle */}
-              <div style={idleHideStyle}>
-                <PlaybackProgressRing
-                  duration={effectivePlayback.duration}
-                  isPlaying={isPlaying}
-                  size={RING_SIZE}
-                  canSeek={canUseSeekControl(effectivePlayback)}
-                  onSeek={handleSeek}
-                />
-              </div>
+        <motion.div
+          layout
+          transition={{ duration: 0.54, ease: STAGE_EASE }}
+          className="main-stage__deck"
+        >
+          {/* Vinyl unit — layout box & GPU scale animate smoothly; spin never resets */}
+          <Tooltip maxVisibleMs={1800}>
+            <TooltipTrigger>
+              <motion.div
+                className="main-stage__vinyl-slot"
+                animate={{
+                  width: vinylSlotSize,
+                  height: vinylSlotSize,
+                }}
+                transition={{ duration: 0.56, ease: STAGE_EASE }}
+              >
+                <motion.div
+                  className="main-stage__vinyl-inner"
+                  style={{
+                    width: `${BASE_RING_SIZE}px`,
+                    height: `${BASE_RING_SIZE}px`,
+                  }}
+                  animate={{ scale: vinylScale }}
+                  transition={{ duration: 0.56, ease: STAGE_EASE }}
+                >
+                  {/* Progress ring — fades cleanly on Lean-Back idle */}
+                  <div style={idleFadeStyle}>
+                    <PlaybackProgressRing
+                      duration={effectivePlayback.duration}
+                      isPlaying={isPlaying}
+                      size={BASE_RING_SIZE}
+                      canSeek={canUseSeekControl(effectivePlayback)}
+                      onSeek={handleSeek}
+                    />
+                  </div>
 
-              {/* Vinyl record */}
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <VinylRecord
-                  isPlaying={isPlaying}
-                  vinylWobble={settings.vinylWobble}
-                  artworkDataUrl={artworkDataUrl}
-                  trackTitle={effectivePlayback.track}
-                  size={VINYL_SIZE}
-                  trackChangeDirection={trackChangeDirection}
-                  trackChangeNonce={trackChangeNonce}
-                />
-              </div>
+                  {/* Vinyl record */}
+                  <div style={{ position: "relative", zIndex: 2 }}>
+                    <VinylRecord
+                      isPlaying={isPlaying}
+                      vinylWobble={settings.vinylWobble}
+                      artworkDataUrl={artworkDataUrl}
+                      trackTitle={effectivePlayback.track}
+                      size={BASE_VINYL_SIZE}
+                      trackChangeDirection={trackChangeDirection}
+                      trackChangeNonce={trackChangeNonce}
+                    />
+                  </div>
 
-              {/* Needle arm */}
-              <NeedleArm
-                isPlaying={isPlaying}
-                trackKey={effectivePlayback.track}
+                  {/* Needle arm */}
+                  <NeedleArm
+                    isPlaying={isPlaying}
+                    trackKey={effectivePlayback.track}
+                  />
+                </motion.div>
+              </motion.div>
+            </TooltipTrigger>
+            <TooltipContent>Drag to seek</TooltipContent>
+          </Tooltip>
+
+          {/* Compact Strip slot — glides smoothly in/out beneath the vinyl */}
+          <AnimatePresence initial={false}>
+            {effectiveShowLyrics && lyricsLayout === "strip" && (
+              <motion.div
+                key="strip-lyrics"
+                className="main-stage__lyrics main-stage__lyrics--strip"
+                initial={{ opacity: 0, height: 0, y: 8 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: 8 }}
+                transition={{ duration: 0.48, ease: STAGE_EASE }}
+              >
+                {lyricsStageNode}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Collapsible transport chrome dock */}
+          <motion.div
+            className="main-stage__chrome-dock"
+            initial={false}
+            animate={{
+              height: isIdle ? 0 : "auto",
+              opacity: isIdle ? 0 : 1,
+            }}
+            transition={{ duration: 0.54, ease: STAGE_EASE }}
+            style={{ pointerEvents: isIdle ? "none" : "auto" }}
+            aria-hidden={isIdle}
+          >
+            <div className="main-stage__chrome-inner">
+              <TrackInfo
+                track={effectivePlayback.track || "Nothing Playing"}
+                artist={effectivePlayback.artist}
+                album={effectivePlayback.album}
+                direction={trackChangeDirection}
               />
+              <Controls
+                isPlaying={isPlaying}
+                canControl={effectivePlayback.canControl}
+                canSkip={effectivePlayback.canSkip}
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+              />
+              <ThemePicker />
             </div>
-          </TooltipTrigger>
-          <TooltipContent>Drag to seek</TooltipContent>
-        </Tooltip>
+          </motion.div>
+        </motion.div>
 
-        {/* Track info — Phase 7: fades on idle */}
-        <div style={idleHideStyle}>
-          <TrackInfo
-            track={effectivePlayback.track || "Nothing Playing"}
-            artist={effectivePlayback.artist}
-            album={effectivePlayback.album}
-            direction={trackChangeDirection}
-          />
-        </div>
-
-        {/* Controls — Phase 7: fades on idle */}
-        <div style={idleHideStyle}>
-          <Controls
-            isPlaying={isPlaying}
-            canControl={effectivePlayback.canControl}
-            canSkip={effectivePlayback.canSkip}
-            onPlay={handlePlay}
-            onPause={handlePause}
-            onNext={handleNext}
-            onPrevious={handlePrevious}
-          />
-        </div>
-
-        {/* Theme picker — Phase 7: fades on idle */}
-        <div style={idleHideStyle}>
-          <ThemePicker />
-        </div>
-      </div>
+        {/* Split View lyrics column — glides smoothly in/out beside the vinyl */}
+        <AnimatePresence initial={false}>
+          {effectiveShowLyrics && lyricsLayout === "split" && (
+            <motion.div
+              key="split-lyrics"
+              className="main-stage__lyrics main-stage__lyrics--split"
+              initial={{ opacity: 0, x: settings.lyricsSide === "left" ? -14 : 14, scale: 0.985 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: settings.lyricsSide === "left" ? -14 : 14, scale: 0.985 }}
+              transition={{ duration: 0.52, ease: STAGE_EASE }}
+            >
+              {lyricsStageNode}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
       {/* z:2 — Source badge */}
-      <SourceBadge sourceName={effectivePlayback.sourceName} />
+      <div className={cornerChromeClass} aria-hidden={isIdle}>
+        <SourceBadge sourceName={effectivePlayback.sourceName} />
+      </div>
 
       <AppContextMenu actions={contextMenuActions} />
 
-      {/* z:90 — Settings trigger */}
-      <Tooltip side="bottom">
-        <TooltipTrigger>
-          <button
-            type="button"
-            className="settings-trigger"
-            aria-label="Open settings"
-            aria-haspopup="dialog"
-            aria-expanded={isSettingsOpen}
-            onPointerDown={(event) => {
-              event.stopPropagation();
-            }}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              setIsSettingsOpen(true);
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
+      {/* z:90 — Lyrics & Settings triggers */}
+      <div className={cornerChromeClass} aria-hidden={isIdle}>
+        <Tooltip side="bottom">
+          <TooltipTrigger>
+            <button
+              type="button"
+              className={[
+                "lyrics-trigger",
+                settings.lyricsEnabled && !isAutoHiddenInstrumental && !isAutoHiddenNotFound
+                  ? "lyrics-trigger--active"
+                  : "",
+                isAutoHiddenInstrumental || isAutoHiddenNotFound
+                  ? "lyrics-trigger--muted"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              aria-label={
+                isAutoHiddenInstrumental
+                  ? "Instrumental track, lyrics auto-hidden"
+                  : isAutoHiddenNotFound
+                    ? "No lyrics found, click to retry"
+                    : settings.lyricsEnabled
+                      ? "Hide lyrics"
+                      : "Show lyrics"
+              }
+              aria-pressed={settings.lyricsEnabled}
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handleLyricsTriggerClick();
+              }}
             >
-              <path
-                d="M4.5 7.25h5.25"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <path
-                d="M13.75 7.25h5.75"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <path
-                d="M4.5 12h9.25"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <path
-                d="M17.75 12h1.75"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <path
-                d="M4.5 16.75h2.75"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <path
-                d="M11.25 16.75h8.25"
-                stroke="currentColor"
-                strokeWidth="1.55"
-                strokeLinecap="round"
-              />
-              <circle
-                cx="11.75"
-                cy="7.25"
-                r="2"
-                stroke="currentColor"
-                strokeWidth="1.55"
-              />
-              <circle
-                cx="15.75"
-                cy="12"
-                r="2"
-                stroke="currentColor"
-                strokeWidth="1.55"
-              />
-              <circle
-                cx="9.25"
-                cy="16.75"
-                r="2"
-                stroke="currentColor"
-                strokeWidth="1.55"
-              />
-            </svg>
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          Settings <Kbd>S</Kbd>
-        </TooltipContent>
-      </Tooltip>
+              <svg
+                width="19"
+                height="19"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M5 7h11"
+                  stroke="currentColor"
+                  strokeWidth="1.65"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M5 12h14"
+                  stroke="currentColor"
+                  strokeWidth="1.65"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M5 17h8"
+                  stroke="currentColor"
+                  strokeWidth="1.65"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="18"
+                  cy="16.5"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                />
+                <path
+                  d="M20 16.5V10.5"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>{lyricsTriggerTooltip}</TooltipContent>
+        </Tooltip>
 
-      {/* z:40 — Settings overlay */}
+        <Tooltip side="bottom">
+          <TooltipTrigger>
+            <button
+              type="button"
+              className="settings-trigger"
+              aria-label="Open settings"
+              aria-haspopup="dialog"
+              aria-expanded={isSettingsOpen}
+              onPointerDown={(event) => {
+                event.stopPropagation();
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                setIsSettingsOpen(true);
+              }}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4.5 7.25h5.25"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M13.75 7.25h5.75"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M4.5 12h9.25"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M17.75 12h1.75"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M4.5 16.75h2.75"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M11.25 16.75h8.25"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                  strokeLinecap="round"
+                />
+                <circle
+                  cx="11.75"
+                  cy="7.25"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                />
+                <circle
+                  cx="15.75"
+                  cy="12"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                />
+                <circle
+                  cx="9.25"
+                  cy="16.75"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="1.55"
+                />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Settings <Kbd>S</Kbd>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
       <Settings
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}

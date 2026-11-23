@@ -1,144 +1,130 @@
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager};
 
 use super::{emit_media_snapshot, model::MediaSnapshot, MediaState};
 
-#[tauri::command]
-pub async fn cmd_media_snapshot(state: State<'_, MediaState>) -> Result<MediaSnapshot, String> {
-    Ok(state.snapshot().await)
-}
+async fn refresh_and_emit_smtc_snapshot(app: &AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    let mut snapshot = super::smtc::current_media_snapshot_with_metadata()
+        .await
+        .map_err(|error| error.to_string())?;
 
-#[tauri::command]
-pub async fn cmd_media_play(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-) -> Result<MediaSnapshot, String> {
-    Ok(media_play(&app, &state).await)
-}
+    let mut should_emit = true;
 
-#[tauri::command]
-pub async fn cmd_media_pause(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-) -> Result<MediaSnapshot, String> {
-    Ok(media_pause(&app, &state).await)
-}
+    if let Some(ref mut current) = snapshot {
+        if current.artwork_data_url.is_none() {
+            let prev = app
+                .try_state::<MediaState>()
+                .map(|state| state.snapshot())
+                .unwrap_or_default();
 
-#[tauri::command]
-pub async fn cmd_media_toggle_play_pause(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-) -> Result<MediaSnapshot, String> {
-    Ok(media_toggle_play_pause(&app, &state).await)
-}
+            let same_track = !current.track.is_empty()
+                && current.track == prev.track
+                && current.artist == prev.artist
+                && current.source_id == prev.source_id;
 
-#[tauri::command]
-pub async fn cmd_media_next(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-) -> Result<MediaSnapshot, String> {
-    Ok(media_next(&app, &state).await)
-}
+            if same_track && prev.artwork_data_url.is_some() {
+                // Preserve cached cover art on same-track play/pause/seek so the vinyl label never flashes blank.
+                current.artwork_data_url = prev.artwork_data_url;
+            } else if !same_track && !current.track.is_empty() {
+                // Track changed (Next/Previous): avoid emitting an artwork-less intermediate snapshot;
+                // the dedicated SMTC poller thread fetches and emits the full snapshot with new artwork.
+                should_emit = false;
+            }
+        }
+    }
 
-#[tauri::command]
-pub async fn cmd_media_previous(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-) -> Result<MediaSnapshot, String> {
-    Ok(media_previous(&app, &state).await)
-}
+    if should_emit {
+        let effective = snapshot.clone().unwrap_or_default();
+        emit_media_snapshot(app, &effective);
+    }
 
-#[tauri::command]
-pub async fn cmd_media_seek(
-    app: AppHandle,
-    state: State<'_, MediaState>,
-    seconds: f64,
-) -> Result<MediaSnapshot, String> {
-    let snapshot = state.seek_to(seconds).await;
-    emit_media_snapshot(&app, &snapshot);
     Ok(snapshot)
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_snapshot() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::current_media_snapshot_with_metadata()
+pub async fn cmd_smtc_snapshot(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    let mut snapshot = super::smtc::current_media_snapshot_with_metadata()
         .await
-        .map_err(|error| error.to_string())
+        .map_err(|error| error.to_string())?;
+
+    if let Some(ref mut current) = snapshot {
+        if current.artwork_data_url.is_none() {
+            if let Some(state) = app.try_state::<MediaState>() {
+                let prev = state.snapshot();
+                if current.track == prev.track
+                    && current.artist == prev.artist
+                    && current.source_id == prev.source_id
+                    && prev.artwork_data_url.is_some()
+                {
+                    current.artwork_data_url = prev.artwork_data_url;
+                }
+            }
+        }
+    }
+
+    if let Some(state) = app.try_state::<MediaState>() {
+        state.set_snapshot(snapshot.clone().unwrap_or_default());
+    }
+
+    Ok(snapshot)
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_play() -> Result<Option<MediaSnapshot>, String> {
+pub async fn cmd_smtc_play(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
     super::smtc::play()
         .await
         .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+    refresh_and_emit_smtc_snapshot(&app).await
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_pause() -> Result<Option<MediaSnapshot>, String> {
+pub async fn cmd_smtc_pause(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
     super::smtc::pause()
         .await
         .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+    refresh_and_emit_smtc_snapshot(&app).await
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_toggle_play_pause() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::toggle_play_pause()
-        .await
-        .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+pub async fn cmd_smtc_toggle_play_pause(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    smtc_toggle_play_pause(&app).await
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_next() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::next()
-        .await
-        .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+pub async fn cmd_smtc_next(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    smtc_next(&app).await
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_previous() -> Result<Option<MediaSnapshot>, String> {
-    super::smtc::previous()
-        .await
-        .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+pub async fn cmd_smtc_previous(app: AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    smtc_previous(&app).await
 }
 
 #[tauri::command]
-pub async fn cmd_smtc_seek(seconds: f64) -> Result<Option<MediaSnapshot>, String> {
+pub async fn cmd_smtc_seek(app: AppHandle, seconds: f64) -> Result<Option<MediaSnapshot>, String> {
     super::smtc::seek(seconds)
         .await
         .map_err(|error| error.to_string())?;
-    cmd_smtc_snapshot().await
+    refresh_and_emit_smtc_snapshot(&app).await
 }
 
-pub async fn media_play(app: &AppHandle, state: &MediaState) -> MediaSnapshot {
-    let snapshot = state.play().await;
-    emit_media_snapshot(app, &snapshot);
-    snapshot
+/// Shared SMTC helpers invoked by both the frontend IPC commands and the System Tray.
+pub async fn smtc_toggle_play_pause(app: &AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    super::smtc::toggle_play_pause()
+        .await
+        .map_err(|error| error.to_string())?;
+    refresh_and_emit_smtc_snapshot(app).await
 }
 
-pub async fn media_pause(app: &AppHandle, state: &MediaState) -> MediaSnapshot {
-    let snapshot = state.pause().await;
-    emit_media_snapshot(app, &snapshot);
-    snapshot
+pub async fn smtc_next(app: &AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    super::smtc::next()
+        .await
+        .map_err(|error| error.to_string())?;
+    refresh_and_emit_smtc_snapshot(app).await
 }
 
-pub async fn media_toggle_play_pause(app: &AppHandle, state: &MediaState) -> MediaSnapshot {
-    let snapshot = state.toggle_play_pause().await;
-    emit_media_snapshot(app, &snapshot);
-    snapshot
-}
-
-pub async fn media_next(app: &AppHandle, state: &MediaState) -> MediaSnapshot {
-    let snapshot = state.next().await;
-    emit_media_snapshot(app, &snapshot);
-    snapshot
-}
-
-pub async fn media_previous(app: &AppHandle, state: &MediaState) -> MediaSnapshot {
-    let snapshot = state.previous().await;
-    emit_media_snapshot(app, &snapshot);
-    snapshot
+pub async fn smtc_previous(app: &AppHandle) -> Result<Option<MediaSnapshot>, String> {
+    super::smtc::previous()
+        .await
+        .map_err(|error| error.to_string())?;
+    refresh_and_emit_smtc_snapshot(app).await
 }

@@ -334,7 +334,7 @@
 }
 
 .settings-shell-card--glass .settings-shell-card__disc {
-  border-radius: 15px;
+  border-radius: 50%;
   background:
     radial-gradient(
       circle at 32% 24%,
@@ -405,6 +405,13 @@
   margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.settings-lyrics-layout-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1543,4 +1550,501 @@
   [data-theme="glass"] .settings-display__switch-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Realtime Lyrics v2.1: Romanization, Translation & Language Picker ── */
+.settings-lyrics-subgrid {
+  margin-top: 12px;
+}
+
+.settings-select-row {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md, 14px);
+  background: var(--ui-control-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
+}
+
+.settings-select {
+  min-width: 148px;
+  height: 36px;
+  padding: 0 32px 0 12px;
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-text-primary);
+  background-color: var(--ui-control-hover, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.14));
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.settings-select:hover {
+  border-color: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-border));
+}
+
+.settings-select:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 2px;
+}
+
+.settings-select option {
+  background: #141416;
+  color: #f1efea;
+}
+
+[data-theme="glass"] .settings-select-row {
+  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(42, 70, 92, 0.16);
+}
+
+[data-theme="glass"] .settings-select {
+  background-color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(42, 70, 92, 0.22);
+  color: rgba(16, 27, 39, 0.92);
+}
+
+[data-theme="glass"] .settings-select option {
+  background: #f5f2ea;
+  color: #101b27;
+}
+
+/* ── v2.2 Uniform Settings Dialog Sizing & Lyrics Studio Controls ── */
+.settings-panel,
+.settings-panel--display,
+.settings-panel--lyrics,
+[data-theme="glass"] .settings-panel,
+[data-theme="glass"] .settings-panel--display,
+[data-theme="glass"] .settings-panel--lyrics {
+  width: min(760px, calc(100vw - 48px));
+  height: min(600px, calc(100vh - 64px));
+  min-height: 0;
+  max-height: calc(100vh - 64px);
+}
+
+.settings-panel__content,
+[data-theme="glass"] .settings-panel__content {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ui-text-secondary) 32%, transparent) transparent;
+}
+
+.settings-panel__content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-panel__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-panel__content::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ui-text-secondary) 28%, transparent);
+  border-radius: 999px;
+}
+
+.settings-lyrics-font-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settings-lyrics-size-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.settings-size-chip {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ui-text-secondary);
+  background: var(--ui-control-bg, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.1));
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.settings-size-chip:hover {
+  color: var(--ui-text-primary);
+  border-color: color-mix(in srgb, var(--ui-accent) 35%, var(--ui-border));
+}
+
+.settings-size-chip--active {
+  color: var(--ui-text-primary);
+  background: var(--ui-control-active, rgba(255, 255, 255, 0.14));
+  border-color: color-mix(in srgb, var(--ui-accent) 60%, var(--ui-border));
+}
+
+[data-theme="glass"] .settings-size-chip {
+  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(42, 70, 92, 0.16);
+}
+
+[data-theme="glass"] .settings-size-chip--active {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+}
+
+/* ── v2.2.1 Scroll Performance Fix & Custom Shadcn-Style Select ── */
+.settings-panel__content,
+[data-theme="glass"] .settings-panel__content {
+  contain: layout style;
+  will-change: scroll-position;
+}
+
+/* Remove expensive nested backdrop-filter inside scrollable LYRICS tab */
+.settings-lyrics .settings-toggle-row,
+.settings-lyrics .settings-theme-card,
+[data-theme="glass"] .settings-lyrics .settings-toggle-row,
+[data-theme="glass"] .settings-lyrics .settings-theme-card {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.settings-custom-select {
+  position: relative;
+  flex-shrink: 0;
+  min-width: 164px;
+}
+
+.settings-custom-select__trigger {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ui-text-primary);
+  background: var(--ui-control-hover, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.14));
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.settings-custom-select__trigger:hover,
+.settings-custom-select__trigger[aria-expanded="true"] {
+  border-color: color-mix(in srgb, var(--ui-accent) 48%, var(--ui-border));
+  background: var(--ui-control-active, rgba(255, 255, 255, 0.12));
+}
+
+.settings-custom-select__chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--ui-text-secondary);
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.settings-custom-select__trigger[aria-expanded="true"] .settings-custom-select__chevron {
+  transform: rotate(180deg);
+}
+
+.settings-custom-select__menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 6px);
+  z-index: 30;
+  min-width: 184px;
+  max-height: 230px;
+  overflow-y: auto;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: var(--radius-md, 12px);
+  background: rgba(14, 14, 16, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.65);
+  scrollbar-width: thin;
+}
+
+.settings-custom-select__option {
+  width: 100%;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: calc(var(--radius-sm, 8px) - 2px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-body, "Inter"), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(241, 239, 235, 0.84);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.settings-custom-select__option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.settings-custom-select__option--active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.settings-custom-select__check {
+  width: 14px;
+  height: 14px;
+  color: var(--ui-accent);
+  flex-shrink: 0;
+}
+
+[data-theme="glass"] .settings-custom-select__trigger {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(42, 70, 92, 0.22);
+  color: rgba(16, 27, 39, 0.92);
+}
+
+[data-theme="glass"] .settings-custom-select__menu {
+  background: rgba(248, 246, 241, 0.96);
+  border-color: rgba(42, 70, 92, 0.2);
+  box-shadow: 0 16px 38px rgba(18, 36, 56, 0.18);
+}
+
+[data-theme="glass"] .settings-custom-select__option {
+  color: rgba(16, 27, 39, 0.82);
+}
+
+[data-theme="glass"] .settings-custom-select__option:hover {
+  background: rgba(0, 112, 217, 0.1);
+  color: rgba(16, 27, 39, 0.98);
+}
+
+[data-theme="glass"] .settings-custom-select__option--active {
+  background: rgba(0, 112, 217, 0.14);
+  color: #0070d9;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   v2.3.0 Settings Readability, Glass Contrast & Dropdown Fix
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Prevent card subtitles like "LIQUID DISPLAY CASE" from clipping with "..." */
+.settings-theme-card__note {
+  white-space: normal;
+  line-height: 1.3;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Fix Translation Language dropdown row width so trigger sits cleanly inside card */
+.settings-select-row {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.settings-select-row .settings-toggle-row__copy {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.settings-select-row .settings-toggle-row__description {
+  max-width: none;
+}
+
+.settings-custom-select {
+  flex: 0 0 156px;
+  width: 156px;
+  min-width: 0;
+}
+
+.settings-custom-select__trigger {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.settings-custom-select__trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Noir readability: stronger backdrop scrim & panel opacity so lyrics never bleed through */
+[data-theme="noir"] .settings-overlay__scrim {
+  background: rgba(0, 0, 0, 0.56);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+[data-theme="noir"] .settings-panel {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.045),
+      transparent 44%
+    ),
+    linear-gradient(180deg, rgba(15, 15, 17, 0.96), rgba(7, 7, 9, 0.97));
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Glass readability: luminous frosted surface + crisp dark ink contrast */
+[data-theme="glass"] .settings-overlay__scrim {
+  background: rgba(228, 236, 245, 0.48);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  backdrop-filter: blur(16px) saturate(1.15);
+}
+
+[data-theme="glass"] .settings-panel {
+  color: rgba(14, 22, 32, 0.94);
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(255, 255, 255, 0.9),
+      transparent 46%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(247, 250, 254, 0.88),
+      rgba(236, 242, 249, 0.84)
+    );
+  border-color: rgba(24, 48, 74, 0.2);
+  -webkit-backdrop-filter: blur(40px) saturate(1.45);
+  backdrop-filter: blur(40px) saturate(1.45);
+  box-shadow:
+    0 28px 72px rgba(24, 44, 68, 0.2),
+    inset 1px 1px 1px rgba(255, 255, 255, 0.92),
+    inset -1px -1px 1px rgba(82, 140, 196, 0.16);
+}
+
+[data-theme="glass"] .settings-panel::before {
+  opacity: 0.16 !important;
+}
+
+[data-theme="glass"] .settings-panel__sidebar {
+  background: rgba(255, 255, 255, 0.44);
+  border-right-color: rgba(24, 48, 74, 0.12);
+}
+
+[data-theme="glass"] .settings-panel__section-label,
+[data-theme="glass"] .settings-panel__eyebrow {
+  color: rgba(34, 48, 64, 0.78);
+  text-shadow: none;
+}
+
+[data-theme="glass"] .settings-nav__item {
+  color: rgba(34, 48, 64, 0.8);
+}
+
+[data-theme="glass"] .settings-nav__item:hover {
+  color: rgba(12, 20, 30, 0.96);
+  background: rgba(255, 255, 255, 0.56);
+}
+
+[data-theme="glass"] .settings-nav__item--active {
+  color: rgba(12, 20, 30, 0.96);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 2px 10px rgba(24, 44, 68, 0.08),
+    inset 0 0 0 1px rgba(24, 48, 74, 0.1);
+}
+
+[data-theme="glass"] .settings-look__header h3,
+[data-theme="glass"] .settings-toggle-row__label,
+[data-theme="glass"] .settings-theme-card__name,
+[data-theme="glass"] .settings-about h3,
+[data-theme="glass"] .settings-about__grid strong {
+  color: rgba(14, 22, 32, 0.95);
+  text-shadow: none;
+}
+
+[data-theme="glass"] .settings-look__header p,
+[data-theme="glass"] .settings-toggle-row__description,
+[data-theme="glass"] .settings-theme-card__note,
+[data-theme="glass"] .settings-card__material,
+[data-theme="glass"] .settings-about__body,
+[data-theme="glass"] .settings-about__grid span {
+  color: rgba(36, 50, 66, 0.8);
+}
+
+[data-theme="glass"] .settings-theme-card,
+[data-theme="glass"] .settings-toggle-row,
+[data-theme="glass"] .settings-about,
+[data-theme="glass"] .settings-display__switch-grid .settings-toggle-row,
+[data-theme="glass"] .settings-toggle-list--compact .settings-toggle-row,
+[data-theme="glass"] .settings-toggle-list > .settings-toggle-row {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(24, 48, 74, 0.15);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow:
+    0 8px 22px rgba(24, 44, 68, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="glass"] .settings-theme-card--active {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 112, 217, 0.55);
+  box-shadow:
+    0 0 0 1.5px rgba(0, 112, 217, 0.42),
+    0 12px 26px rgba(24, 44, 68, 0.09);
+}
+
+[data-theme="glass"] .settings-select-row {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(24, 48, 74, 0.16);
+}
+
+[data-theme="glass"] .settings-size-chip {
+  background: rgba(255, 255, 255, 0.66);
+  border-color: rgba(24, 48, 74, 0.16);
+  color: rgba(24, 38, 54, 0.84);
+}
+
+[data-theme="glass"] .settings-size-chip--active {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
+}
+
+[data-theme="glass"] .settings-custom-select__trigger {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(24, 48, 74, 0.22);
+  color: rgba(14, 22, 32, 0.95);
+}
+
+[data-theme="glass"] .settings-custom-select__menu {
+  background: rgba(250, 252, 255, 0.98);
+  border-color: rgba(24, 48, 74, 0.2);
+  box-shadow: 0 18px 42px rgba(18, 36, 56, 0.22);
+}
+
+/* v2.3.2 Dropdown box-sizing guarantee (overrides button { all: unset }) */
+.settings-custom-select,
+.settings-custom-select__trigger,
+.settings-custom-select__menu,
+.settings-custom-select__option {
+  box-sizing: border-box;
 }

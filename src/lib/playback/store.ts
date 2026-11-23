@@ -15,69 +15,40 @@ const PENDING_SEEK_SETTLE_SECONDS = 1.25;
 
 // ── Store state types ─────────────────────────────────────────
 export interface PlaybackStoreState {
-  // Current playback snapshot (from source)
   playback: PlaybackState;
-
-  // Raw sync data for client-side position extrapolation
   lastKnownPosition: number;
-  lastSyncTime: number; // ms since epoch
-
-  // Active theme
+  lastSyncTime: number;
   theme: ThemeId;
-
-  // Album-reactive lighting mode. artAmbient remains as legacy derived flag.
   ambientMode: AmbientModeId;
   artAmbient: boolean;
-
-  // Persisted settings (runtime QA state stays separate)
   settings: PersistedSettings;
-
-  // Active source (runtime, not persisted)
   source: PlaybackSource | null;
   sourceUnsubscribe: (() => void) | null;
-
-  // Dev visual QA: force no-media state without stopping MockSource.
   devForceEmpty: boolean;
-
-  // Runtime-only seek optimism: masks SMTC poll lag after user releases scrub.
   pendingSeekPosition: number | null;
   pendingSeekStartedAt: number;
-
-  // Runtime-only direction hint for physical track-change motion.
   trackChangeDirection: TrackChangeDirection;
   trackChangeNonce: number;
   pendingTrackChangeDirection: TrackChangeDirection;
 }
 
 export interface PlaybackStoreActions {
-  // Initialize with a source
   setSource(source: PlaybackSource): void;
   clearSource(source?: PlaybackSource): void;
-
-  // Called by source.onStateChange
   updatePlayback(state: PlaybackState): void;
-
-  // Client-side position (extrapolated from lastSync + elapsed)
   getPosition(): number;
   beginPendingSeek(seconds: number): void;
   clearPendingSeek(): void;
-
-  // Persisted settings
   hydrateSettings(settings: PersistedSettings): void;
   updateSettings(partial: Partial<PersistedSettings>): void;
   setWindowMode(mode: PersistedSettings["windowMode"]): void;
   setAlwaysOnTop(enabled: boolean): void;
-
-  // Dev visual QA
   setDevForceEmpty(enabled: boolean): void;
-
-  // Runtime track-change motion intent
   markTrackChangeIntent(direction: TrackChangeDirection): void;
 }
 
 export type VinylDeckStore = PlaybackStoreState & PlaybackStoreActions;
 
-// ── Default empty playback state ──────────────────────────────
 export const EMPTY_PLAYBACK: PlaybackState = {
   track: "",
   artist: "",
@@ -93,10 +64,8 @@ export const EMPTY_PLAYBACK: PlaybackState = {
   canControl: false,
 };
 
-// ── Store ─────────────────────────────────────────────────────
 export const useVinylDeckStore = create<VinylDeckStore>()(
   subscribeWithSelector((set, get) => ({
-    // Initial state
     playback: EMPTY_PLAYBACK,
     lastKnownPosition: 0,
     lastSyncTime: Date.now(),
@@ -113,7 +82,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
     trackChangeNonce: 0,
     pendingTrackChangeDirection: "unknown",
 
-    // ── Set source and subscribe to its state changes ─────────
     setSource(source) {
       const { source: existing, sourceUnsubscribe: existingUnsubscribe } = get();
       if (existing === source && existingUnsubscribe) return;
@@ -135,14 +103,12 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
         pendingTrackChangeDirection: "unknown",
       });
 
-      // Subscribe to state changes from source
       const unsubscribe = source.onStateChange((state) => {
         get().updatePlayback(state);
       });
 
       set({ sourceUnsubscribe: unsubscribe });
 
-      // Start the source
       source.start().catch((error) => {
         console.error(error);
         if (get().source === source) get().clearSource(source);
@@ -170,7 +136,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       });
     },
 
-    // ── Update playback snapshot from source event ────────────
     updatePlayback(state) {
       const current = get();
       const trackChanged =
@@ -178,19 +143,28 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
         state.artist !== current.playback.artist ||
         state.album !== current.playback.album ||
         state.sourceId !== current.playback.sourceId;
+
+      // Never wipe cover art to null on same-track play/pause/seek events
+      const nextPlayback =
+        !trackChanged &&
+        !state.artworkDataUrl &&
+        current.playback.artworkDataUrl
+          ? { ...state, artworkDataUrl: current.playback.artworkDataUrl }
+          : state;
+
       const pendingSeekExpired =
         current.pendingSeekPosition !== null &&
         Date.now() - current.pendingSeekStartedAt > PENDING_SEEK_TIMEOUT_MS;
       const pendingSeekSettled =
         current.pendingSeekPosition !== null &&
-        Math.abs(state.position - current.pendingSeekPosition) <=
+        Math.abs(nextPlayback.position - current.pendingSeekPosition) <=
           PENDING_SEEK_SETTLE_SECONDS;
       const consumeDirection =
         trackChanged && current.pendingTrackChangeDirection !== "unknown";
 
       set({
-        playback: state,
-        lastKnownPosition: state.position,
+        playback: nextPlayback,
+        lastKnownPosition: nextPlayback.position,
         lastSyncTime: Date.now(),
         pendingSeekPosition:
           pendingSeekExpired || pendingSeekSettled || trackChanged
@@ -214,8 +188,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
       });
     },
 
-    // ── Client-side position extrapolation ────────────────────
-    // Between SMTC sync events, advance position using elapsed real time.
     getPosition() {
       const {
         playback,
@@ -300,7 +272,6 @@ export const useVinylDeckStore = create<VinylDeckStore>()(
   }))
 );
 
-// ── Convenience selectors (stable references) ─────────────────
 export const selectPlayback = (s: VinylDeckStore) => s.playback;
 export const selectIsPlaying = (s: VinylDeckStore) => s.playback.isPlaying;
 export const selectTrack = (s: VinylDeckStore) => s.playback.track;

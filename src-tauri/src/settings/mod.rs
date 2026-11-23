@@ -16,6 +16,41 @@ const VERSION: u8 = 2;
 const SHELL_THEMES: &[&str] = &["noir", "glass"];
 const LEGACY_THEMES: &[&str] = &["noir", "glass", "aurora", "vapor", "paper"];
 const WINDOW_MODES: &[&str] = &["main", "fullscreen", "mini"];
+const LYRICS_LAYOUTS: &[&str] = &["split", "strip"];
+const LYRICS_FONT_FAMILIES: &[&str] = &["display", "sans", "serif", "mono"];
+const LYRICS_FONT_SIZES: &[&str] = &["sm", "md", "lg", "xl"];
+const LYRICS_SIDES: &[&str] = &["right", "left"];
+const LYRICS_TARGET_LANGS: &[&str] = &[
+    "en", "es", "fr", "de", "hi", "pa", "ja", "ko", "zh", "pt", "ar", "ru",
+];
+
+fn default_lyrics_enabled() -> bool {
+    true
+}
+
+fn default_lyrics_layout() -> String {
+    "split".to_string()
+}
+
+fn default_lyrics_target_lang() -> String {
+    "en".to_string()
+}
+
+fn default_lyrics_auto_romanize() -> bool {
+    true
+}
+
+fn default_lyrics_font_family() -> String {
+    "display".to_string()
+}
+
+fn default_lyrics_font_size() -> String {
+    "md".to_string()
+}
+
+fn default_lyrics_side() -> String {
+    "right".to_string()
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -39,6 +74,24 @@ pub struct PersistedSettings {
     /// Mini-only: applies a native Windows Acrylic blur-through effect on the
     /// Mini window and lets its own background go fully transparent.
     pub mini_transparent_mode: bool,
+    #[serde(default = "default_lyrics_enabled")]
+    pub lyrics_enabled: bool,
+    #[serde(default = "default_lyrics_layout")]
+    pub lyrics_layout: String,
+    #[serde(default)]
+    pub lyrics_romanized: bool,
+    #[serde(default)]
+    pub lyrics_translated: bool,
+    #[serde(default = "default_lyrics_auto_romanize")]
+    pub lyrics_auto_romanize: bool,
+    #[serde(default = "default_lyrics_target_lang")]
+    pub lyrics_target_lang: String,
+    #[serde(default = "default_lyrics_font_family")]
+    pub lyrics_font_family: String,
+    #[serde(default = "default_lyrics_font_size")]
+    pub lyrics_font_size: String,
+    #[serde(default = "default_lyrics_side")]
+    pub lyrics_side: String,
 }
 
 impl Default for PersistedSettings {
@@ -59,6 +112,15 @@ impl Default for PersistedSettings {
             start_with_windows: false,
             window_mode: "main".to_string(),
             mini_transparent_mode: false,
+            lyrics_enabled: true,
+            lyrics_layout: "split".to_string(),
+            lyrics_romanized: false,
+            lyrics_auto_romanize: true,
+            lyrics_translated: false,
+            lyrics_target_lang: "en".to_string(),
+            lyrics_font_family: "display".to_string(),
+            lyrics_font_size: "md".to_string(),
+            lyrics_side: "right".to_string(),
         }
     }
 }
@@ -80,6 +142,15 @@ pub struct SettingsPatch {
     pub start_with_windows: Option<bool>,
     pub window_mode: Option<String>,
     pub mini_transparent_mode: Option<bool>,
+    pub lyrics_enabled: Option<bool>,
+    pub lyrics_layout: Option<String>,
+    pub lyrics_romanized: Option<bool>,
+    pub lyrics_translated: Option<bool>,
+    pub lyrics_auto_romanize: Option<bool>,
+    pub lyrics_target_lang: Option<String>,
+    pub lyrics_font_family: Option<String>,
+    pub lyrics_font_size: Option<String>,
+    pub lyrics_side: Option<String>,
 }
 
 pub struct SettingsState {
@@ -203,6 +274,19 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
         .unwrap_or_else(|| ambient_from_legacy_theme(&legacy_theme, art_ambient).to_string());
     let window_mode = read_string_choice(raw.get("windowMode"), WINDOW_MODES)
         .unwrap_or_else(|| defaults.window_mode.clone());
+    let lyrics_layout = read_string_choice(raw.get("lyricsLayout"), LYRICS_LAYOUTS)
+        .unwrap_or_else(|| defaults.lyrics_layout.clone());
+    let lyrics_target_lang =
+        read_string_choice(raw.get("lyricsTargetLang"), LYRICS_TARGET_LANGS)
+            .unwrap_or_else(|| defaults.lyrics_target_lang.clone());
+    let lyrics_font_family =
+        read_string_choice(raw.get("lyricsFontFamily"), LYRICS_FONT_FAMILIES)
+            .unwrap_or_else(|| defaults.lyrics_font_family.clone());
+    let lyrics_font_size =
+        read_string_choice(raw.get("lyricsFontSize"), LYRICS_FONT_SIZES)
+            .unwrap_or_else(|| defaults.lyrics_font_size.clone());
+    let lyrics_side = read_string_choice(raw.get("lyricsSide"), LYRICS_SIDES)
+        .unwrap_or_else(|| defaults.lyrics_side.clone());
 
     PersistedSettings {
         version: VERSION,
@@ -226,6 +310,15 @@ fn validate_settings(value: Option<Value>) -> PersistedSettings {
             raw.get("miniTransparentMode"),
             defaults.mini_transparent_mode,
         ),
+        lyrics_enabled: read_bool(raw.get("lyricsEnabled"), defaults.lyrics_enabled),
+        lyrics_layout,
+        lyrics_romanized: read_bool(raw.get("lyricsRomanized"), defaults.lyrics_romanized),
+        lyrics_auto_romanize: read_bool(raw.get("lyricsAutoRomanize"), defaults.lyrics_auto_romanize),
+        lyrics_translated: read_bool(raw.get("lyricsTranslated"), defaults.lyrics_translated),
+        lyrics_target_lang,
+        lyrics_font_family,
+        lyrics_font_size,
+        lyrics_side,
     }
 }
 
@@ -283,6 +376,48 @@ fn apply_patch(current: &PersistedSettings, patch: SettingsPatch) -> PersistedSe
     }
     if let Some(value) = patch.mini_transparent_mode {
         next.mini_transparent_mode = value;
+    }
+    if let Some(value) = patch.lyrics_enabled {
+        next.lyrics_enabled = value;
+    }
+    if let Some(layout) = patch
+        .lyrics_layout
+        .filter(|value| LYRICS_LAYOUTS.contains(&value.as_str()))
+    {
+        next.lyrics_layout = layout;
+    }
+    if let Some(value) = patch.lyrics_romanized {
+        next.lyrics_romanized = value;
+    }
+    if let Some(value) = patch.lyrics_translated {
+        next.lyrics_translated = value;
+    }
+    if let Some(value) = patch.lyrics_auto_romanize {
+        next.lyrics_auto_romanize = value;
+    }
+    if let Some(lang) = patch
+        .lyrics_target_lang
+        .filter(|value| LYRICS_TARGET_LANGS.contains(&value.as_str()))
+    {
+        next.lyrics_target_lang = lang;
+    }
+    if let Some(font) = patch
+        .lyrics_font_family
+        .filter(|value| LYRICS_FONT_FAMILIES.contains(&value.as_str()))
+    {
+        next.lyrics_font_family = font;
+    }
+    if let Some(size) = patch
+        .lyrics_font_size
+        .filter(|value| LYRICS_FONT_SIZES.contains(&value.as_str()))
+    {
+        next.lyrics_font_size = size;
+    }
+    if let Some(side) = patch
+        .lyrics_side
+        .filter(|value| LYRICS_SIDES.contains(&value.as_str()))
+    {
+        next.lyrics_side = side;
     }
 
     next.art_ambient = next.ambient_mode != "off";
@@ -513,5 +648,38 @@ mod tests {
         );
 
         assert!(settings.mini_transparent_mode);
+    }
+
+    #[test]
+    fn validates_and_patches_lyrics_settings() {
+        let fallback = validate_settings(Some(json!({
+            "lyricsEnabled": "invalid",
+            "lyricsLayout": "overlay",
+            "lyricsRomanized": "yes",
+            "lyricsTranslated": "no",
+            "lyricsTargetLang": "xx"
+        })));
+        assert!(fallback.lyrics_enabled);
+        assert_eq!(fallback.lyrics_layout, "split");
+        assert!(!fallback.lyrics_romanized);
+        assert!(!fallback.lyrics_translated);
+        assert_eq!(fallback.lyrics_target_lang, "en");
+
+        let patched = apply_patch(
+            &fallback,
+            SettingsPatch {
+                lyrics_enabled: Some(false),
+                lyrics_layout: Some("strip".to_string()),
+                lyrics_romanized: Some(true),
+                lyrics_translated: Some(true),
+                lyrics_target_lang: Some("ja".to_string()),
+                ..SettingsPatch::default()
+            },
+        );
+        assert!(!patched.lyrics_enabled);
+        assert_eq!(patched.lyrics_layout, "strip");
+        assert!(patched.lyrics_romanized);
+        assert!(patched.lyrics_translated);
+        assert_eq!(patched.lyrics_target_lang, "ja");
     }
 }

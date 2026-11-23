@@ -156,21 +156,14 @@ enum TrayMediaAction {
 fn control_media_from_tray(app: &AppHandle, action: TrayMediaAction) {
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
-        let Some(state) = app.try_state::<MediaState>() else {
-            eprintln!("[VinylDeck tray] media state unavailable for tray control");
-            return;
+        let result = match action {
+            TrayMediaAction::TogglePlayPause => media::commands::smtc_toggle_play_pause(&app).await,
+            TrayMediaAction::Previous => media::commands::smtc_previous(&app).await,
+            TrayMediaAction::Next => media::commands::smtc_next(&app).await,
         };
 
-        match action {
-            TrayMediaAction::TogglePlayPause => {
-                media::commands::media_toggle_play_pause(&app, &state).await;
-            }
-            TrayMediaAction::Previous => {
-                media::commands::media_previous(&app, &state).await;
-            }
-            TrayMediaAction::Next => {
-                media::commands::media_next(&app, &state).await;
-            }
+        if let Err(error) = result {
+            eprintln!("[VinylDeck tray] SMTC control failed: {error}");
         }
     });
 }
@@ -200,7 +193,7 @@ fn start_tray_media_state_loop<R: Runtime>(
                 continue;
             };
 
-            let snapshot = state.snapshot().await;
+            let snapshot = state.snapshot();
             let presentation = TrayPresentation {
                 play_pause_text: if snapshot.is_playing { "Pause" } else { "Play" },
                 controls_enabled: snapshot.can_control,

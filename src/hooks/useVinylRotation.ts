@@ -1,7 +1,7 @@
 // src/hooks/useVinylRotation.ts
 // RAF-based rotation with inertia on pause.
 // Direct DOM mutation (no React state) = zero re-renders.
-// Element must have id="vinyl-disc".
+// Caches #vinyl-disc ref and pauses automatically when window is hidden/minimized.
 
 import { useEffect, useRef } from "react";
 import type { TrackChangeDirection } from "../lib/trackTransition/types";
@@ -28,6 +28,7 @@ export function useVinylRotation({
   onFrame,
 }: UseVinylRotationOptions): void {
   const rafRef = useRef<number | null>(null);
+  const discElRef = useRef<HTMLElement | null>(null);
   const rotationRef = useRef<number>(0);
   const velocityRef = useRef<number>(0);
   const lastTimestampRef = useRef<number | null>(null);
@@ -37,12 +38,20 @@ export function useVinylRotation({
   const lastSkipNonceRef = useRef<number>(skipNonce);
   const onFrameRef = useRef<typeof onFrame>(onFrame);
 
-  // degreesPerMs at 33.33 RPM:  (33.33 / 60) * (360 / 1000) ≈ 0.19998 deg/ms
+  // degreesPerMs at 33.33 RPM: (33.33 / 60) * (360 / 1000) ~= 0.19998 deg/ms
   const degreesPerMs = (rpm / 60) * (360 / 1000);
 
   useEffect(() => {
     onFrameRef.current = onFrame;
   }, [onFrame]);
+
+  function getDiscElement(): HTMLElement | null {
+    const cached = discElRef.current;
+    if (cached && cached.isConnected) return cached;
+    const found = document.getElementById("vinyl-disc");
+    discElRef.current = found;
+    return found;
+  }
 
   function applyFrame(delta: number) {
     const target = targetVelocityRef.current;
@@ -58,9 +67,9 @@ export function useVinylRotation({
         (velocityRef.current + skipImpulseRef.current) * delta) %
       360;
 
-    const disc = document.getElementById("vinyl-disc");
+    const disc = getDiscElement();
     if (disc) {
-      disc.style.transform = `rotate(${rotationRef.current}deg)`;
+      disc.style.transform = `rotate3d(0, 0, 1, ${rotationRef.current.toFixed(3)}deg)`;
     }
 
     onFrameRef.current?.({
@@ -70,7 +79,16 @@ export function useVinylRotation({
     });
   }
 
+  function stopLoop() {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+      lastTimestampRef.current = null;
+    }
+  }
+
   function wakeLoop() {
+    if (typeof document !== "undefined" && document.hidden) return;
     if (rafRef.current === null) {
       lastTimestampRef.current = null;
       rafRef.current = requestAnimationFrame(tick);
@@ -78,6 +96,11 @@ export function useVinylRotation({
   }
 
   function tick(timestamp: number) {
+    if (typeof document !== "undefined" && document.hidden) {
+      stopLoop();
+      return;
+    }
+
     if (lastTimestampRef.current === null) {
       lastTimestampRef.current = timestamp;
     }
@@ -91,15 +114,33 @@ export function useVinylRotation({
       Math.abs(skipImpulseRef.current) < 0.0001 &&
       !isPlayingRef.current
     ) {
-      rafRef.current = null;
-      lastTimestampRef.current = null;
+      stopLoop();
       return;
     }
 
     rafRef.current = requestAnimationFrame(tick);
   }
 
-  // Sync target velocity whenever isPlaying changes.
+  // Pause 60fps rotation loop completely when window is hidden/minimized to tray
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        stopLoop();
+      } else if (
+        isPlayingRef.current ||
+        Math.abs(velocityRef.current) > 0.0001 ||
+        Math.abs(skipImpulseRef.current) > 0.0001
+      ) {
+        wakeLoop();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     isPlayingRef.current = isPlaying;
     targetVelocityRef.current = isPlaying ? degreesPerMs : 0;
@@ -121,11 +162,8 @@ export function useVinylRotation({
 
   useEffect(() => {
     return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-        lastTimestampRef.current = null;
-      }
+      stopLoop();
+      discElRef.current = null;
     };
   }, []);
 }

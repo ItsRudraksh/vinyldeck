@@ -1,21 +1,24 @@
 # VinylDeck
-> Windows desktop app that renders the active system media session as a cinematic vinyl deck.
+> Windows desktop app that renders the active system media session as a cinematic vinyl deck with realtime synced lyrics.
 
 ## Primary Docs
 - `README.md`: public project overview, quick start, features, links
-- `docs/USER_GUIDE.md`: user controls, settings, window modes
-- `docs/ARCHITECTURE.md`: system design and state ownership
+- `docs/USER_GUIDE.md`: user controls, realtime lyrics, settings, window modes
+- `docs/ARCHITECTURE.md`: system design, lyrics pipeline, and state ownership
 - `docs/API.md`: Tauri command/event contracts
 - `docs/DEVELOPMENT.md`: contributor setup and verification
-- `docs/TROUBLESHOOTING.md`: common runtime issues
+- `docs/TROUBLESHOOTING.md`: common runtime and lyrics issues
 - `docs/RELEASE_V1.md`: version notes and distribution checklist
 - `CHANGELOG.md`: notable changes
 
 ## Core Concepts
-- Browser mode uses `MockSource`.
+- Browser mode uses `MockSource` (with deterministic demo lyrics fixtures).
 - Tauri mode uses `TauriSource` over Rust SMTC commands and events.
 - React consumes `PlaybackState`; Rust owns Windows media integration.
 - Rust owns persisted settings and emits backend-approved settings snapshots.
+- Realtime lyrics resolve through a Rust-backed multi-tier cascade (`cmd_lyrics_fetch`: LyricsPlus -> BetterLyrics TTML -> LRCLIB) with zero-flicker 2-layer 60fps DOM-ref word sweep, 3-dot instrumental gap interludes, tucked background vocals, damped-spring scrolling, and automatic collapse on instrumental/no-lyrics tracks.
+- Free zero-key Romanization replaces primary lyrics in-place (preserving karaoke word sweep) using native Apple Music TTML `<iTunesMetadata>` syllable-timed transliterations, instant offline romanizers (Korean Hangul, Japanese Kana, Punjabi Gurmukhi, Hindi Devanagari), and per-line bounded-concurrency Rust enrichment (`cmd_lyrics_enrich`), with opt-in Auto-Romanize (never auto-translates) and customizable font family, font size, and Split View side.
+- Settings includes a dedicated `LYRICS` tab (`LOOK | VINYL | LYRICS | DISPLAY | OTHER | ABOUT`); the right-click context menu stays slim and essential-only.
 - Start With Windows is a Rust-owned persisted setting backed by Tauri autostart.
 - Mini Transparency is a Rust-owned persisted setting; it applies native Acrylic only to the Mini window.
 - Active visual shells are Noir and Glass.
@@ -24,10 +27,13 @@
 
 ## Important Paths
 - `src/App.tsx`: app boot and render-mode routing
-- `src/views/`: main and mini views
-- `src/components/`: visual and interaction components
+- `src/views/`: main and mini views (unified Pure/Split/Strip stage choreography)
+- `src/components/`: visual and interaction components including `LyricsStage`, `Tooltip`, and `Settings`
+- `src/hooks/`: playback, idle, keyboard shortcuts, `useLyrics`, and `useLyricsSync`
+- `src/lib/lyrics/`: lyrics types, offline romanizer (`romanize.ts`), parsers (LyricsPlus, TTML, LRC, GTX, interludes), provider cascade, and demo fixtures
 - `src/lib/playback/`: playback contracts, store, mock source, Tauri source
 - `src/lib/settings/`: frontend settings adapter/cache
+- `src-tauri/src/lyrics/`: Rust lyrics fetch and per-line romanization/translation enrichment commands
 - `src-tauri/src/media/`: SMTC integration
 - `src-tauri/src/settings/`: settings authority
 - `src-tauri/src/window/`: window modes
@@ -41,3 +47,5 @@ npm run fmt:rust
 npm run clippy:rust
 npm run test:rust
 ```
+
+- **v2.3.0**: On-disk Rust LRU lyrics cache (`0ms` reload across restarts), subtle depth-of-field lyric focus blur, zero-shift karaoke wrapping for overlapping background vocals, high-contrast Glass & Noir Settings modal, and unified System Tray + Windows SMTC controls.

@@ -11,8 +11,23 @@ import {
   normalizeAmbientMode,
   resetAmbientColors,
 } from "../themes/applier";
-import { DEFAULT_SETTINGS, WINDOW_MODES } from "./types";
-import type { PersistedSettings } from "./types";
+import {
+  DEFAULT_SETTINGS,
+  LYRICS_FONT_FAMILIES,
+  LYRICS_FONT_SIZES,
+  LYRICS_LAYOUTS,
+  LYRICS_SIDES,
+  LYRICS_TARGET_LANGS,
+  WINDOW_MODES,
+} from "./types";
+import type {
+  LyricsFontFamily,
+  LyricsFontSize,
+  LyricsLayout,
+  LyricsSide,
+  LyricsTargetLang,
+  PersistedSettings,
+} from "./types";
 import type { AmbientModeId, LegacyThemeId, ThemeId } from "../themes/applier";
 
 export const SETTINGS_CHANGED_EVENT = "settings-changed";
@@ -41,6 +56,21 @@ export function validateSettings(value: unknown): PersistedSettings {
   const windowMode = isWindowMode(raw.windowMode)
     ? raw.windowMode
     : DEFAULT_SETTINGS.windowMode;
+  const lyricsLayout = isLyricsLayout(raw.lyricsLayout)
+    ? raw.lyricsLayout
+    : DEFAULT_SETTINGS.lyricsLayout;
+  const lyricsTargetLang = isLyricsTargetLang(raw.lyricsTargetLang)
+    ? raw.lyricsTargetLang
+    : DEFAULT_SETTINGS.lyricsTargetLang;
+  const lyricsFontFamily = isLyricsFontFamily(raw.lyricsFontFamily)
+    ? raw.lyricsFontFamily
+    : DEFAULT_SETTINGS.lyricsFontFamily;
+  const lyricsFontSize = isLyricsFontSize(raw.lyricsFontSize)
+    ? raw.lyricsFontSize
+    : DEFAULT_SETTINGS.lyricsFontSize;
+  const lyricsSide = isLyricsSide(raw.lyricsSide)
+    ? raw.lyricsSide
+    : DEFAULT_SETTINGS.lyricsSide;
 
   return {
     version: 2,
@@ -67,6 +97,27 @@ export function validateSettings(value: unknown): PersistedSettings {
       raw.miniTransparentMode,
       DEFAULT_SETTINGS.miniTransparentMode,
     ),
+    lyricsEnabled: readBoolean(
+      raw.lyricsEnabled,
+      DEFAULT_SETTINGS.lyricsEnabled,
+    ),
+    lyricsLayout,
+    lyricsRomanized: readBoolean(
+      raw.lyricsRomanized,
+      DEFAULT_SETTINGS.lyricsRomanized,
+    ),
+    lyricsAutoRomanize: readBoolean(
+      raw.lyricsAutoRomanize,
+      DEFAULT_SETTINGS.lyricsAutoRomanize,
+    ),
+    lyricsTranslated: readBoolean(
+      raw.lyricsTranslated,
+      DEFAULT_SETTINGS.lyricsTranslated,
+    ),
+    lyricsTargetLang,
+    lyricsFontFamily,
+    lyricsFontSize,
+    lyricsSide,
   };
 }
 
@@ -97,11 +148,16 @@ export async function commitSettings(
     return settings;
   }
 
-  return validateSettings(
-    await invoke<PersistedSettings>("cmd_settings_update", {
-      patch: normalizedPatch,
-    }),
-  );
+  // Optimistic local update for instant zero-lag UI response
+  const current = useVinylDeckStore.getState().settings;
+  const optimistic = validateSettings({ ...current, ...normalizedPatch });
+  useVinylDeckStore.getState().hydrateSettings(optimistic);
+
+  const backend = await invoke<Record<string, unknown>>("cmd_settings_update", {
+    patch: normalizedPatch,
+  });
+  // Preserve newly patched fields even if a stale dev binary hasn't rebuilt Rust yet
+  return validateSettings({ ...optimistic, ...backend, ...normalizedPatch });
 }
 
 export async function resetSettings(): Promise<PersistedSettings> {
@@ -121,8 +177,9 @@ export async function subscribeToSettingsChanges(
 ): Promise<() => void> {
   if (!isTauri()) return () => {};
 
-  return listen<PersistedSettings>(SETTINGS_CHANGED_EVENT, ({ payload }) => {
-    callback(validateSettings(payload));
+  return listen<Record<string, unknown>>(SETTINGS_CHANGED_EVENT, ({ payload }) => {
+    const current = useVinylDeckStore.getState().settings;
+    callback(validateSettings({ ...current, ...payload }));
   });
 }
 
@@ -152,6 +209,41 @@ function isWindowMode(
   return (
     typeof value === "string" &&
     WINDOW_MODES.includes(value as PersistedSettings["windowMode"])
+  );
+}
+
+function isLyricsLayout(value: unknown): value is LyricsLayout {
+  return (
+    typeof value === "string" &&
+    LYRICS_LAYOUTS.includes(value as LyricsLayout)
+  );
+}
+
+function isLyricsTargetLang(value: unknown): value is LyricsTargetLang {
+  return (
+    typeof value === "string" &&
+    LYRICS_TARGET_LANGS.includes(value as LyricsTargetLang)
+  );
+}
+
+function isLyricsFontFamily(value: unknown): value is LyricsFontFamily {
+  return (
+    typeof value === "string" &&
+    LYRICS_FONT_FAMILIES.includes(value as LyricsFontFamily)
+  );
+}
+
+function isLyricsFontSize(value: unknown): value is LyricsFontSize {
+  return (
+    typeof value === "string" &&
+    LYRICS_FONT_SIZES.includes(value as LyricsFontSize)
+  );
+}
+
+function isLyricsSide(value: unknown): value is LyricsSide {
+  return (
+    typeof value === "string" &&
+    LYRICS_SIDES.includes(value as LyricsSide)
   );
 }
 
