@@ -1,6 +1,7 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
+  base = "landing"
+  command = "npm install && npm run build"
+  publish = "landing/dist"
 
 [[headers]]
   for = "/media/*"
