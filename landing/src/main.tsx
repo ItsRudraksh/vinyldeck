@@ -1,15 +1,11 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './styles/tokens.css';
-import './styles/base.css';
-import './styles/components.css';
-import './styles/motion.css';
-import './styles/polish.css';
-import './styles/v5-final.css';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./styles/tokens.css";
+import "./styles/global.css";
+import { App } from "./App";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
     <App />
-  </React.StrictMode>
+  </StrictMode>
 );

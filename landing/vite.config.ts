@@ -1,12 +1,11 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  base: './',
   plugins: [react()],
-  server: { port: 5174 },
   build: {
-    target: 'es2020',
-    assetsInlineLimit: 4096
-  }
+    target: "es2022",
+    cssMinify: true,
+    sourcemap: false,
+  },
 });

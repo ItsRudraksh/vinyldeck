@@ -2,17 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#000000" />
-    <title>VinylDeck — A cinematic vinyl deck for Windows</title>
-    <meta name="description" content="VinylDeck turns the music already playing on your Windows desktop into a living vinyl deck with Noir and Glass shells, mini mode, fullscreen mode, and native media controls." />
-    <meta property="og:title" content="VinylDeck — A cinematic vinyl deck for Windows" />
-    <meta property="og:description" content="A living vinyl deck for everything already playing on your Windows desktop." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#060608" />
+    <title>VinylDeck v2.3.2 — Physical Turntable & 60fps Lyrics for Windows</title>
+    <meta
+      name="description"
+      content="A native Rust + Tauri v2 desktop turntable and 60fps word-by-word karaoke lyrics stage for Windows. Works instantly with Spotify, YouTube, Apple Music, and every SMTC player."
+    />
+    <meta property="og:title" content="VinylDeck v2.3.2 — Physical Turntable & 60fps Lyrics" />
+    <meta
+      property="og:description"
+      content="Noir OLED Velvet and Refractive Glass. Word-by-word karaoke, Auto-Romanize, 0ms on-disk lyrics cache, and zero login on Windows 10/11."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/assets/meta/og-vinyldeck-1200x630.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="/assets/meta/icon-32.png" sizes="32x32" />
-    <link rel="apple-touch-icon" href="/assets/meta/icon-180.png" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%2308080a' stroke='%23ffffff' stroke-opacity='0.25' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%23ffffff' stroke-opacity='0.14' stroke-width='1'/%3E%3Ccircle cx='32' cy='32' r='16' fill='none' stroke='%23ffffff' stroke-opacity='0.14' stroke-width='1'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%23e5a96d'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%2308080a'/%3E%3C/svg%3E"
+    />
+    <!-- Clash Display (Fontshare) -->
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Plus Jakarta Sans + JetBrains Mono (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="root"></div>
